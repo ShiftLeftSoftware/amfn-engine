@@ -1,0 +1,16 @@
+[package]
+name = "amfnengine"
+version = "1.0.0"
+authors = ["ShiftLeft Software"]
+description = "AmFn Engine"
+license = "MIT"
+edition = "2018"
+
+[dependencies]
+libmath = "*"
+compare = "0.1"
+rust_decimal = "*"
+chrono = "*"
+chrono_locale = "*"
+json = "*"
+regex = "*"
