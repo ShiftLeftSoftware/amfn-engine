@@ -1,0 +1,946 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"description": "Cashflow Schema",
+	"additionalProperties": false,
+	"definitions": {
+		"am": {
+			"additionalProperties": false,
+			"properties": {
+				"accrued-balance": {
+					"type": "string"
+				},
+				"balance": {
+					"type": "string"
+				},
+				"date": {
+					"$ref": "#/definitions/date-format"
+				},
+				"descriptor-list": {
+					"$ref": "#/definitions/descriptor-list"
+				},
+				"event-type": {
+					"type": "string"
+				},
+				"extension": {
+					"$ref": "#/definitions/extension"
+				},
+				"frequency": {
+					"$ref": "#/definitions/frequency"
+				},
+				"interest": {
+					"type": "string"
+				},
+				"intervals": {
+					"type": "number"
+				},
+				"parameter-list": {
+					"$ref": "#/definitions/parameter-list"
+				},
+				"periods": {
+					"type": "number"
+				},
+				"principal-decrease": {
+					"type": "string"
+				},
+				"principal-increase": {
+					"type": "string"
+				},
+				"sl-interest": {
+					"type": "string"
+				},
+				"sort-order": {
+					"type": "number"
+				},
+				"value": {
+					"type": "string"
+				},
+				"value-to-interest": {
+					"type": "string"
+				},
+				"value-to-principal": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"accrued-balance",
+				"balance",
+				"date",
+				"frequency",
+				"interest",
+				"intervals",
+				"periods",
+				"principal-decrease",
+				"principal-increase",
+				"sl-interest",
+				"sort-order",
+				"value",
+				"value-to-interest",
+				"value-to-principal"
+			],
+			"type": "object"
+		},
+		"am-list": {
+			"items": {
+				"$ref": "#/definitions/am"
+			},
+			"type": "array"
+		},
+		"balance-result": {
+			"additionalProperties": false,
+			"properties": {
+				"accrued-balance-seen": {
+					"type": "boolean"
+				},
+				"polarity": {
+					"enum": [
+						"positive",
+						"negative"
+					],
+					"type": "string"
+				},
+				"rule-of-78-seen": {
+					"type": "boolean"
+				},
+				"auxiliary-active-decrease": {
+					"type": "string"
+				},
+				"auxiliary-active-increase": {
+					"type": "string"
+				},
+				"auxiliary-passive-decrease": {
+					"type": "string"
+				},
+				"auxiliary-passive-increase": {
+					"type": "string"
+				},
+				"final-accrued-balance": {
+					"type": "string"
+				},
+				"final-balance": {
+					"type": "string"
+				},
+				"final-balance-date": {
+					"$ref": "#/definitions/date-format"
+				},
+				"interest-present": {
+					"type": "string"
+				},
+				"interest-total": {
+					"type": "string"
+				},
+				"principal-changes-present": {
+					"type": "number"
+				},
+				"principal-changes-total": {
+					"type": "number"
+				},
+				"principal-total-decrease": {
+					"type": "string"
+				},
+				"principal-total-increase": {
+					"type": "string"
+				},
+				"sl-interest-present": {
+					"type": "string"
+				},
+				"sl-interest-total": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"auxiliary-active-decrease",
+				"auxiliary-active-increase",
+				"auxiliary-passive-decrease",
+				"auxiliary-passive-increase",
+				"final-accrued-balance",
+				"final-balance",
+				"final-balance-date",
+				"interest-present",
+				"interest-total",
+				"principal-changes-present",
+				"principal-changes-total",
+				"principal-total-decrease",
+				"principal-total-increase",
+				"sl-interest-present",
+				"sl-interest-total"
+			],
+			"type": "object"
+		},
+		"cashflow": {
+			"additionalProperties": false,
+			"properties": {
+				"balance-result": {
+					"$ref": "#/definitions/balance-result"
+				},
+				"compress-list": {
+					"$ref": "#/definitions/compress-list"
+				},
+				"event-list": {
+					"$ref": "#/definitions/event-list"
+				},
+				"am-list": {
+					"$ref": "#/definitions/am-list"
+				},
+				"name": {
+					"type": "string"
+				},
+				"preferences": {
+					"$ref": "#/definitions/preferences"
+				}
+			},
+			"required": [
+				"name"
+			],
+			"type": "object"
+		},
+		"cashflows": {
+			"items": {
+				"$ref": "#/definitions/cashflow"
+			},
+			"type": "array"
+		},
+		"compress": {
+			"additionalProperties": false,
+			"properties": {
+				"accrued-balance": {
+					"type": "string"
+				},
+				"balance": {
+					"type": "string"
+				},
+				"date": {
+					"$ref": "#/definitions/date-format"
+				},
+				"descriptor-list": {
+					"$ref": "#/definitions/descriptor-list"
+				},
+				"end-date": {
+					"$ref": "#/definitions/date-format"
+				},
+				"event-type": {
+					"type": "string"
+				},
+				"extension": {
+					"$ref": "#/definitions/extension"
+				},
+				"frequency": {
+					"$ref": "#/definitions/frequency"
+				},
+				"interest": {
+					"type": "string"
+				},
+				"intervals": {
+					"type": "number"
+				},
+				"periods": {
+					"type": "number"
+				},
+				"principal-decrease": {
+					"type": "string"
+				},
+				"principal-increase": {
+					"type": "string"
+				},
+				"sl-interest": {
+					"type": "string"
+				},
+				"sort-order": {
+					"type": "number"
+				},
+				"value": {
+					"type": "string"
+				},
+				"value-to-interest": {
+					"type": "string"
+				},
+				"value-to-principal": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"accrued-balance",
+				"balance",
+				"date",
+				"end-date",
+				"extension",
+				"frequency",
+				"interest",
+				"intervals",
+				"periods",
+				"principal-decrease",
+				"principal-increase",
+				"sl-interest",
+				"sort-order",
+				"value",
+				"value-to-interest",
+				"value-to-principal"
+			],
+			"type": "object"
+		},
+		"compress-list": {
+			"items": {
+				"$ref": "#/definitions/compress"
+			},
+			"type": "array"
+		},
+		"current-value": {
+			"additionalProperties": false,
+			"properties": {
+				"current-value": {
+					"$ref": "#/definitions/current-value-props"
+				}
+			},
+			"required": [
+				"current-value"
+			],
+			"type": "object"
+		},
+		"current-value-props": {
+			"additionalProperties": false,
+			"properties": {
+				"eom": {
+					"type": "boolean"
+				},
+				"passive": {
+					"type": "boolean"
+				},
+				"present": {
+					"type": "boolean"
+				}
+			},
+			"type": "object"
+		},
+		"date-format": {
+			"pattern": "\\d{4}-\\d{2}-\\d{2}",
+			"type": "string"
+		},
+		"default-encoding": {
+			"enum": [
+				"us-ascii",
+				"iso-8859-1",
+				"utf-8",
+				"utf-16be",
+				"utf-16le",
+				"utf-16",
+				"custom"
+			],
+			"type": "string"
+		},
+		"descriptor": {
+			"additionalProperties": false,
+			"properties": {
+				"propagate": {
+					"type": "boolean"
+				},
+				"descriptor-code": {
+					"type": "string"
+				},
+				"descriptor-type": {
+					"type": "string"
+				},
+				"event-index": {
+					"type": "number"
+				},
+				"expression": {
+					"type": "string"
+				},
+				"group": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"descriptor-code",
+				"descriptor-type",
+				"group",
+				"name",
+				"value"
+			],
+			"type": "object"
+		},
+		"descriptor-list": {
+			"items": {
+				"$ref": "#/definitions/descriptor"
+			},
+			"type": "array"
+		},
+		"event": {
+			"additionalProperties": false,
+			"properties": {
+				"descriptor-list": {
+					"$ref": "#/definitions/descriptor-list"
+				},
+				"end-date": {
+					"$ref": "#/definitions/date-format"
+				},
+				"event-date": {
+					"$ref": "#/definitions/event-date"
+				},
+				"event-name": {
+					"type": "string"
+				},
+				"event-next-name": {
+					"type": "string"
+				},
+				"event-periods": {
+					"$ref": "#/definitions/event-periods"
+				},
+				"event-type": {
+					"type": "string"
+				},
+				"event-value": {
+					"$ref": "#/definitions/event-value"
+				},
+				"extension": {
+					"$ref": "#/definitions/extension"
+				},
+				"frequency": {
+					"$ref": "#/definitions/frequency"
+				},
+				"intervals": {
+					"type": "number"
+				},
+				"parameter-list": {
+					"$ref": "#/definitions/parameter-list"
+				},
+				"skip-mask": {
+					"type": "string"
+				},
+				"sort-order": {
+					"type": "number"
+				}
+			},
+			"required": [
+				"event-date",
+				"event-periods",
+				"event-value",
+				"frequency",
+				"intervals",
+				"sort-order",
+				"extension",
+				"descriptor-list"
+			],
+			"type": "object"
+		},
+		"event-date": {
+			"additionalProperties": false,
+			"properties": {
+				"date": {
+					"$ref": "#/definitions/date-format"
+				},
+				"expression": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"date"
+			],
+			"type": "object"
+		},
+		"event-list": {
+			"items": {
+				"$ref": "#/definitions/event"
+			},
+			"type": "array"
+		},
+		"event-periods": {
+			"additionalProperties": false,
+			"properties": {
+				"expression": {
+					"type": "string"
+				},
+				"periods": {
+					"type": "number"
+				}
+			},
+			"required": [
+				"periods"
+			],
+			"type": "object"
+		},
+		"event-value": {
+			"additionalProperties": false,
+			"properties": {
+				"expression": {
+					"type": "string"
+				},
+				"expr-balance": {
+					"type": "boolean"
+				},
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"value"
+			],
+			"type": "object"
+		},
+		"exchange-rate": {
+			"additionalProperties": false,
+			"properties": {
+				"value": {
+					"type": "string"
+				},
+				"from": {
+					"type": "string"
+				},
+				"to": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"from",
+				"to"
+			],
+			"type": "object"
+		},
+		"exchange-rates": {
+			"items": {
+				"$ref": "#/definitions/exchange-rate"
+			},
+			"type": "array"
+		},
+		"extension": {
+			"oneOf": [
+				{
+					"$ref": "#/definitions/current-value"
+				},
+				{
+					"$ref": "#/definitions/interest-change"
+				},
+				{
+					"$ref": "#/definitions/principal-change"
+				},
+				{
+					"$ref": "#/definitions/statistic-value"
+				}
+			],
+			"type": "object"
+		},
+		"frequency": {
+			"enum": [
+				"1-year",
+				"6-months",
+				"4-months",
+				"3-months",
+				"2-months",
+				"1-month",
+				"half-month",
+				"4-weeks",
+				"2-weeks",
+				"1-week",
+				"1-day",
+				"continuous"
+			],
+			"type": "string"
+		},
+		"interest-change": {
+			"additionalProperties": false,
+			"properties": {
+				"interest-change": {
+					"$ref": "#/definitions/interest-change-props"
+				}
+			},
+			"required": [
+				"interest-change"
+			],
+			"type": "object"
+		},
+		"interest-change-props": {
+			"additionalProperties": false,
+			"properties": {
+				"round-balance": {
+					"enum": [
+						"none",
+						"bankers",
+						"bias_up",
+						"bias_down",
+						"up",
+						"truncate",
+						"yes",
+						"no"
+					],
+					"type": "string"
+				},
+				"day-count-basis": {
+					"enum": [
+						"periodic",
+						"actual",
+						"actual-actual",
+						"actual-365L",
+						"actual-365F",
+						"30",
+						"30E",
+						"30EP"
+					],
+					"type": "string"
+				},
+				"days-in-year": {
+					"type": "number"
+				},
+				"effective-frequency": {
+					"$ref": "#/definitions/frequency"
+				},
+				"amortization-frequency": {
+					"$ref": "#/definitions/frequency"
+				},
+				"interest-method": {
+					"enum": [
+						"actuarial",
+						"simple-interest"
+					],
+					"type": "string"
+				},
+				"interest-statistics": {
+					"$ref": "#/definitions/interest-statistics"
+				},
+				"round-decimal-digits": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"day-count-basis",
+				"days-in-year",
+				"interest-method"
+			],
+			"type": "object"
+		},
+		"interest-statistics": {
+			"additionalProperties": false,
+			"properties": {
+				"interest-statistics-dr": {
+					"type": "string"
+				},
+				"interest-statistics-ear": {
+					"type": "string"
+				},
+				"interest-statistics-pr": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"interest-statistics-dr",
+				"interest-statistics-ear",
+				"interest-statistics-pr"
+			],
+			"type": "object"
+		},
+		"locale": {
+			"additionalProperties": false,
+			"properties": {
+				"locale_str": {
+					"type": "string"
+				},
+				"currency_code": {
+					"type": "string"
+				},
+				"decimal-digits": {
+					"type": "number"
+				},
+				"format": {
+					"$ref": "#/definitions/locale-format"
+				},
+				"resources": {
+					"$ref": "#/definitions/locale-resources"
+				}
+			},
+			"required": [
+				"locale_str",
+				"currency_code",
+				"format",
+				"resources"
+			],
+			"type": "object"
+		},
+		"locales": {
+			"items": {
+				"$ref": "#/definitions/locale"
+			},
+			"type": "array"
+		},
+		"locale-format": {
+			"additionalProperties": false,
+			"properties": {
+				"date-regex": {
+					"type": "string"
+				},
+				"date-replace": {
+					"type": "string"
+				},
+				"integer-regex": {
+					"type": "string"
+				},
+				"integer-replace": {
+					"type": "string"
+				},
+				"float-regex": {
+					"type": "string"
+				},
+				"float-replace": {
+					"type": "string"
+				},
+				"currency-regex": {
+					"type": "string"
+				},
+				"currency-replace": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"date-regex",
+				"date-replace",
+				"integer-regex",
+				"integer-replace",
+				"float-regex",
+				"float-replace",
+				"currency-regex",
+				"currency-replace"
+			],
+			"type": "object"
+		},
+		"locale-resource": {
+			"additionalProperties": false,
+			"properties": {
+				"key": {
+					"type": "string"
+				},
+				"text": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"key",
+				"text"
+			],
+			"type": "object"
+		},
+		"locale-resources": {
+			"items": {
+				"$ref": "#/definitions/locale-resource"
+			},
+			"type": "array"
+		},
+		"parameter": {
+			"additionalProperties": false,
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"parameter-type": {
+					"$ref": "#/definitions/parameter-type"
+				},
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name",
+				"parameter-type",
+				"value"
+			],
+			"type": "object"
+		},
+		"parameter-list": {
+			"items": {
+				"$ref": "#/definitions/parameter"
+			},
+			"type": "array"
+		},
+		"parameter-type": {
+			"enum": [
+				"integer",
+				"float",
+				"string"
+			],
+			"type": "string"
+		},
+		"preferences": {
+			"additionalProperties": false,
+			"properties": {
+				"combine-principal": {
+					"type": "number"
+				},
+				"compress-descriptor": {
+					"type": "number"
+				},
+				"decimal-digits": {
+					"type": "number"
+				},
+				"default-encoding": {
+					"$ref": "#/definitions/default-encoding"
+				},
+				"descriptor-list": {
+					"$ref": "#/definitions/descriptor-list"
+				},
+				"fiscal-year-start": {
+					"type": "number"
+				},
+				"group": {
+					"type": "string"
+				},
+				"locale": {
+					"type": "string"
+				},
+				"omit-statistic-events": {
+					"type": "number"
+				},
+				"parameter-list": {
+					"$ref": "#/definitions/parameter-list"
+				}
+			},
+			"type": "object"
+		},
+		"principal-change": {
+			"additionalProperties": false,
+			"properties": {
+				"principal-change": {
+					"$ref": "#/definitions/principal-change-props"
+				}
+			},
+			"required": [
+				"principal-change"
+			],
+			"type": "object"
+		},
+		"principal-change-props": {
+			"additionalProperties": false,
+			"properties": {
+				"auxiliary": {
+					"type": "boolean"
+				},
+				"eom": {
+					"type": "boolean"
+				},
+				"passive": {
+					"type": "boolean"
+				},
+				"principal-first": {
+					"type": "boolean"
+				},
+				"statistics": {
+					"type": "boolean"
+				},
+				"principal-type": {
+					"$ref": "#/definitions/principal-type"
+				}
+			},
+			"required": [
+				"principal-type"
+			],
+			"type": "object"
+		},
+		"principal-type": {
+			"enum": [
+				"positive",
+				"negative",
+				"increase",
+				"decrease"
+			],
+			"type": "string"
+		},
+		"statistic-value": {
+			"additionalProperties": false,
+			"properties": {
+				"statistic-value": {
+					"$ref": "#/definitions/statistic-value-props"
+				}
+			},
+			"required": [
+				"statistic-value"
+			],
+			"type": "object"
+		},
+		"statistic-value-props": {
+			"additionalProperties": false,
+			"properties": {
+				"eom": {
+					"type": "boolean"
+				},
+				"final": {
+					"type": "boolean"
+				},
+				"name": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name"
+			],
+			"type": "object"
+		},
+		"template-event": {
+			"additionalProperties": false,
+			"properties": {
+				"initial": {
+					"type": "boolean"
+				},
+				"event-list": {
+					"$ref": "#/definitions/event-list"
+				},
+				"name": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name",
+				"event-list"
+			],
+			"type": "object"
+		},
+		"template-events": {
+			"items": {
+				"$ref": "#/definitions/template-event"
+			},
+			"type": "array"
+		},
+		"template-group": {
+			"additionalProperties": false,
+			"properties": {
+				"group": {
+					"type": "string"
+				},
+				"preferences": {
+					"$ref": "#/definitions/preferences"
+				},
+				"template-events": {
+					"$ref": "#/definitions/template-events"
+				}
+			},
+			"required": [
+				"group",
+				"template-events"
+			],
+			"type": "object"
+		},
+		"template-groups": {
+			"items": {
+				"$ref": "#/definitions/template-group"
+			},
+			"type": "array"
+		}
+	},
+	"properties": {
+		"cashflows": {
+			"$ref": "#/definitions/cashflows"
+		},
+		"exchange-rates": {
+			"$ref": "#/definitions/exchange-rates"
+		},
+		"locales": {
+			"$ref": "#/definitions/locales"
+		},
+		"preferences": {
+			"$ref": "#/definitions/preferences"
+		},
+		"template-groups": {
+			"$ref": "#/definitions/template-groups"
+		}
+	},
+	"type": "object"
+}

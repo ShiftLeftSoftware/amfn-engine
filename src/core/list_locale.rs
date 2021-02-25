@@ -1,0 +1,701 @@
+//! List of locales.
+// Copyright (c) 2021 ShiftLeft Software
+//
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
+// option. This file may not be copied, modified, or distributed
+// except according to those terms.
+
+use regex::Regex;
+use rust_decimal::prelude::*;
+use std::cell::Cell;
+use std::collections::HashMap;
+
+use super::{CoreUtility, ElemLocale};
+
+pub struct ListLocale {
+    list_locale: Vec<ElemLocale>,
+
+    /// Currently selected user locale element.
+    list_index_user: Cell<usize>,
+
+    /// Currently selected cashflow locale element.
+    list_index_cashflow: Cell<usize>,
+
+    /// Currently selected event locale element.
+    list_index_event: Cell<usize>,
+}
+
+/// List of locales default implementation.
+
+impl Default for ListLocale {
+    /// Create and return a new list of locale elements.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    fn default() -> Self {
+        ListLocale::new()
+    }
+}
+
+/// List of locales implementation.
+
+impl ListLocale {
+    /// Create and return a new list of locale elements.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+    pub fn new() -> ListLocale {
+        ListLocale {
+            list_locale: Vec::new(),
+            list_index_user: Cell::new(usize::MAX),
+            list_index_cashflow: Cell::new(usize::MAX),
+            list_index_event: Cell::new(usize::MAX),
+        }
+    }
+
+    /// Add a new locale to the locale list.
+    ///
+    /// # Arguments
+    ///
+    /// * `locale_str_param` - Locale string.
+    /// * `currency_code_param` - Currency code.
+    /// * `decimal_digits_param` - Decimal digits.
+    /// * `date_regex_param` - Date regular expression.
+    /// * `date_replace_param` - Date replace expression.
+    /// * `integer_regex_param` - Integer regular expression.
+    /// * `integer_replace_param` - Integer replace expression.
+    /// * `decimal_regex_param` - Decimal regular expression.
+    /// * `decimal_replace_param` - Decimal replace expression.
+    /// * `currency_regex_param` - Currency regular expression.
+    /// * `currency_replace_param` - Currency replace expression.
+    /// * `resources_param` - Resources hash map.
+    #[allow(clippy::too_many_arguments)]
+
+    pub fn add_locale(
+        &mut self,
+        locale_str_param: &str,
+        currency_code_param: &str,
+        decimal_digits_param: usize,
+        date_regex_param: &str,
+        date_replace_param: &str,
+        integer_regex_param: &str,
+        integer_replace_param: &str,
+        decimal_regex_param: &str,
+        decimal_replace_param: &str,
+        currency_regex_param: &str,
+        currency_replace_param: &str,
+        resources_param: &HashMap<String, String>,
+    ) {
+        let resources = resources_param.clone();
+
+        self.list_locale.push(ElemLocale::new(
+            locale_str_param,
+            currency_code_param,
+            decimal_digits_param,
+            date_regex_param,
+            date_replace_param,
+            integer_regex_param,
+            integer_replace_param,
+            decimal_regex_param,
+            decimal_replace_param,
+            currency_regex_param,
+            currency_replace_param,
+            resources,
+        ));
+    }
+
+    /// Copy the locale list and return a new locale list.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn copy(&self) -> ListLocale {
+        let mut locales = ListLocale::new();
+
+        for locale in self.list_locale.iter() {
+            let locale_str = locale.locale_str();
+            let currency_code = locale.currency_code();
+            let decimal_digits = locale.decimal_digits();
+
+            let date_regex = locale.date_regex();
+            let date_replace = locale.date_replace();
+
+            let integer_regex = locale.integer_regex();
+            let integer_replace = locale.integer_replace();
+
+            let decimal_regex = locale.decimal_regex();
+            let decimal_replace = locale.decimal_replace();
+
+            let currency_regex = locale.currency_regex();
+            let currency_replace = locale.currency_replace();
+
+            let resources = locale.resources();
+
+            locales.add_locale(
+                locale_str,
+                currency_code,
+                decimal_digits,
+                date_regex,
+                date_replace,
+                integer_regex,
+                integer_replace,
+                decimal_regex,
+                decimal_replace,
+                currency_regex,
+                currency_replace,
+                resources,
+            );
+        }
+
+        locales
+    }
+
+    /// Clear all locales selects.
+
+    pub fn clear(&mut self) {
+        self.list_index_user.set(usize::MAX);
+        self.list_index_cashflow.set(usize::MAX);
+        self.list_index_event.set(usize::MAX);
+    }
+
+    /// Get the locale string.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn locale_str(&self, event: bool) -> &str {
+        match self.list_locale.get(self.get_locale_index(event)) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o.locale_str(),
+        }
+    }
+
+    /// Get the currency code.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn currency_code(&self, event: bool) -> &str {
+        match self.list_locale.get(self.get_locale_index(event)) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o.currency_code(),
+        }
+    }
+
+    /// Get the decimal digits.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn decimal_digits(&self, event: bool) -> usize {
+        match self.list_locale.get(self.get_locale_index(event)) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o.decimal_digits(),
+        }
+    }
+
+    /// Get the date regex.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn date_regex(&self, event: bool) -> &str {
+        match self.list_locale.get(self.get_locale_index(event)) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o.date_regex(),
+        }
+    }
+
+    /// Get the date replace.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn date_replace(&self, event: bool) -> &str {
+        match self.list_locale.get(self.get_locale_index(event)) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o.date_replace(),
+        }
+    }
+
+    /// Get the integer regex.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn integer_regex(&self, event: bool) -> &str {
+        match self.list_locale.get(self.get_locale_index(event)) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o.integer_regex(),
+        }
+    }
+
+    /// Get the integer replace.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn integer_replace(&self, event: bool) -> &str {
+        match self.list_locale.get(self.get_locale_index(event)) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o.integer_replace(),
+        }
+    }
+
+    /// Get the decimal regex.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn decimal_regex(&self, event: bool) -> &str {
+        match self.list_locale.get(self.get_locale_index(event)) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o.decimal_regex(),
+        }
+    }
+
+    /// Get the decimal replace.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn decimal_replace(&self, event: bool) -> &str {
+        match self.list_locale.get(self.get_locale_index(event)) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o.decimal_replace(),
+        }
+    }
+
+    /// Get the currency regex.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn currency_regex(&self, event: bool) -> &str {
+        match self.list_locale.get(self.get_locale_index(event)) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o.currency_regex(),
+        }
+    }
+
+    /// Get the currency replace.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn currency_replace(&self, event: bool) -> &str {
+        match self.list_locale.get(self.get_locale_index(event)) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o.currency_replace(),
+        }
+    }
+
+    /// Get the resources.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn resources(&self, event: bool) -> &HashMap<String, String> {
+        match self.list_locale.get(self.get_locale_index(event)) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o.resources(),
+        }
+    }
+
+    /// Get the user locale.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn user_locale(&self) -> &ElemLocale {
+        match self.list_locale.get(self.list_index_user.get()) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o,
+        }
+    }
+
+    /// Get the cashflow locale.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn cashflow_locale(&self) -> &ElemLocale {
+        match self.list_locale.get(self.list_index_cashflow.get()) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o,
+        }
+    }
+
+    /// Get the event locale.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn event_locale(&self) -> &ElemLocale {
+        match self.list_locale.get(self.list_index_event.get()) {
+            None => {
+                panic!("Locale list index not set");
+            }
+            Some(o) => o,
+        }
+    }
+
+    /// Return the cashflow currency code.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn cashflow_currency_code(&self) -> &str {
+        self.get_locale(false).currency_code()
+    }
+
+    /// Return the event currency code.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn event_currency_code(&self) -> &str {
+        self.get_locale(true).currency_code()
+    }
+
+    /// Format and return a date string.
+    ///
+    /// # Arguments
+    ///
+    /// * `val` - The usize date value to format.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_date(&self, val: usize) -> String {
+        let text = format!("{:04}-{:02}-{:02}", val / 10000, val / 100 % 100, val % 100);
+
+        match Regex::new(self.get_locale(true).date_regex()) {
+            Err(_e) => String::from(text.as_str()),
+            Ok(o) => o
+                .replace(text.as_str(), self.get_locale(true).date_replace())
+                .to_string(),
+        }
+    }
+
+    /// Format and return an integer string.
+    ///
+    /// # Arguments
+    ///
+    /// * `val` - The i32 value to format.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_integeri(&self, val: i32) -> String {
+        let text = val.to_string();
+
+        match Regex::new(self.get_locale(true).integer_regex()) {
+            Err(_e) => String::from(text.as_str()),
+            Ok(o) => o
+                .replace(text.as_str(), self.get_locale(true).integer_replace())
+                .to_string(),
+        }
+    }
+
+    /// Format and return an integer string.
+    ///
+    /// # Arguments
+    ///
+    /// * `val` - The usize value to format.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_integer(&self, val: usize) -> String {
+        self.format_integeri(val as i32)
+    }
+
+    /// Format and return a decimal string.
+    ///
+    /// # Arguments
+    ///
+    /// * `val` - The decimal value to format.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_decimal(&self, val: Decimal) -> String {
+        let text = CoreUtility::util_round(val, crate::MAXIMUM_DISPLAY_DECIMAL_DIGITS).to_string();
+
+        match Regex::new(self.get_locale(true).decimal_regex()) {
+            Err(_e) => String::from(text.as_str()),
+            Ok(o) => o
+                .replace(text.as_str(), self.get_locale(true).decimal_replace())
+                .to_string(),
+        }
+    }
+
+    /// Format and return a currency string.
+    ///
+    /// # Arguments
+    ///
+    /// * `val` - The decimal value to format.
+    /// * `decimal_digits` - The number of decimal digits to round.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_currency(&self, val: Decimal, decimal_digits: usize) -> String {
+        let mut text = CoreUtility::util_round(val, decimal_digits).to_string();
+
+        let tokens: Vec<_> = text.split('.').collect();
+        if tokens.len() > 1 {
+            text = format!("{}.{:0<2}", tokens[0], tokens[1]);
+        } else {
+            text = format!("{}.00", text);
+        }
+
+        match Regex::new(self.get_locale(true).currency_regex()) {
+            Err(_e) => String::from(text.as_str()),
+            Ok(o) => o
+                .replace(text.as_str(), self.get_locale(true).currency_replace())
+                .to_string(),
+        }
+    }
+
+    /// Get the most relevant locale index.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn get_locale_index(&self, event: bool) -> usize {
+        if event && self.list_index_event.get() != usize::MAX {
+            return self.list_index_event.get();
+        }
+        if self.list_index_cashflow.get() != usize::MAX {
+            return self.list_index_cashflow.get();
+        }
+
+        self.list_index_user.get()
+    }
+
+    /// Get the most relevant locale.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn get_locale(&self, event: bool) -> &ElemLocale {
+        if event && self.list_index_event.get() != usize::MAX {
+            return self.event_locale();
+        }
+        if self.list_index_cashflow.get() != usize::MAX {
+            return self.cashflow_locale();
+        }
+
+        self.user_locale()
+    }
+
+    /// Get the most relevant locale string.
+    ///
+    /// # Arguments
+    ///
+    /// * `event` - Check event level.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn get_locale_str(&self, event: bool) -> &str {
+        if event && self.list_index_event.get() != usize::MAX {
+            return self.event_locale().locale_str();
+        }
+        if self.list_index_cashflow.get() != usize::MAX {
+            return self.cashflow_locale().locale_str();
+        }
+
+        self.user_locale().locale_str()
+    }
+
+    /// Get the resource string for the locale.
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - The resource key.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+    #[allow(clippy::manual_unwrap_or)]
+
+    pub fn get_resource(&self, key: &str) -> &str {
+        match self.get_locale(true).resources().get(key) {
+            None => "",
+            Some(o) => o,
+        }
+    }
+
+    /// Select a user locale parameter.
+    ///
+    /// # Arguments
+    ///
+    /// * `locale_str_param` - Locale string to select.
+
+    pub fn select_user_locale(&mut self, locale_str_param: &str) {
+        for (index, loc) in self.list_locale.iter().enumerate() {
+            if loc.locale_str() == locale_str_param {
+                self.list_index_user.set(index);
+                return;
+            }
+        }
+
+        self.list_index_user.set(usize::MAX);
+    }
+
+    /// Select a cashflow locale parameter.
+    ///
+    /// # Arguments
+    ///
+    /// * `locale_str_param` - Locale string to select.
+
+    pub fn select_cashflow_locale(&mut self, locale_str_param: &str) {
+        for (index, loc) in self.list_locale.iter().enumerate() {
+            if loc.locale_str() == locale_str_param {
+                self.list_index_cashflow.set(index);
+                return;
+            }
+        }
+
+        self.list_index_cashflow.set(usize::MAX);
+    }
+
+    /// Select an event locale parameter.
+    ///
+    /// # Arguments
+    ///
+    /// * `locale_str_param` - Locale string to select.
+
+    pub fn select_event_locale(&mut self, locale_str_param: &str) {
+        for (index, loc) in self.list_locale.iter().enumerate() {
+            if loc.locale_str() == locale_str_param {
+                self.list_index_event.set(index);
+                return;
+            }
+        }
+
+        self.list_index_event.set(usize::MAX);
+    }
+}

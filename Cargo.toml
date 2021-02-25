@@ -1,0 +1,22 @@
+[package]
+name = "amfnengine"
+version = "0.1.0"
+authors = ["ShiftLeft Software"]
+description = "Amortization Functions (AmFn) Engine"
+homepage = "https://shiftleftsoftware.com"
+documentation = "https://shiftleftsoftware.com/amfnengine/amfnengine.html"
+repository = "https://github.com/amfn/amfn-engine"
+keywords = ["amortization", "calculator"]
+categories = ["mathematics"]
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+edition = "2018"
+
+[dependencies]
+libmath = "~0.2"
+compare = "~0.1"
+rust_decimal = "~1.10"
+chrono = "~0.4"
+chrono_locale = "~0.1"
+json = "~0.12"
+regex = "~1.4"
