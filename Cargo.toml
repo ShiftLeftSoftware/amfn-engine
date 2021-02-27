@@ -1,6 +1,6 @@
 [package]
 name = "amfnengine"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["ShiftLeft Software"]
 description = "Amortization Functions (AmFn) Engine"
 homepage = "https://shiftleftsoftware.com"
