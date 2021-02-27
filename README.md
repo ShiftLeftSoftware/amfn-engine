@@ -2,9 +2,9 @@
 
 Amortization Functions (AmFn) Engine for Rust
 ==========================================================
-API Documentation: [latest release](https://docs.rs/amfn-engine)
+API Documentation: [latest release](https://docs.rs/amfnengine)
 
-[Crates.io](https://crates.io/crates/amfn-engine)
+[Crates.io](https://crates.io/crates/amfnengine)
 
 [Homepage](https://shiftleftsoftware.com)
 
