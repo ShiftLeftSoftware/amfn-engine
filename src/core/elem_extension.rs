@@ -12,10 +12,9 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use super::{
-    CoreManager, CoreUtility, ElemCurrentValue, ElemInterestChange, ElemPrincipalChange,
+    CoreManager, ElemCurrentValue, ElemInterestChange, ElemPrincipalChange,
     ElemStatisticValue,
 };
-use crate::{ElemLevelType, ElemUpdateType};
 
 pub enum ExtensionValue {
     PrincipalChange(ElemPrincipalChange),
@@ -511,8 +510,6 @@ impl ElemExtension {
 
     pub fn set_principal_change(&mut self, principal_change_param: ElemPrincipalChange) {
         self.extension_value = ExtensionValue::PrincipalChange(principal_change_param);
-
-        self.set_updated();
     }
 
     /// Set the principal change type.
@@ -525,7 +522,6 @@ impl ElemExtension {
     pub fn set_pc_type(&mut self, param: crate::PrincipalType) {
         if let ExtensionValue::PrincipalChange(o) = self.extension_value_mut() {
             o.set_type(param);
-            self.set_updated();
         }
     }
 
@@ -538,7 +534,6 @@ impl ElemExtension {
     pub fn set_pc_eom(&mut self, param: bool) {
         if let ExtensionValue::PrincipalChange(o) = self.extension_value_mut() {
             o.set_eom(param);
-            self.set_updated();
         }
     }
 
@@ -551,7 +546,6 @@ impl ElemExtension {
     pub fn set_pc_principal_first(&mut self, param: bool) {
         if let ExtensionValue::PrincipalChange(o) = self.extension_value_mut() {
             o.set_principal_first(param);
-            self.set_updated();
         }
     }
 
@@ -564,7 +558,6 @@ impl ElemExtension {
     pub fn set_pc_balance_statistics(&mut self, param: bool) {
         if let ExtensionValue::PrincipalChange(o) = self.extension_value_mut() {
             o.set_balance_statistics(param);
-            self.set_updated();
         }
     }
 
@@ -577,7 +570,6 @@ impl ElemExtension {
     pub fn set_pc_auxiliary(&mut self, param: bool) {
         if let ExtensionValue::PrincipalChange(o) = self.extension_value_mut() {
             o.set_auxiliary(param);
-            self.set_updated();
         }
     }
 
@@ -590,7 +582,6 @@ impl ElemExtension {
     pub fn set_pc_aux_passive(&mut self, param: bool) {
         if let ExtensionValue::PrincipalChange(o) = self.extension_value_mut() {
             o.set_aux_passive(param);
-            self.set_updated();
         }
     }
 
@@ -602,8 +593,6 @@ impl ElemExtension {
 
     pub fn set_current_value(&mut self, current_value_param: ElemCurrentValue) {
         self.extension_value = ExtensionValue::CurrentValue(current_value_param);
-
-        self.set_updated();
     }
 
     /// Set the value to adjust successive dates to end of month.
@@ -615,7 +604,6 @@ impl ElemExtension {
     pub fn set_cv_eom(&mut self, param: bool) {
         if let ExtensionValue::CurrentValue(o) = self.extension_value_mut() {
             o.set_eom(param);
-            self.set_updated();
         }
     }
 
@@ -628,7 +616,6 @@ impl ElemExtension {
     pub fn set_cv_passive(&mut self, param: bool) {
         if let ExtensionValue::CurrentValue(o) = self.extension_value_mut() {
             o.set_passive(param);
-            self.set_updated();
         }
     }
 
@@ -641,7 +628,6 @@ impl ElemExtension {
     pub fn set_cv_present(&mut self, param: bool) {
         if let ExtensionValue::CurrentValue(o) = self.extension_value_mut() {
             o.set_present(param);
-            self.set_updated();
         }
     }
 
@@ -653,8 +639,6 @@ impl ElemExtension {
 
     pub fn set_interest_change(&mut self, interest_change_param: ElemInterestChange) {
         self.extension_value = ExtensionValue::InterestChange(interest_change_param);
-
-        self.set_updated();
     }
 
     /// Set the interest method used.
@@ -666,7 +650,6 @@ impl ElemExtension {
     pub fn set_ic_method(&mut self, param: crate::MethodType) {
         if let ExtensionValue::InterestChange(o) = self.extension_value_mut() {
             o.set_method(param);
-            self.set_updated();
         }
     }
 
@@ -679,7 +662,6 @@ impl ElemExtension {
     pub fn set_ic_day_count_basis(&mut self, param: crate::DayCountType) {
         if let ExtensionValue::InterestChange(o) = self.extension_value_mut() {
             o.set_day_count_basis(param);
-            self.set_updated();
         }
     }
 
@@ -692,7 +674,6 @@ impl ElemExtension {
     pub fn set_ic_days_in_year(&mut self, param: usize) {
         if let ExtensionValue::InterestChange(o) = self.extension_value_mut() {
             o.set_days_in_year(param);
-            self.set_updated();
         }
     }
 
@@ -705,7 +686,6 @@ impl ElemExtension {
     pub fn set_ic_effective_frequency(&mut self, param: crate::FrequencyType) {
         if let ExtensionValue::InterestChange(o) = self.extension_value_mut() {
             o.set_effective_frequency(param);
-            self.set_updated();
         }
     }
 
@@ -719,7 +699,6 @@ impl ElemExtension {
     pub fn set_ic_interest_frequency(&mut self, param: crate::FrequencyType) {
         if let ExtensionValue::InterestChange(o) = self.extension_value_mut() {
             o.set_interest_frequency(param);
-            self.set_updated();
         }
     }
 
@@ -733,7 +712,6 @@ impl ElemExtension {
     pub fn set_ic_round_balance(&mut self, param: crate::RoundType) {
         if let ExtensionValue::InterestChange(o) = self.extension_value_mut() {
             o.set_round_balance(param);
-            self.set_updated();
         }
     }
 
@@ -747,7 +725,6 @@ impl ElemExtension {
     pub fn set_ic_round_decimal_digits(&mut self, param: Decimal) {
         if let ExtensionValue::InterestChange(o) = self.extension_value_mut() {
             o.set_round_decimal_digits(param);
-            self.set_updated();
         }
     }
 
@@ -759,8 +736,6 @@ impl ElemExtension {
 
     pub fn set_statistic_value(&mut self, statistic_value_param: ElemStatisticValue) {
         self.extension_value = ExtensionValue::StatisticValue(statistic_value_param);
-
-        self.set_updated();
     }
 
     /// Set the name of the statistic event.
@@ -772,7 +747,6 @@ impl ElemExtension {
     pub fn set_sv_name(&mut self, param: &str) {
         if let ExtensionValue::StatisticValue(o) = self.extension_value_mut() {
             o.set_name(param);
-            self.set_updated();
         }
     }
 
@@ -785,7 +759,6 @@ impl ElemExtension {
     pub fn set_sv_eom(&mut self, param: bool) {
         if let ExtensionValue::StatisticValue(o) = self.extension_value_mut() {
             o.set_eom(param);
-            self.set_updated();
         }
     }
 
@@ -798,18 +771,6 @@ impl ElemExtension {
     pub fn set_sv_final(&mut self, param: bool) {
         if let ExtensionValue::StatisticValue(o) = self.extension_value_mut() {
             o.set_final(param);
-            self.set_updated();
         }
-    }
-
-    /// Call the updated signal.
-
-    fn set_updated(&self) {
-        self.core_manager
-            .borrow()
-            .notify(CoreUtility::format_update(
-                ElemUpdateType::Event,
-                ElemLevelType::Event,
-            ));
     }
 }

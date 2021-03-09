@@ -22,7 +22,7 @@ use crate::core::{
     CoreUtility, ElemCurrentValue, ElemExtension, ElemInterestChange, ElemPrincipalChange,
     ElemStatisticValue, ListDescriptor, ListEvent, ListLocale, ListParameter,
 };
-use crate::{ElemLevelType, ListTrait};
+use crate::{ListTrait};
 
 pub struct CalcJsonDeserialize {
     /// Calculator manager element.
@@ -90,7 +90,7 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager.borrow_mut().set_cashflow(o);
+                    self.calc_manager.borrow_mut().append_cashflows(o);
                 }
             }
         }
@@ -116,13 +116,13 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager.borrow_mut().mgr_mut().set_list_locale(o);
+                    self.calc_manager.borrow_mut().mgr_mut().append_list_locale(o);
                 }
             }
         }
 
         if !data["preferences"].is_null() {
-            let result = self.deserialize_preferences(&data["preferences"], ElemLevelType::Engine);
+            let result = self.deserialize_preferences(&data["preferences"]);
             match result {
                 Err(e) => {
                     self.calc_mgr().set_updating_json(false);
@@ -142,7 +142,7 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager.borrow_mut().set_list_template_group(o);
+                    self.calc_manager.borrow_mut().append_list_template_group(o);
                 }
             }
         }
@@ -166,7 +166,7 @@ impl CalcJsonDeserialize {
     fn deserialize_cashflows(&self, cfs: &JsonValue) -> Result<ListCashflow, crate::ErrorType> {
         let mut index: usize = 0;
         let mut cashflows = ListCashflow::new();
-        cashflows.set_calc_reg(&self.calc_manager);
+        cashflows.set_calc_mgr(&self.calc_manager);
 
         loop {
             let cf = &cfs[index];
@@ -187,7 +187,7 @@ impl CalcJsonDeserialize {
             let preferences = self
                 .calc_mgr()
                 .preferences()
-                .copy(ElemLevelType::Cashflow, true);
+                .copy(true);
             let result = cashflows.add_cashflow(name, None, Option::from(preferences), "");
             match result {
                 Err(_e) => {
@@ -209,7 +209,7 @@ impl CalcJsonDeserialize {
                 match cashflows.preferences_mut() {
                     None => {}
                     Some(o) => {
-                        let result = self.deserialize_preferences_with_prefs(&cf["preferences"], o);
+                        let result = self.deserialize_preferences_with_prefs(&cf["preferences"], o, true);
                         match result {
                             Err(e) => {
                                 return Err(e);
@@ -647,7 +647,7 @@ impl CalcJsonDeserialize {
             }
 
             let mut params =
-                ListParameter::new(self.calc_mgr().core_manager(), ElemLevelType::Event);
+                ListParameter::new(self.calc_mgr().core_manager());
             if !ev["parameter-list"].is_null() {
                 let result = self.deserialize_parameter_list(&ev["parameter-list"], &mut params);
                 match result {
@@ -659,7 +659,7 @@ impl CalcJsonDeserialize {
             }
 
             let mut descs =
-                ListDescriptor::new(self.calc_mgr().core_manager(), ElemLevelType::Event);
+                ListDescriptor::new(self.calc_mgr().core_manager());
             if ev["descriptor-list"].is_null() {
                 return Err(crate::ErrorType::Json);
             }
@@ -803,8 +803,8 @@ impl CalcJsonDeserialize {
         ic: &JsonValue,
         interest_change: &mut ElemInterestChange,
     ) -> Result<(), crate::ErrorType> {
-        let calc_reg = self.calc_mgr();
-        let decimal_digits = calc_reg.decimal_digits(false);
+        let calc_mgr = self.calc_mgr();
+        let decimal_digits = calc_mgr.decimal_digits(false);
 
         match ic["round-balance"].as_str() {
             None => {}
@@ -1200,8 +1200,7 @@ impl CalcJsonDeserialize {
 
     fn deserialize_preferences(
         &self,
-        prefs: &JsonValue,
-        elem_level_param: ElemLevelType,
+        prefs: &JsonValue
     ) -> Result<ElemPreferences, crate::ErrorType> {
         let mut preferences = ElemPreferences::new(
             &self.calc_manager,
@@ -1217,11 +1216,10 @@ impl CalcJsonDeserialize {
             None,
             None,
             false,
-            elem_level_param,
             true,
         );
 
-        match self.deserialize_preferences_with_prefs(prefs, &mut preferences) {
+        match self.deserialize_preferences_with_prefs(prefs, &mut preferences, false) {
             Err(e) => Err(e),
             Ok(_o) => Ok(preferences),
         }
@@ -1233,7 +1231,7 @@ impl CalcJsonDeserialize {
     ///
     /// * `prefs` - Json value for preferences value.
     /// * `preferences` - Element preferences value.
-    /// * `elem_level_param` - Element level
+    /// * `cashflow_level` - Cashflow level
     ///
     /// # Return
     ///
@@ -1243,6 +1241,7 @@ impl CalcJsonDeserialize {
         &self,
         prefs: &JsonValue,
         preferences: &mut ElemPreferences,
+        cashflow_level: bool
     ) -> Result<(), crate::ErrorType> {
         match prefs["combine-principal"].as_i32() {
             None => {}
@@ -1261,7 +1260,7 @@ impl CalcJsonDeserialize {
         match prefs["decimal-digits"].as_usize() {
             None => {}
             Some(o) => {
-                preferences.set_decimal_digits(o);
+                preferences.set_decimal_digits(o, cashflow_level);
             }
         }
 
@@ -1288,7 +1287,7 @@ impl CalcJsonDeserialize {
         match prefs["fiscal-year-start"].as_usize() {
             None => {}
             Some(o) => {
-                preferences.set_fiscal_year_start(o);
+                preferences.set_fiscal_year_start(o, cashflow_level);
             }
         }
 
@@ -1516,7 +1515,7 @@ impl CalcJsonDeserialize {
         let mut template_groups = ListTemplateGroup::new();
         let mut index: usize = 0;
 
-        template_groups.set_calc_reg(&self.calc_manager);
+        template_groups.set_calc_mgr(&self.calc_manager);
         template_groups.set_sort_on_add(false);
 
         loop {
@@ -1555,9 +1554,7 @@ impl CalcJsonDeserialize {
                         None => {}
                         Some(o) => {
                             template_groups.set_index(o);
-                            if template_groups.sort_on_add() {
-                                template_groups.set_updated();
-                            } else {
+                            if !template_groups.sort_on_add() {
                                 template_groups.set_sort_updated(true);
                             }
                         }
@@ -1568,6 +1565,7 @@ impl CalcJsonDeserialize {
                 let result = self.deserialize_preferences_with_prefs(
                     &templ_group["preferences"],
                     template_groups.preferences_mut(),
+                    false
                 );
                 match result {
                     Err(_e) => {

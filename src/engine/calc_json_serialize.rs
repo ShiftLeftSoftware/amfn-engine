@@ -143,16 +143,16 @@ impl CalcJsonSerialize {
         buf: &mut String,
         add_comma: bool,
     ) {
-        let calc_reg = self.calc_mgr();
-        let decimal_digits = calc_reg.decimal_digits(true);
-        let mgr = calc_reg.mgr();
+        let calc_mgr = self.calc_mgr();
+        let decimal_digits = calc_mgr.decimal_digits(true);
+        let mgr = calc_mgr.mgr();
         let list_locale = mgr.list_locale();
 
-        let compress_descriptor = calc_reg.compress_descriptor(true);
-        let omit_statistic_events = calc_reg.statistic_events(true);
+        let compress_descriptor = calc_mgr.compress_descriptor(true);
+        let omit_statistic_events = calc_mgr.statistic_events(true);
 
         let list_am: ListAmortization;
-        match calc_reg.list_cashflow().create_cashflow_output(
+        match calc_mgr.list_cashflow().create_cashflow_output(
             include_rollups,
             include_details,
             compress_descriptor,
@@ -378,9 +378,9 @@ impl CalcJsonSerialize {
         buf: &mut String,
         add_comma: bool,
     ) {
-        let calc_reg = self.calc_mgr();
-        let decimal_digits = calc_reg.decimal_digits(true);
-        let mgr = calc_reg.mgr();
+        let calc_mgr = self.calc_mgr();
+        let decimal_digits = calc_mgr.decimal_digits(true);
+        let mgr = calc_mgr.mgr();
         let list_locale = mgr.list_locale();
 
         buf.push_str(self.indent().as_str());
@@ -1106,9 +1106,9 @@ impl CalcJsonSerialize {
         nar: Decimal,
         frequency: crate::FrequencyType,
     ) {
-        let calc_reg = self.calc_mgr();
-        let decimal_digits = calc_reg.decimal_digits(false);
-        let mgr = calc_reg.mgr();
+        let calc_mgr = self.calc_mgr();
+        let decimal_digits = calc_mgr.decimal_digits(false);
+        let mgr = calc_mgr.mgr();
         let list_locale = mgr.list_locale();
 
         buf.push_str(self.indent().as_str());

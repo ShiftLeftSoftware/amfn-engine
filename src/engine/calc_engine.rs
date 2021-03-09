@@ -16,13 +16,27 @@ use std::rc::Rc;
 use super::{CalcExpression, CalcManager, CalcUtility, ElemCashflowStats, ElemPreferences};
 use crate::core::{
     CoreManager, CoreUtility, ElemBalanceResult, ElemSymbol, ListAmortization, ListDescriptor,
-    ListEvent, ListParameter, ListStatisticHelper, UpdateListener,
+    ListEvent, ListParameter, ListStatisticHelper
 };
-use crate::{ElemLevelType, ExtensionTrait, ListTrait};
+use crate::{ExtensionTrait, ListTrait};
 
 pub struct CalcEngine {
     /// Calculator manager element.
     calc_manager: Rc<RefCell<CalcManager>>,
+}
+
+/// The main default implementation of the AmFn engine component.
+
+impl Default for CalcEngine {    
+    /// Create and return a new AmFn engine.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    fn default() -> Self {
+        CalcEngine::new()
+    }
 }
 
 /// The main implementation of the AmFn engine component.
@@ -30,20 +44,14 @@ pub struct CalcEngine {
 impl CalcEngine {
     /// Create and return a new AmFn engine.
     ///
-    /// # Arguments
-    ///
-    /// * `update_listener_param` - Update listener.
-    ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn new(update_listener_param: UpdateListener) -> CalcEngine {
+    pub fn new() -> CalcEngine {
         let calc_engine = CalcEngine {
             // The AmFn manager instance
-            calc_manager: Rc::new(RefCell::new(CalcManager::new(CoreManager::new(
-                update_listener_param,
-            )))),
+            calc_manager: Rc::new(RefCell::new(CalcManager::new(CoreManager::new()))),
         };
 
         // Inject the wrapped calculation manager into itself
@@ -54,11 +62,11 @@ impl CalcEngine {
         calc_engine
             .calc_mgr_mut()
             .list_cashflow_mut()
-            .set_calc_reg(&calc_engine.calc_manager());
+            .set_calc_mgr(&calc_engine.calc_manager());
         calc_engine
             .calc_mgr_mut()
             .list_template_group_mut()
-            .set_calc_reg(&calc_engine.calc_manager());
+            .set_calc_mgr(&calc_engine.calc_manager());
 
         calc_engine
     }
@@ -108,7 +116,7 @@ impl CalcEngine {
             let decimal_digits = self.calc_mgr().mgr().list_locale().decimal_digits(false);
             self.calc_mgr()
                 .preferences()
-                .set_decimal_digits(decimal_digits);
+                .set_decimal_digits(decimal_digits, false);
         }
 
         let orig_index = self.calc_mgr().list_cashflow().index();
@@ -144,26 +152,58 @@ impl CalcEngine {
         self.calc_mgr().list_cashflow().get_element(orig_index);
     }
 
+    /// Initialize a cashflow.
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - Cashflow index to initialize.
+    /// 
+    /// # Return
+    /// 
+    /// * True if successful, otherwise false.
+
+    pub fn init_cashflow(&self, index: u32) -> bool {
+        if !self.calc_mgr().list_cashflow().get_element(index as usize) { 
+            return false; 
+        }
+
+        if !self.calc_mgr().list_cashflow().cashflow_valid() {
+            let locale = self.calc_mgr().locale(true);
+            self.calc_mgr()
+                .mgr()
+                .list_locale_mut()
+                .select_cashflow_locale(locale.as_str());
+            self.evaluate_cashflow_descriptors();
+            self.evaluate_cashflow_event_type_all();
+
+            match self.balance_cashflow() {
+                Err(_e) => { return false; }
+                Ok(_o) => { }
+            }
+        }
+
+        true
+    }
+
     /// Copy the current preferences locales, exchange rates, template groups,
     /// and optionally cashflows and return a new AmFn engine.
     ///
     /// # Arguments
     ///
-    /// * `update_listener_param` - Update listener.
     /// * `cashflow` - Copy the list of cashflows.
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn copy(&self, update_listener_param: UpdateListener, cashflow: bool) -> CalcEngine {
-        let calc_engine = CalcEngine::new(update_listener_param);
+    pub fn copy(&self, cashflow: bool) -> CalcEngine {
+        let calc_engine = CalcEngine::new();
 
         let preferences = self
             .calc_manager()
             .borrow()
             .preferences()
-            .copy_with_calc_manager(calc_engine.calc_manager(), ElemLevelType::Engine, true);
+            .copy_with_calc_manager(calc_engine.calc_manager(), true);
         calc_engine.calc_mgr_mut().set_preferences(preferences);
 
         let list_locale = self.calc_manager().borrow().mgr().list_locale().copy();
@@ -196,7 +236,7 @@ impl CalcEngine {
                 .borrow()
                 .list_cashflow()
                 .copy_with_calc_manager(calc_engine.calc_manager());
-            calc_engine.calc_mgr_mut().set_cashflow(list_cashflow);
+            calc_engine.calc_mgr_mut().set_list_cashflow(list_cashflow);
 
             let mut index: usize = 0;
 
@@ -288,7 +328,7 @@ impl CalcEngine {
             match event.list_parameter().as_ref() {
                 None => {}
                 Some(o2) => {
-                    list_parameter_opt = Option::from(o2.copy(ElemLevelType::Event, true));
+                    list_parameter_opt = Option::from(o2.copy(true));
                 }
             }
 
@@ -296,7 +336,7 @@ impl CalcEngine {
             match event.list_descriptor().as_ref() {
                 None => {}
                 Some(o2) => {
-                    list_descriptor_opt = Option::from(o2.copy(false, ElemLevelType::Event, true));
+                    list_descriptor_opt = Option::from(o2.copy(false, true));
                 }
             }
             list_event.add_event_ex(
@@ -777,7 +817,7 @@ impl CalcEngine {
                 self.calc_mgr()
                     .list_template_group()
                     .preferences()
-                    .copy(ElemLevelType::Cashflow, true),
+                    .copy(true),
             );
         }
 
@@ -858,7 +898,7 @@ impl CalcEngine {
                 }
                 if elem_preferences_opt.is_none() {
                     elem_preferences_opt =
-                        Option::from(o.preferences().copy(ElemLevelType::Cashflow, true));
+                        Option::from(o.preferences().copy(true));
                 }
             }
         }
@@ -1005,7 +1045,7 @@ impl CalcEngine {
                 self.calc_mgr()
                     .list_template_group()
                     .preferences()
-                    .copy(ElemLevelType::Cashflow, true),
+                    .copy(true),
             );
         }
 
@@ -1057,7 +1097,7 @@ impl CalcEngine {
                 }
                 if elem_preferences_opt.is_none() {
                     elem_preferences_opt =
-                        Option::from(o.preferences().copy(ElemLevelType::Cashflow, true));
+                        Option::from(o.preferences().copy(true));
                 }
             }
         }
@@ -1270,7 +1310,7 @@ impl CalcEngine {
                 self.calc_mgr()
                     .list_template_group()
                     .preferences()
-                    .copy(ElemLevelType::Cashflow, true),
+                    .copy(true),
             );
         }
 
@@ -1321,13 +1361,13 @@ impl CalcEngine {
                 }
 
                 if !new_group.is_empty() {
-                    let calc_reg = self.calc_mgr();
-                    let list_template_group = calc_reg.list_template_group();
+                    let calc_mgr = self.calc_mgr();
+                    let list_template_group = calc_mgr.list_template_group();
                     if list_template_group.get_element_by_group(new_group.as_str(), true) {
                         let list_parameter = o.preferences().list_parameter();
                         let mut elem_preferences = list_template_group
                             .preferences()
-                            .copy(ElemLevelType::Cashflow, true);
+                            .copy(true);
                         if list_parameter.get_element_by_name(crate::PARAM_DESCRIPTION, true) {
                             if !elem_preferences
                                 .list_parameter()
@@ -1364,7 +1404,7 @@ impl CalcEngine {
                 }
                 if elem_preferences_opt.is_none() {
                     elem_preferences_opt =
-                        Option::from(o.preferences().copy(ElemLevelType::Cashflow, true));
+                        Option::from(o.preferences().copy(true));
                 }
             }
         }
@@ -1539,7 +1579,7 @@ impl CalcEngine {
             self.calc_mgr()
                 .list_template_group()
                 .preferences()
-                .copy(ElemLevelType::Cashflow, true),
+                .copy(true),
         );
 
         let result = self.calc_mgr().list_cashflow().add_cashflow(
@@ -1696,17 +1736,17 @@ impl CalcEngine {
     /// execute the expression using the list of parameters.
 
     pub fn evaluate_user_descriptors(&self) {
-        let calc_reg = self.calc_mgr();
+        let calc_mgr = self.calc_mgr();
 
         let calc_expression = CalcExpression::new(
             self.calc_manager(),
-            calc_reg.fiscal_year_start(false),
-            calc_reg.decimal_digits(false),
+            calc_mgr.fiscal_year_start(false),
+            calc_mgr.decimal_digits(false),
         );
         let expression = RefCell::new(calc_expression);
 
-        let list_parameter = calc_reg.preferences().list_parameter();
-        let list_descriptor = calc_reg.preferences().list_descriptor();
+        let list_parameter = calc_mgr.preferences().list_parameter();
+        let list_descriptor = calc_mgr.preferences().list_descriptor();
 
         CalcUtility::evaluate_descriptors(
             self.calc_manager(),
@@ -1721,17 +1761,17 @@ impl CalcEngine {
     /// execute the expression using the list of parameters.
 
     pub fn evaluate_cashflow_descriptors(&self) {
-        let calc_reg = self.calc_mgr();
+        let calc_mgr = self.calc_mgr();
 
         let calc_expression = CalcExpression::new(
             self.calc_manager(),
-            calc_reg.fiscal_year_start(false),
-            calc_reg.decimal_digits(false),
+            calc_mgr.fiscal_year_start(false),
+            calc_mgr.decimal_digits(false),
         );
 
         let preferences: &ElemPreferences;
-        let index = calc_reg.list_cashflow().index();
-        match calc_reg.list_cashflow().list().get(index) {
+        let index = calc_mgr.list_cashflow().index();
+        match calc_mgr.list_cashflow().list().get(index) {
             None => {
                 panic!("Cashflow list index not set");
             }
@@ -1758,8 +1798,8 @@ impl CalcEngine {
         let cfindex = self.calc_mgr().list_cashflow().index();
 
         {
-            let calc_reg = self.calc_mgr();
-            match calc_reg.list_cashflow().list().get(cfindex) {
+            let calc_mgr = self.calc_mgr();
+            match calc_mgr.list_cashflow().list().get(cfindex) {
                 None => {
                     panic!("Cashflow list index not set");
                 }
@@ -1788,12 +1828,12 @@ impl CalcEngine {
                 let locale_str: String;
                 if list_event.cashflow() {
                     locale_str =
-                        String::from(calc_reg.mgr().list_locale().cashflow_locale().locale_str());
+                        String::from(calc_mgr.mgr().list_locale().cashflow_locale().locale_str());
                 } else {
                     locale_str =
-                        String::from(calc_reg.mgr().list_locale().user_locale().locale_str());
+                        String::from(calc_mgr.mgr().list_locale().user_locale().locale_str());
                 }
-                let mut event_type_expr = calc_reg.descriptor_value(
+                let mut event_type_expr = calc_mgr.descriptor_value(
                     group.as_str(),
                     crate::NAME_EVENT_TYPE,
                     crate::TYPE_LOCALE,
@@ -1803,10 +1843,10 @@ impl CalcEngine {
                 );
 
                 if event_type_expr.is_empty() {
-                    event_type_expr = calc_reg.descriptor_value(
+                    event_type_expr = calc_mgr.descriptor_value(
                         group.as_str(),
                         crate::NAME_EVENT_TYPE,
-                        "",
+                        crate::TYPE_CUSTOM,
                         "",
                         true,
                         true,
@@ -1835,11 +1875,11 @@ impl CalcEngine {
 
                 let mut core_expression = CalcExpression::new(
                     self.calc_manager(),
-                    calc_reg.fiscal_year_start(true),
-                    calc_reg.decimal_digits(true),
+                    calc_mgr.fiscal_year_start(true),
+                    calc_mgr.decimal_digits(true),
                 );
 
-                let preferences_cashflow = calc_reg.list_cashflow().preferences();
+                let preferences_cashflow = calc_mgr.list_cashflow().preferences();
 
                 let list_parameter = CalcUtility::create_event_type_list_parameter(
                     self.calc_manager(),
@@ -1950,9 +1990,9 @@ impl CalcEngine {
     /// * See description.
 
     pub fn format_date(&self, val: usize) -> String {
-        let calc_reg = self.calc_mgr();
+        let calc_mgr = self.calc_mgr();
 
-        let fs = calc_reg.mgr().list_locale().format_date(val);
+        let fs = calc_mgr.mgr().list_locale().format_date(val);
 
         fs
     }
@@ -1968,9 +2008,9 @@ impl CalcEngine {
     /// * See description.
 
     pub fn format_integeri(&self, val: i32) -> String {
-        let calc_reg = self.calc_mgr();
+        let calc_mgr = self.calc_mgr();
 
-        let fs = calc_reg.mgr().list_locale().format_integeri(val);
+        let fs = calc_mgr.mgr().list_locale().format_integeri(val);
 
         fs
     }
@@ -2000,9 +2040,9 @@ impl CalcEngine {
     /// * See description.
 
     pub fn format_decimal(&self, val: Decimal) -> String {
-        let calc_reg = self.calc_mgr();
+        let calc_mgr = self.calc_mgr();
 
-        let fs = calc_reg.mgr().list_locale().format_decimal(val);
+        let fs = calc_mgr.mgr().list_locale().format_decimal(val);
 
         fs
     }
@@ -2018,10 +2058,10 @@ impl CalcEngine {
     /// * See description.
 
     pub fn format_currency(&self, val: Decimal) -> String {
-        let calc_reg = self.calc_mgr();
-        let decimal_digits = calc_reg.decimal_digits(false);
+        let calc_mgr = self.calc_mgr();
+        let decimal_digits = calc_mgr.decimal_digits(false);
 
-        let fs = calc_reg
+        let fs = calc_mgr
             .mgr()
             .list_locale()
             .format_currency(val, decimal_digits);
@@ -2054,8 +2094,8 @@ impl CalcEngine {
     /// * See description.
 
     pub fn round_currency(&self, val: Decimal) -> Decimal {
-        let calc_reg = self.calc_mgr();
-        let decimal_digits = calc_reg.decimal_digits(false);
+        let calc_mgr = self.calc_mgr();
+        let decimal_digits = calc_mgr.decimal_digits(false);
 
         CoreUtility::util_round(val, decimal_digits)
     }

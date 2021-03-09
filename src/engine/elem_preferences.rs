@@ -11,8 +11,8 @@ use std::cell::{Cell, Ref, RefCell};
 use std::rc::Rc;
 
 use super::CalcManager;
-use crate::core::{CoreManager, CoreUtility, ListDescriptor, ListParameter};
-use crate::{ElemLevelType, ElemUpdateType, ListTrait};
+use crate::core::{CoreManager, ListDescriptor, ListParameter};
+use crate::{ListTrait};
 
 pub struct ElemPreferences {
     /// Calculator manager element.
@@ -44,9 +44,6 @@ pub struct ElemPreferences {
     /// Eliminate statistic events from the amortization list
     /// (1=set, 0=reset, -1=not set).
     statistic_events: i32,
-
-    /// Element level.
-    elem_level: ElemLevelType,
 }
 
 /// Preferences definition implementation.
@@ -91,7 +88,6 @@ impl ElemPreferences {
         list_parameter_param: Option<&ListParameter>,
         list_descriptor_param: Option<&ListDescriptor>,
         copy_propagate_param: bool,
-        elem_level_param: ElemLevelType,
         updating_json: bool,
     ) -> ElemPreferences {
         ElemPreferences::new_with_calc_manager(
@@ -109,7 +105,6 @@ impl ElemPreferences {
             list_parameter_param,
             list_descriptor_param,
             copy_propagate_param,
-            elem_level_param,
             updating_json,
         )
     }
@@ -155,26 +150,25 @@ impl ElemPreferences {
         list_parameter_param: Option<&ListParameter>,
         list_descriptor_param: Option<&ListDescriptor>,
         copy_propagate_param: bool,
-        elem_level_param: ElemLevelType,
         updating_json: bool,
     ) -> ElemPreferences {
         let new_list_parameter: ListParameter;
         let new_list_descriptor: ListDescriptor;
         match list_parameter_param.as_ref() {
             None => {
-                new_list_parameter = ListParameter::new(core_manager_param, elem_level_param);
+                new_list_parameter = ListParameter::new(core_manager_param);
             }
             Some(o) => {
-                new_list_parameter = o.copy(elem_level_param, updating_json);
+                new_list_parameter = o.copy(updating_json);
             }
         }
 
         match list_descriptor_param.as_ref() {
             None => {
-                new_list_descriptor = ListDescriptor::new(core_manager_param, elem_level_param);
+                new_list_descriptor = ListDescriptor::new(core_manager_param);
             }
             Some(o) => {
-                new_list_descriptor = o.copy(copy_propagate_param, elem_level_param, updating_json);
+                new_list_descriptor = o.copy(copy_propagate_param, updating_json);
             }
         }
 
@@ -190,8 +184,7 @@ impl ElemPreferences {
             compress_descriptor: compress_descriptor_param,
             statistic_events: statistic_events_param,
             list_parameter: new_list_parameter,
-            list_descriptor: new_list_descriptor,
-            elem_level: elem_level_param,
+            list_descriptor: new_list_descriptor
         }
     }
 
@@ -227,14 +220,13 @@ impl ElemPreferences {
     /// # Arguments
     ///
     /// * `updating_json` - Updating from Json.
-    /// * `elem_level_param` - Element level
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn copy(&self, elem_level_param: ElemLevelType, updating_json: bool) -> ElemPreferences {
-        self.copy_with_calc_manager(&self.calc_manager, elem_level_param, updating_json)
+    pub fn copy(&self, updating_json: bool) -> ElemPreferences {
+        self.copy_with_calc_manager(&self.calc_manager, updating_json)
     }
 
     /// Copy this preferences element and return a new preferences element.
@@ -252,7 +244,6 @@ impl ElemPreferences {
     pub fn copy_with_calc_manager(
         &self,
         calc_manager: &Rc<RefCell<CalcManager>>,
-        elem_level_param: ElemLevelType,
         updating_json: bool,
     ) -> ElemPreferences {
         ElemPreferences::new(
@@ -266,14 +257,13 @@ impl ElemPreferences {
             self.combine_principal,
             self.compress_descriptor,
             self.statistic_events,
-            Option::from(&self.list_parameter.copy(elem_level_param, updating_json)),
+            Option::from(&self.list_parameter.copy(updating_json)),
             Option::from(
                 &self
                     .list_descriptor
-                    .copy(false, elem_level_param, updating_json),
+                    .copy(false, updating_json),
             ),
             false,
-            elem_level_param,
             updating_json,
         )
     }
@@ -371,16 +361,6 @@ impl ElemPreferences {
         self.statistic_events
     }
 
-    /// Get the element level.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn elem_level(&self) -> ElemLevelType {
-        self.elem_level
-    }
-
     /// Get the parameter list.
     ///
     /// # Return
@@ -429,8 +409,6 @@ impl ElemPreferences {
 
     pub fn set_locale_str(&mut self, locale_str_param: &str) {
         self.locale_str = String::from(locale_str_param);
-
-        self.set_updated();
     }
 
     /// Set the cross rate international currency code (e.g., USD, GBP, JPY, AUD, EUR, other currency code).
@@ -441,8 +419,6 @@ impl ElemPreferences {
 
     pub fn set_cross_rate_code(&mut self, cross_rate_code_param: &str) {
         self.cross_rate_code = String::from(cross_rate_code_param);
-
-        self.set_updated();
     }
 
     /// Set the default encoding (us-ascii, iso-8859-1, utf-8, utf-16be, utf-16le, utf-16, other encoding).
@@ -453,8 +429,6 @@ impl ElemPreferences {
 
     pub fn set_default_encoding(&mut self, default_encoding_param: &str) {
         self.default_encoding = String::from(default_encoding_param);
-
-        self.set_updated();
     }
 
     /// Set the template group name.
@@ -465,8 +439,6 @@ impl ElemPreferences {
 
     pub fn set_group(&mut self, group_param: &str) {
         self.set_group_result(group_param);
-
-        self.set_updated();
     }
 
     /// Set the template group name result.
@@ -484,15 +456,14 @@ impl ElemPreferences {
     /// # Arguments
     ///
     /// * `fiscal_year_start_param` - See description.
+    /// * `cashflow_level` - Cashflow level.
 
-    pub fn set_fiscal_year_start(&self, fiscal_year_start_param: usize) {
+    pub fn set_fiscal_year_start(&self, fiscal_year_start_param: usize, cashflow_level: bool) {
         self.fiscal_year_start.set(fiscal_year_start_param);
 
-        if self.elem_level != ElemLevelType::Engine {
+        if cashflow_level {
             self.calc_mgr().list_cashflow().update_preferences();
         }
-
-        self.set_updated();
     }
 
     /// Set the number of significant decimal digits.
@@ -500,15 +471,14 @@ impl ElemPreferences {
     /// # Arguments
     ///
     /// * `decimal_digits_param` - See description.
+    /// * `cashflow_level` - Cashflow level.
 
-    pub fn set_decimal_digits(&self, decimal_digits_param: usize) {
+    pub fn set_decimal_digits(&self, decimal_digits_param: usize, cashflow_level: bool) {
         self.decimal_digits.set(decimal_digits_param);
 
-        if self.elem_level != ElemLevelType::Engine {
+        if cashflow_level {
             self.calc_mgr().list_cashflow().update_preferences();
         }
-
-        self.set_updated();
     }
 
     /// Set the combine principal change events that are identical except
@@ -520,8 +490,6 @@ impl ElemPreferences {
 
     pub fn set_combine_principal(&mut self, combine_principal_param: i32) {
         self.combine_principal = combine_principal_param;
-
-        self.set_updated();
     }
 
     /// Set the After balancing and during compression, merge
@@ -533,8 +501,6 @@ impl ElemPreferences {
 
     pub fn set_compress_descriptor(&mut self, compress_descriptor_param: i32) {
         self.compress_descriptor = compress_descriptor_param;
-
-        self.set_updated();
     }
 
     /// Set the Eliminate statistic events from the compressed
@@ -546,26 +512,5 @@ impl ElemPreferences {
 
     pub fn set_statistic_events(&mut self, statistic_events_param: i32) {
         self.statistic_events = statistic_events_param;
-
-        self.set_updated();
-    }
-
-    /// Set the element level.
-    ///
-    /// # Arguments
-    ///
-    /// * `elem_level_param` - See description.
-
-    pub fn set_elem_level(&mut self, elem_level_param: ElemLevelType) {
-        self.elem_level = elem_level_param;
-    }
-
-    /// Call the updated signal.
-
-    fn set_updated(&self) {
-        self.calc_mgr().mgr().notify(CoreUtility::format_update(
-            ElemUpdateType::Preferences,
-            self.elem_level,
-        ));
     }
 }

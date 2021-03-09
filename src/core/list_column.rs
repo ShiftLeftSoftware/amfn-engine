@@ -184,6 +184,16 @@ impl ListColumn {
         true
     }
 
+    /// Get the vector of columns.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn list(&self) -> &Vec<ElemColumn> {
+        &self.list_column
+    }
+
     /// Get the name of the column.
     ///
     /// # Return

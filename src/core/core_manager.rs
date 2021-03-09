@@ -9,7 +9,7 @@
 
 use std::cell::{Ref, RefCell, RefMut};
 
-use super::{ListKey, ListLocale, UpdateListener};
+use super::{ListKey, ListLocale};
 
 pub struct CoreManager {
     /// Table of event type mappings.
@@ -35,11 +35,22 @@ pub struct CoreManager {
     /// Table of column names.
     map_col_names: ListKey,
 
-    /// UpdateListener parent object.
-    update_listener: UpdateListener,
-
     /// List of locales.
     list_locale: RefCell<ListLocale>,
+}
+
+/// The core manager default implementation.
+
+impl Default for CoreManager {
+    /// Create and return a new core manager.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    fn default() -> Self {
+        CoreManager::new()
+    }
 }
 
 /// The core manager implementation.
@@ -47,15 +58,11 @@ pub struct CoreManager {
 impl CoreManager {
     /// Create and return a new core manager.
     ///
-    /// # Arguments
-    ///
-    /// * `update_listener_param` - The update listener callback function.
-    ///
     /// # Return
     ///
     /// * See description.    
 
-    pub fn new(update_listener_param: UpdateListener) -> CoreManager {
+    pub fn new() -> CoreManager {
         let mut mgr = CoreManager {
             map_event_type: ListKey::new(),
             map_principal_type: ListKey::new(),
@@ -68,7 +75,6 @@ impl CoreManager {
             functions: ListKey::new(),
             map_error: ListKey::new(),
             map_col_names: ListKey::new(),
-            update_listener: update_listener_param,
             list_locale: RefCell::new(ListLocale::new()),
         };
         // Initialize engine lists
@@ -869,6 +875,24 @@ impl CoreManager {
     pub fn list_locale_mut(&self) -> RefMut<ListLocale> {
         self.list_locale.borrow_mut()
     }
+
+    /// Append to the list locale.
+    ///
+    /// # Arguments
+    ///
+    /// * `list_locale` - See description.
+
+    pub fn append_list_locale(&mut self, mut list_locale: ListLocale) {
+        let ll = list_locale.list_mut();
+
+        loop {
+            match ll.pop() {
+                None => { break; }
+                Some(o) => { self.list_locale.borrow_mut().list_mut().push(o); }
+            }
+        }
+    }
+
     /// Set the list locale.
     ///
     /// # Arguments
@@ -877,15 +901,5 @@ impl CoreManager {
 
     pub fn set_list_locale(&mut self, list_locale: ListLocale) {
         self.list_locale = RefCell::new(list_locale);
-    }
-
-    /// Call the update listener.
-    ///
-    /// # Arguments
-    ///
-    /// * `text` - The text to notify.
-
-    pub fn notify(&self, text: String) {
-        self.update_listener.notify(text);
     }
 }

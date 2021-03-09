@@ -13,9 +13,6 @@ use elem_key::ElemKey;
 mod list_key;
 use list_key::ListKey;
 
-pub mod core_update_listener;
-pub use core_update_listener::UpdateListener;
-
 pub mod core_manager;
 pub use core_manager::CoreManager;
 

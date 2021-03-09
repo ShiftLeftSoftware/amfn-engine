@@ -341,38 +341,6 @@ pub enum ErrorType {
     Json = 26,
 }
 
-/// Element level enumeration.
-
-#[derive(Clone, Copy, Eq, PartialEq, Debug)]
-pub enum ElemUpdateType {
-    /// Descriptor update.
-    Descriptor = 0,
-    /// Parameter update.
-    Parameter = 1,
-    /// Preferences update.
-    Preferences = 2,
-    /// Cashflow update
-    Cashflow = 3,
-    /// Event update.
-    Event = 4,
-    /// Template update.
-    Template = 5,
-    /// Exchange rate update.
-    ExchangeRate = 6,
-}
-
-/// Element level enumeration.
-
-#[derive(Clone, Copy, Eq, PartialEq, Debug)]
-pub enum ElemLevelType {
-    /// Engine level.
-    Engine = 0,
-    /// Cashflow level.
-    Cashflow = 1,
-    /// Event level.
-    Event = 2,
-}
-
 /// Table type enumeration.
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]

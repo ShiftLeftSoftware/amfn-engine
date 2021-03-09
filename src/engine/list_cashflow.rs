@@ -7,15 +7,15 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::{Cell, Ref, RefCell, RefMut};
+use std::cell::{Cell, Ref, RefCell};
 use std::cmp::Ordering::Equal;
 use std::rc::Rc;
 
 use super::{CalcCalculate, CalcManager, ElemCashflow, ElemCashflowStats, ElemPreferences};
 use crate::core::{
-    CoreUtility, ElemBalanceResult, ListAmortization, ListEvent, ListStatisticHelper,
+    ElemBalanceResult, ListAmortization, ListEvent, ListStatisticHelper,
 };
-use crate::{ElemLevelType, ElemUpdateType, ExtensionTrait, ListTrait};
+use crate::{ExtensionTrait, ListTrait};
 
 pub struct ListCashflow {
     /// Calculator manager element.
@@ -41,7 +41,6 @@ impl ListTrait for ListCashflow {
 
         self.list_mut().clear();
         self.list_index.set(usize::MAX);
-        self.set_updated();
     }
 
     /// Get the count of the cashflow list.
@@ -162,28 +161,13 @@ impl ListCashflow {
         }
     }
 
-    /// Returns the mutable calculation manager.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    fn calc_mgr_mut(&self) -> RefMut<CalcManager> {
-        match self.calc_manager.as_ref() {
-            None => {
-                panic!("Missing calc manager");
-            }
-            Some(o) => o.borrow_mut(),
-        }
-    }
-
     /// Set the calculation manager.
     ///
     /// # Arguments
     ///
     /// * `calc_manager_param` - Calculation manager.
 
-    pub fn set_calc_reg(&mut self, calc_manager_param: &Rc<RefCell<CalcManager>>) {
+    pub fn set_calc_mgr(&mut self, calc_manager_param: &Rc<RefCell<CalcManager>>) {
         self.calc_manager = Option::from(Rc::clone(calc_manager_param));
     }
 
@@ -247,7 +231,6 @@ impl ListCashflow {
                     None,
                     None,
                     false,
-                    ElemLevelType::Cashflow,
                     updating_json,
                 ));
             }
@@ -275,7 +258,6 @@ impl ListCashflow {
                     Option::from(o.list_parameter()),
                     Option::from(o.list_descriptor()),
                     group_param.is_empty(),
-                    ElemLevelType::Cashflow,
                     updating_json,
                 ));
             }
@@ -320,7 +302,7 @@ impl ListCashflow {
         calc_manager_param: &Rc<RefCell<CalcManager>>,
     ) -> ListCashflow {
         let mut list_cashflow = ListCashflow::new();
-        list_cashflow.set_calc_reg(calc_manager_param);
+        list_cashflow.set_calc_mgr(calc_manager_param);
 
         let mut index: usize = 0;
         loop {
@@ -336,7 +318,7 @@ impl ListCashflow {
                     break;
                 }
                 Some(o) => {
-                    preferences = o.copy(ElemLevelType::Cashflow, true);
+                    preferences = o.copy(true);
                     group = String::from(o.group());
                 }
             }
@@ -711,7 +693,6 @@ impl ListCashflow {
             self.list_index.set(self.list_index.get() - 1);
         }
 
-        self.set_updated();
         true
     }
 
@@ -767,8 +748,6 @@ impl ListCashflow {
                 self.list_index.set(o);
             }
         }
-
-        self.set_updated();
 
         true
     }
@@ -833,20 +812,11 @@ impl ListCashflow {
             None => false,
             Some(o) => {
                 let prefs = o.preferences();
-                prefs.set_fiscal_year_start(self.calc_mgr().fiscal_year_start(true));
-                prefs.set_decimal_digits(self.calc_mgr().decimal_digits(true));
+                prefs.set_fiscal_year_start(self.calc_mgr().fiscal_year_start(true), true);
+                prefs.set_decimal_digits(self.calc_mgr().decimal_digits(true), true);
                 true
             }
         }
-    }
-
-    /// Call the updated signal.
-
-    fn set_updated(&self) {
-        self.calc_mgr().mgr().notify(CoreUtility::format_update(
-            ElemUpdateType::Cashflow,
-            ElemLevelType::Cashflow,
-        ));
     }
 
     /// Sort the event list.

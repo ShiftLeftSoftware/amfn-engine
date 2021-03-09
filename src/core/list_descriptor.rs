@@ -11,8 +11,8 @@ use std::cell::{Cell, RefCell};
 use std::cmp::Ordering::Equal;
 use std::rc::Rc;
 
-use super::{CoreManager, CoreUtility, ElemDescriptor};
-use crate::{ElemLevelType, ElemUpdateType, ListTrait};
+use super::{CoreManager, ElemDescriptor};
+use crate::{ListTrait};
 
 pub struct ListDescriptor {
     /// CoreManager element.
@@ -23,9 +23,6 @@ pub struct ListDescriptor {
 
     /// The index of the currently selected descriptor element.
     list_index: Cell<usize>,
-
-    /// Element level.
-    elem_level: ElemLevelType,
 
     /// If true sort when a descriptor is added, otherwise do not sort (for bulk adds).
     sort_on_add: bool,
@@ -44,7 +41,6 @@ impl ListTrait for ListDescriptor {
         self.list_index.set(usize::MAX);
         self.sort_on_add = true;
         self.sort_updated = false;
-        self.set_updated();
     }
 
     /// Get the count of the descriptor list.
@@ -119,14 +115,12 @@ impl ListDescriptor {
     /// * See description.
 
     pub fn new(
-        core_manager: &Rc<RefCell<CoreManager>>,
-        elem_level_param: ElemLevelType,
+        core_manager: &Rc<RefCell<CoreManager>>
     ) -> ListDescriptor {
         ListDescriptor {
             core_manager: Rc::clone(core_manager),
             list_descriptor: Vec::new(),
             list_index: Cell::new(usize::MAX),
-            elem_level: elem_level_param,
             sort_on_add: true,
             sort_updated: false,
         }
@@ -239,9 +233,7 @@ impl ListDescriptor {
                 self.list_index.set(o);
             }
         }
-        if self.sort_on_add {
-            self.set_updated();
-        } else {
+        if !self.sort_on_add {
             self.sort_updated = true;
         }
 
@@ -264,10 +256,9 @@ impl ListDescriptor {
     pub fn copy(
         &self,
         copy_propagate: bool,
-        elem_level_param: ElemLevelType,
         updating_json_param: bool,
     ) -> ListDescriptor {
-        let mut list_descriptor = ListDescriptor::new(&self.core_manager, elem_level_param);
+        let mut list_descriptor = ListDescriptor::new(&self.core_manager);
         self.copy_list_descriptor(&mut list_descriptor, copy_propagate, updating_json_param);
 
         list_descriptor
@@ -367,16 +358,6 @@ impl ListDescriptor {
 
     fn list(&self) -> &Vec<ElemDescriptor> {
         &self.list_descriptor
-    }
-
-    /// Get the element level.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn elem_level(&self) -> ElemLevelType {
-        self.elem_level
     }
 
     /// Get the group name of the descriptor.
@@ -551,7 +532,7 @@ impl ListDescriptor {
         if self.list_index.get() > 0 {
             self.list_index.set(self.list_index.get() - 1);
         }
-        self.set_updated();
+
         true
     }
 
@@ -612,9 +593,7 @@ impl ListDescriptor {
             }
         }
 
-        if self.sort_on_add {
-            self.set_updated();
-        } else {
+        if !self.sort_on_add {
             self.set_sort_updated(true);
         }
 
@@ -678,9 +657,7 @@ impl ListDescriptor {
             }
         }
 
-        if self.sort_on_add {
-            self.set_updated();
-        } else {
+        if !self.sort_on_add {
             self.set_sort_updated(true);
         }
 
@@ -743,9 +720,7 @@ impl ListDescriptor {
             }
         }
 
-        if self.sort_on_add {
-            self.set_updated();
-        } else {
+        if !self.sort_on_add {
             self.set_sort_updated(true);
         }
 
@@ -809,7 +784,6 @@ impl ListDescriptor {
         }
 
         if self.sort_on_add {
-            self.set_updated();
         } else {
             self.set_sort_updated(true);
         }
@@ -831,7 +805,6 @@ impl ListDescriptor {
             None => false,
             Some(o) => {
                 o.set_value(value);
-                self.set_updated();
                 true
             }
         }
@@ -852,7 +825,6 @@ impl ListDescriptor {
             None => false,
             Some(o) => {
                 o.set_value(value);
-                self.set_updated();
                 true
             }
         }
@@ -873,7 +845,6 @@ impl ListDescriptor {
             None => false,
             Some(o) => {
                 o.set_value_expr(value_expr);
-                self.set_updated();
                 true
             }
         }
@@ -894,7 +865,6 @@ impl ListDescriptor {
             None => false,
             Some(o) => {
                 o.set_propagate(propagate);
-                self.set_updated();
                 true
             }
         }
@@ -952,7 +922,6 @@ impl ListDescriptor {
                         None => {}
                         Some(o2) => {
                             self.list_index.set(o2);
-                            self.set_updated();
                         }
                     }
                 }
@@ -1023,16 +992,5 @@ impl ListDescriptor {
         }
 
         Equal
-    }
-
-    /// Call the updated signal.
-
-    fn set_updated(&self) {
-        self.core_manager
-            .borrow()
-            .notify(CoreUtility::format_update(
-                ElemUpdateType::Descriptor,
-                self.elem_level,
-            ));
     }
 }

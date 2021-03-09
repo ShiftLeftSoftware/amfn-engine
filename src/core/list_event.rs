@@ -13,10 +13,10 @@ use std::cmp::Ordering::Equal;
 use std::rc::Rc;
 
 use super::{
-    CoreManager, CoreUtility, ElemCurrentValue, ElemEvent, ElemExtension, ElemInterestChange,
+    CoreManager, ElemCurrentValue, ElemEvent, ElemExtension, ElemInterestChange,
     ElemPrincipalChange, ElemStatisticValue, ListDescriptor, ListParameter,
 };
-use crate::{ElemLevelType, ElemUpdateType, ExtensionTrait, ListTrait};
+use crate::{ExtensionTrait, ListTrait};
 
 pub struct ListEvent {
     /// CoreManager element.
@@ -43,7 +43,6 @@ impl ListTrait for ListEvent {
         self.list_index.set(usize::MAX);
         self.sort_on_add.set(true);
         self.sort_updated.set(false);
-        self.set_updated();
     }
 
     /// Get the count of the event list.
@@ -196,7 +195,7 @@ impl ListEvent {
         }
 
         let mut list_descriptor: ListDescriptor =
-            ListDescriptor::new(&self.core_manager, ElemLevelType::Event);
+            ListDescriptor::new(&self.core_manager);
         list_descriptor.add_descriptor(
             group.as_str(),
             crate::NAME_EVENT_TYPE,
@@ -281,13 +280,12 @@ impl ListEvent {
         let extension_type = elem_extension.extension_type();
         if list_parameter_param.is_none() {
             list_parameter_param =
-                Option::from(ListParameter::new(&self.core_manager, ElemLevelType::Event));
+                Option::from(ListParameter::new(&self.core_manager));
         }
 
         if list_descriptor_param.is_none() {
             list_descriptor_param = Option::from(ListDescriptor::new(
-                &self.core_manager,
-                ElemLevelType::Event,
+                &self.core_manager
             ));
         }
 
@@ -325,9 +323,7 @@ impl ListEvent {
             None => false,
             Some(o) => {
                 self.list_index.set(o);
-                if self.sort_on_add.get() {
-                    self.set_updated();
-                } else {
+                if !self.sort_on_add.get() {
                     self.sort_updated.set(true);
                 }
 
@@ -482,7 +478,7 @@ impl ListEvent {
                     None => {}
                     Some(o2) => {
                         list_parameter_opt =
-                            Option::from(o2.copy(ElemLevelType::Event, updating_json_param));
+                            Option::from(o2.copy(updating_json_param));
                     }
                 }
 
@@ -491,7 +487,7 @@ impl ListEvent {
                     None => {}
                     Some(o2) => {
                         list_descriptor_opt =
-                            Option::from(o2.copy(false, ElemLevelType::Event, updating_json_param));
+                            Option::from(o2.copy(false, updating_json_param));
                     }
                 }
                 list_event.add_event_ex(
@@ -973,7 +969,6 @@ impl ListEvent {
             self.list_index.set(self.list_index.get() - 1);
         }
 
-        self.set_updated();
         true
     }
 
@@ -992,7 +987,6 @@ impl ListEvent {
             None => false,
             Some(o) => {
                 o.set_event_type(event_type_param);
-                self.set_updated();
                 true
             }
         }
@@ -1040,9 +1034,7 @@ impl ListEvent {
             }
         }
 
-        if self.sort_on_add.get() {
-            self.set_updated();
-        } else {
+        if !self.sort_on_add.get() {
             self.sort_updated.set(true);
         }
         true
@@ -1063,7 +1055,6 @@ impl ListEvent {
             None => false,
             Some(o) => {
                 o.set_event_date(event_date_param);
-                self.set_updated();
                 true
             }
         }
@@ -1084,7 +1075,6 @@ impl ListEvent {
             None => false,
             Some(o) => {
                 o.set_date_expr(date_expr_param);
-                self.set_updated();
                 true
             }
         }
@@ -1129,9 +1119,7 @@ impl ListEvent {
             }
         }
 
-        if self.sort_on_add.get() {
-            self.set_updated();
-        } else {
+        if !self.sort_on_add.get() {
             self.sort_updated.set(true);
         }
         true
@@ -1151,8 +1139,6 @@ impl ListEvent {
         if !self.set_value_result(value_param) {
             return false;
         }
-
-        self.set_updated();
 
         true
     }
@@ -1192,8 +1178,6 @@ impl ListEvent {
             return false;
         }
 
-        self.set_updated();
-
         true
     }
 
@@ -1232,7 +1216,6 @@ impl ListEvent {
             None => false,
             Some(o) => {
                 o.set_value_expr_balance(value_expr_balance_param);
-                self.set_updated();
                 true
             }
         }
@@ -1252,8 +1235,6 @@ impl ListEvent {
         if !self.set_periods_result(periods_param) {
             return false;
         }
-
-        self.set_updated();
 
         true
     }
@@ -1292,8 +1273,6 @@ impl ListEvent {
         if !self.set_periods_expr_result(periods_expr_param) {
             return false;
         }
-
-        self.set_updated();
 
         true
     }
@@ -1334,7 +1313,6 @@ impl ListEvent {
             None => false,
             Some(o) => {
                 o.set_skip_mask(skip_mask_len_param, skip_mask_param);
-                self.set_updated();
                 true
             }
         }
@@ -1355,7 +1333,6 @@ impl ListEvent {
             None => false,
             Some(o) => {
                 o.set_intervals(intervals_param);
-                self.set_updated();
                 true
             }
         }
@@ -1375,8 +1352,6 @@ impl ListEvent {
         if !self.set_frequency_result(frequency_param) {
             return false;
         }
-
-        self.set_updated();
 
         true
     }
@@ -1417,7 +1392,6 @@ impl ListEvent {
             Some(o) => {
                 o.elem_extension_mut()
                     .set_principal_change(principal_change_param);
-                self.set_updated();
                 true
             }
         }
@@ -1439,7 +1413,6 @@ impl ListEvent {
             Some(o) => {
                 o.elem_extension_mut()
                     .set_current_value(current_value_param);
-                self.set_updated();
                 true
             }
         }
@@ -1461,7 +1434,6 @@ impl ListEvent {
             Some(o) => {
                 o.elem_extension_mut()
                     .set_interest_change(interest_change_param);
-                self.set_updated();
                 true
             }
         }
@@ -1483,7 +1455,6 @@ impl ListEvent {
             Some(o) => {
                 o.elem_extension_mut()
                     .set_statistic_value(statistic_value_param);
-                self.set_updated();
                 true
             }
         }
@@ -1504,7 +1475,6 @@ impl ListEvent {
             None => false,
             Some(o) => {
                 o.set_event_name(event_name_param);
-                self.set_updated();
                 true
             }
         }
@@ -1525,7 +1495,6 @@ impl ListEvent {
             None => false,
             Some(o) => {
                 o.set_next_name(next_name_param);
-                self.set_updated();
                 true
             }
         }
@@ -1556,7 +1525,6 @@ impl ListEvent {
                         None => {}
                         Some(o2) => {
                             self.list_index.set(o2);
-                            self.set_updated();
                         }
                     }
                 }
@@ -1616,16 +1584,5 @@ impl ListEvent {
         }
 
         Equal
-    }
-
-    /// Call the updated signal.
-
-    fn set_updated(&self) {
-        self.core_manager
-            .borrow()
-            .notify(CoreUtility::format_update(
-                ElemUpdateType::Event,
-                ElemLevelType::Event,
-            ));
     }
 }

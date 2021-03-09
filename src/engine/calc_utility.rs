@@ -8,21 +8,52 @@
 // except according to those terms.
 
 use rust_decimal::prelude::*;
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::rc::Rc;
 
 use super::{CalcExpression, CalcManager};
 use crate::core::{
-    CoreUtility, ElemBalanceResult, ElemExtension, ElemSymbol, ListAmortization, ListColumn,
-    ListDescriptor, ListEvent, ListParameter, ListSummary,
+    CoreUtility, ElemBalanceResult, ElemColumn, ElemExtension, ElemSymbol,
+    ListAmortization, ListColumn, ListDescriptor, ListParameter, ListEvent, ListSummary
 };
-use crate::{ElemLevelType, ListTrait};
+use crate::{ListTrait};
 
 pub struct CalcUtility {}
 
 /// The AmFn utility methods implementation.
 
 impl CalcUtility {
+
+    /// Convert a value from the cashflow code to the event code.
+    /// Cross rates are used if the exchange rate is unavailable and
+    /// the cross rate international currency code is not empty.
+    ///
+    /// # Arguments
+    ///
+    /// * `value` - The value to convert.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn convert_currency_event(
+        calc_manager_param: &Ref<CalcManager>, 
+        cashflow_currency_code: &str, 
+        event_currency_code: &str, 
+        value: Decimal) -> Decimal {
+
+        if event_currency_code.is_empty() || event_currency_code == cashflow_currency_code {
+            return value;
+        }
+
+        calc_manager_param.list_exchange_rate().convert_currency(
+            value,
+            cashflow_currency_code,
+            event_currency_code,
+            calc_manager_param.cross_rate_code(true),
+        )
+    }
+
     /// Create the event type parameter list.
     ///
     /// # Arguments
@@ -43,7 +74,7 @@ impl CalcUtility {
     ) -> ListParameter {
         let calc_manager = Rc::clone(calc_manager_param);
         let mut list_parameter =
-            ListParameter::new(calc_manager.borrow().core_manager(), ElemLevelType::Event);
+            ListParameter::new(calc_manager.borrow().core_manager());
         let updating_json = calc_manager.borrow().updating_json();
         match elem_type {
             crate::ExtensionType::CurrentValue => {
@@ -286,7 +317,7 @@ impl CalcUtility {
     /// # Arguments
     ///
     /// * `calc_manager_param` - Calculation manager.
-    /// * `list_column` - List of columns object.
+    /// * `elem_column` - Column element.
     ///
     /// # Return
     ///
@@ -294,14 +325,16 @@ impl CalcUtility {
 
     pub fn get_event_value(
         calc_manager_param: &Rc<RefCell<CalcManager>>,
-        list_column: &ListColumn,
+        elem_column: &ElemColumn,
     ) -> String {
         let calc_manager = Rc::clone(calc_manager_param);
-        let calc_reg = calc_manager.borrow();
-        let decimal_digits = calc_reg.decimal_digits(true);
-        let mgr = calc_reg.mgr();
+        let calc_mgr = calc_manager.borrow();
+        let decimal_digits = calc_mgr.decimal_digits(true);
+        let mgr = calc_mgr.mgr();
         let mut list_locale = mgr.list_locale_mut();
-        let list_cashflow = calc_reg.list_cashflow();
+        let cashflow_currency_code = String::from(list_locale.cashflow_currency_code());
+        let event_currency_code = String::from(list_locale.event_currency_code());
+        let list_cashflow = calc_mgr.list_cashflow();
         let list_event_opt = list_cashflow.list_event();
         let mut result = String::from("");
 
@@ -317,10 +350,10 @@ impl CalcUtility {
 
         let orig_list_index = list_event.index();
         list_locale.select_event_locale("");
-        if list_column.col_type() == crate::TYPE_LOCALE && !list_column.code().is_empty() {
-            list_locale.select_event_locale(list_column.code());
+        if elem_column.col_type() == crate::TYPE_LOCALE && !elem_column.code().is_empty() {
+            list_locale.select_event_locale(elem_column.code());
         }
-        match CoreUtility::get_col_name(list_column.col_name_index()) {
+        match CoreUtility::get_col_name(elem_column.col_name_index()) {
             crate::ColumnType::None => {
                 let list_descriptor_opt = list_event.list_descriptor();
                 match list_descriptor_opt.as_ref() {
@@ -329,13 +362,13 @@ impl CalcUtility {
                     }
                     Some(o) => {
                         if o.get_element_by_name(
-                            list_column.group(),
-                            list_column.name(),
-                            list_column.col_type(),
-                            list_column.code(),
+                            elem_column.group(),
+                            elem_column.name(),
+                            elem_column.col_type(),
+                            elem_column.code(),
                             true,
                         ) {
-                            match list_column.format() {
+                            match elem_column.format() {
                                 crate::FormatType::Date => match o.value().parse::<usize>() {
                                     Err(_e) => {}
                                     Ok(o2) => {
@@ -358,8 +391,12 @@ impl CalcUtility {
                                     Err(_e) => {}
                                     Ok(o2) => {
                                         result = list_locale.format_currency(
-                                            calc_manager.borrow().util_convert_currency_event(o2),
-                                            decimal_digits,
+                                            CalcUtility::convert_currency_event(
+                                                &calc_mgr, 
+                                                cashflow_currency_code.as_str(), 
+                                                event_currency_code.as_str(), 
+                                                o2),
+                                            decimal_digits
                                         );
                                     }
                                 },
@@ -388,10 +425,12 @@ impl CalcUtility {
             crate::ColumnType::Value => match list_event.elem_type() {
                 crate::ExtensionType::PrincipalChange => {
                     result = list_locale.format_currency(
-                        calc_manager
-                            .borrow()
-                            .util_convert_currency_event(list_event.value()),
-                        decimal_digits,
+                        CalcUtility::convert_currency_event(
+                            &calc_mgr, 
+                            cashflow_currency_code.as_str(), 
+                            event_currency_code.as_str(), 
+                            list_event.value()),
+                        decimal_digits
                     );
                 }
                 crate::ExtensionType::InterestChange => {
@@ -436,7 +475,7 @@ impl CalcUtility {
                     .map_frequency()
                     .get_element_by_value(list_event.frequency() as usize);
                 result = String::from(
-                    list_locale.get_resource(calc_manager.borrow().mgr().map_frequency().key()),
+                    list_locale.get_resource(calc_mgr.mgr().map_frequency().key()),
                 );
             }
             crate::ColumnType::EndDate => {
@@ -493,7 +532,7 @@ impl CalcUtility {
     /// # Arguments
     ///
     /// * `calc_manager_param` - Calculation manager.
-    /// * `list_column` - List of columns object.
+    /// * `elem_column` - Column element.
     ///
     /// # Return
     ///
@@ -501,14 +540,16 @@ impl CalcUtility {
 
     pub fn get_am_value(
         calc_manager_param: &Rc<RefCell<CalcManager>>,
-        list_column: &ListColumn,
+        elem_column: &ElemColumn,
     ) -> String {
         let calc_manager = Rc::clone(calc_manager_param);
-        let calc_reg = calc_manager.borrow();
-        let decimal_digits = calc_reg.decimal_digits(true);
-        let mgr = calc_reg.mgr();
+        let calc_mgr = calc_manager.borrow();
+        let decimal_digits = calc_mgr.decimal_digits(true);
+        let mgr = calc_mgr.mgr();
         let mut list_locale = mgr.list_locale_mut();
-        let list_cashflow = calc_reg.list_cashflow();
+        let cashflow_currency_code = String::from(list_locale.cashflow_currency_code());
+        let event_currency_code = String::from(list_locale.event_currency_code());
+        let list_cashflow = calc_mgr.list_cashflow();
         let list_am_opt = list_cashflow.list_amortization();
         let elem_balance_result_opt = list_cashflow.elem_balance_result();
 
@@ -538,49 +579,53 @@ impl CalcUtility {
         }
 
         list_locale.select_event_locale("");
-        if list_column.col_type() == crate::TYPE_LOCALE && !list_column.code().is_empty() {
-            list_locale.select_event_locale(list_column.code());
+        if elem_column.col_type() == crate::TYPE_LOCALE && !elem_column.code().is_empty() {
+            list_locale.select_event_locale(elem_column.code());
         }
 
         let mut result = String::from("");
-        match CoreUtility::get_col_name(list_column.col_name_index()) {
+        match CoreUtility::get_col_name(elem_column.col_name_index()) {
             crate::ColumnType::None => {
                 let list_descriptor_opt = list_am.list_descriptor();
                 match list_descriptor_opt.as_ref() {
                     None => {}
                     Some(o) => {
                         if o.get_element_by_name(
-                            list_column.group(),
-                            list_column.name(),
-                            list_column.col_type(),
-                            list_column.code(),
+                            elem_column.group(),
+                            elem_column.name(),
+                            elem_column.col_type(),
+                            elem_column.code(),
                             true,
                         ) {
-                            match list_column.format() {
+                            match elem_column.format() {
                                 crate::FormatType::Date => match o.value().parse::<usize>() {
                                     Err(_e) => {}
-                                    Ok(o) => {
-                                        result = list_locale.format_date(o);
+                                    Ok(o2) => {
+                                        result = list_locale.format_date(o2);
                                     }
                                 },
                                 crate::FormatType::Integer => match o.value().parse::<i32>() {
                                     Err(_e) => {}
-                                    Ok(o) => {
-                                        result = list_locale.format_integeri(o);
+                                    Ok(o2) => {
+                                        result = list_locale.format_integeri(o2);
                                     }
                                 },
                                 crate::FormatType::Decimal => match o.value().parse::<Decimal>() {
                                     Err(_e) => {}
-                                    Ok(o) => {
-                                        result = list_locale.format_decimal(o);
+                                    Ok(o2) => {
+                                        result = list_locale.format_decimal(o2);
                                     }
                                 },
                                 crate::FormatType::Currency => match o.value().parse::<Decimal>() {
                                     Err(_e) => {}
-                                    Ok(o) => {
+                                    Ok(o2) => {
                                         result = list_locale.format_currency(
-                                            calc_manager.borrow().util_convert_currency_event(o),
-                                            decimal_digits,
+                                            CalcUtility::convert_currency_event(
+                                                &calc_mgr, 
+                                                cashflow_currency_code.as_str(), 
+                                                event_currency_code.as_str(), 
+                                                o2),
+                                            decimal_digits
                                         );
                                     }
                                 },
@@ -610,10 +655,12 @@ impl CalcUtility {
             crate::ColumnType::Value => match list_am.elem_type() {
                 crate::ExtensionType::PrincipalChange => {
                     result = list_locale.format_currency(
-                        calc_manager
-                            .borrow()
-                            .util_convert_currency_event(list_am.value()),
-                        decimal_digits,
+                        CalcUtility::convert_currency_event(
+                            &calc_mgr, 
+                            cashflow_currency_code.as_str(), 
+                            event_currency_code.as_str(), 
+                            list_am.value()),
+                        decimal_digits
                     );
                 }
                 crate::ExtensionType::InterestChange => {
@@ -624,10 +671,12 @@ impl CalcUtility {
             crate::ColumnType::Decrease => {
                 if list_am.principal_decrease() > dec!(0.0) {
                     result = list_locale.format_currency(
-                        calc_manager
-                            .borrow()
-                            .util_convert_currency_event(list_am.principal_decrease()),
-                        decimal_digits,
+                        CalcUtility::convert_currency_event(
+                            &calc_mgr, 
+                            cashflow_currency_code.as_str(), 
+                            event_currency_code.as_str(), 
+                            list_am.principal_decrease()),
+                        decimal_digits
                     );
                 }
             }
@@ -638,10 +687,12 @@ impl CalcUtility {
                 _ => {
                     if list_am.principal_increase() > dec!(0.0) {
                         result = list_locale.format_currency(
-                            calc_manager
-                                .borrow()
-                                .util_convert_currency_event(list_am.principal_increase()),
-                            decimal_digits,
+                            CalcUtility::convert_currency_event(
+                                &calc_mgr, 
+                                cashflow_currency_code.as_str(), 
+                                event_currency_code.as_str(), 
+                                list_am.principal_increase()),
+                            decimal_digits
                         );
                     }
                 }
@@ -656,7 +707,7 @@ impl CalcUtility {
                     .map_frequency()
                     .get_element_by_value(list_am.frequency() as usize);
                 result = String::from(
-                    list_locale.get_resource(calc_manager.borrow().mgr().map_frequency().key()),
+                    list_locale.get_resource(calc_mgr.mgr().map_frequency().key()),
                 );
             }
             crate::ColumnType::ParameterList => match list_am.list_parameter().as_ref() {
@@ -684,10 +735,12 @@ impl CalcUtility {
                     && list_am.elem_type() == crate::ExtensionType::StatisticValue)
                 {
                     result = list_locale.format_currency(
-                        calc_manager
-                            .borrow()
-                            .util_convert_currency_event(list_am.interest()),
-                        decimal_digits,
+                        CalcUtility::convert_currency_event(
+                            &calc_mgr, 
+                            cashflow_currency_code.as_str(), 
+                            event_currency_code.as_str(), 
+                            list_am.interest()),
+                        decimal_digits
                     );
                 }
             }
@@ -696,10 +749,12 @@ impl CalcUtility {
                     && list_am.elem_type() == crate::ExtensionType::StatisticValue)
                 {
                     result = list_locale.format_currency(
-                        calc_manager
-                            .borrow()
-                            .util_convert_currency_event(list_am.sl_interest()),
-                        decimal_digits,
+                        CalcUtility::convert_currency_event(
+                            &calc_mgr, 
+                            cashflow_currency_code.as_str(), 
+                            event_currency_code.as_str(), 
+                            list_am.sl_interest()),
+                        decimal_digits
                     );
                 }
             }
@@ -708,10 +763,12 @@ impl CalcUtility {
                     && list_am.elem_type() == crate::ExtensionType::StatisticValue)
                 {
                     result = list_locale.format_currency(
-                        calc_manager.borrow().util_convert_currency_event(
-                            list_am.interest() - list_am.sl_interest(),
-                        ),
-                        decimal_digits,
+                        CalcUtility::convert_currency_event(
+                            &calc_mgr, 
+                            cashflow_currency_code.as_str(), 
+                            event_currency_code.as_str(), 
+                            list_am.interest() - list_am.sl_interest()),
+                        decimal_digits
                     );
                 }
             }
@@ -720,10 +777,12 @@ impl CalcUtility {
                     && list_am.elem_type() == crate::ExtensionType::StatisticValue)
                 {
                     result = list_locale.format_currency(
-                        calc_manager
-                            .borrow()
-                            .util_convert_currency_event(list_am.value_to_interest()),
-                        decimal_digits,
+                        CalcUtility::convert_currency_event(
+                            &calc_mgr, 
+                            cashflow_currency_code.as_str(), 
+                            event_currency_code.as_str(), 
+                            list_am.value_to_interest()),
+                        decimal_digits
                     );
                 }
             }
@@ -732,10 +791,12 @@ impl CalcUtility {
                     && list_am.elem_type() == crate::ExtensionType::StatisticValue)
                 {
                     result = list_locale.format_currency(
-                        calc_manager
-                            .borrow()
-                            .util_convert_currency_event(list_am.value_to_principal()),
-                        decimal_digits,
+                        CalcUtility::convert_currency_event(
+                            &calc_mgr, 
+                            cashflow_currency_code.as_str(), 
+                            event_currency_code.as_str(), 
+                            list_am.value_to_principal()),
+                        decimal_digits
                     );
                 }
             }
@@ -744,10 +805,12 @@ impl CalcUtility {
                     && list_am.elem_type() == crate::ExtensionType::StatisticValue)
                 {
                     result = list_locale.format_currency(
-                        calc_manager
-                            .borrow()
-                            .util_convert_currency_event(list_am.acc_balance()),
-                        decimal_digits,
+                        CalcUtility::convert_currency_event(
+                            &calc_mgr, 
+                            cashflow_currency_code.as_str(), 
+                            event_currency_code.as_str(), 
+                            list_am.acc_balance()),
+                        decimal_digits
                     );
                 }
             }
@@ -757,7 +820,7 @@ impl CalcUtility {
                 {
                     let balance = CoreUtility::round(
                         list_am.balance(),
-                        list_column.decimal_digits(),
+                        elem_column.decimal_digits(),
                         crate::RoundType::Bankers,
                     );
                     if elem_balance_result.polarity() < 0 {
@@ -765,22 +828,32 @@ impl CalcUtility {
                             result = format!(
                                 "+{}",
                                 list_locale.format_currency(
-                                    calc_manager.borrow().util_convert_currency_event(balance),
+                                    CalcUtility::convert_currency_event(
+                                        &calc_mgr, 
+                                        cashflow_currency_code.as_str(), 
+                                        event_currency_code.as_str(), 
+                                        balance),
                                     decimal_digits
                                 )
                             );
                         } else {
                             result = list_locale.format_currency(
-                                calc_manager
-                                    .borrow()
-                                    .util_convert_currency_event(balance.abs()),
-                                decimal_digits,
+                                CalcUtility::convert_currency_event(
+                                    &calc_mgr, 
+                                    cashflow_currency_code.as_str(), 
+                                    event_currency_code.as_str(), 
+                                    balance.abs()),
+                                decimal_digits
                             );
                         }
                     } else {
                         result = list_locale.format_currency(
-                            calc_manager.borrow().util_convert_currency_event(balance),
-                            decimal_digits,
+                            CalcUtility::convert_currency_event(
+                                &calc_mgr, 
+                                cashflow_currency_code.as_str(), 
+                                event_currency_code.as_str(), 
+                                balance),
+                            decimal_digits
                         );
                     }
                 }
@@ -797,7 +870,7 @@ impl CalcUtility {
     /// # Arguments
     ///
     /// * `calc_manager_param` - Calculation manager.
-    /// * `list_column` - List of columns object.
+    /// * `elem_column` - Column element.
     /// * `elem_type` - The type of table.
     ///
     /// # Return
@@ -806,7 +879,7 @@ impl CalcUtility {
 
     pub fn is_column_empty(
         calc_manager_param: &Rc<RefCell<CalcManager>>,
-        list_column: &ListColumn,
+        elem_column: &ElemColumn,
         elem_type: crate::TableType,
     ) -> bool {
         let calc_manager = Rc::clone(calc_manager_param);
@@ -848,7 +921,7 @@ impl CalcUtility {
                         if !o.get_element(index) {
                             break;
                         }
-                        result = CalcUtility::get_am_value(&calc_manager, list_column);
+                        result = CalcUtility::get_am_value(&calc_manager, elem_column);
                     }
                 },
                 _ => match list_event_opt.as_ref() {
@@ -859,7 +932,7 @@ impl CalcUtility {
                         if !o.get_element(index) {
                             break;
                         }
-                        result = CalcUtility::get_event_value(&calc_manager, list_column);
+                        result = CalcUtility::get_event_value(&calc_manager, elem_column);
                     }
                 },
             }
@@ -871,7 +944,7 @@ impl CalcUtility {
             }
 
             let dval: Decimal = CoreUtility::parse_decimal(result.as_str());
-            if dval <= list_column.column_empty_value() {
+            if dval <= elem_column.column_empty_value() {
                 continue;
             }
             break;
@@ -904,6 +977,7 @@ impl CalcUtility {
             calc_manager.borrow().fiscal_year_start(false),
             calc_manager.borrow().decimal_digits(false),
         );
+        
         calc_expression.init_expression(None, None, None, expression);
         calc_expression.normalize_expression(new_line)
     }
@@ -926,8 +1000,8 @@ impl CalcUtility {
         cashflow: bool,
     ) -> ListColumn {
         let calc_manager = Rc::clone(calc_manager_param);
-        let calc_reg = calc_manager.borrow();
-        let mgr = calc_reg.mgr();
+        let calc_mgr = calc_manager.borrow();
+        let mgr = calc_mgr.mgr();
         let list_locale = mgr.list_locale();
 
         let mut group = String::from(if !cashflow {
@@ -937,6 +1011,7 @@ impl CalcUtility {
         } else {
             crate::GROUP_EVENT
         });
+
         let locale_str: &str;
         if cashflow {
             locale_str = list_locale.cashflow_locale().locale_str();
@@ -957,7 +1032,7 @@ impl CalcUtility {
             columns = calc_manager.borrow().descriptor_value(
                 group.as_str(),
                 crate::NAME_COLUMNS,
-                "",
+                crate::TYPE_CUSTOM,
                 "",
                 true,
                 false,
@@ -972,6 +1047,7 @@ impl CalcUtility {
                 });
             }
         }
+
         let mut list_column = ListColumn::new();
         for column in columns.split('|') {
             let text = column.trim();
@@ -1016,7 +1092,7 @@ impl CalcUtility {
                     col_header = calc_manager.borrow().descriptor_value(
                         crate::GROUP_COLHEADER,
                         col_name,
-                        "",
+                        crate::TYPE_CUSTOM,
                         "",
                         true,
                         false,
@@ -1054,7 +1130,7 @@ impl CalcUtility {
                     desc_text = calc_manager.borrow().descriptor_value(
                         crate::GROUP_COLVALUE,
                         col_name,
-                        "",
+                        crate::TYPE_CUSTOM,
                         "",
                         true,
                         false,
@@ -1098,7 +1174,7 @@ impl CalcUtility {
                         col_header = calc_manager.borrow().descriptor_value(
                             crate::GROUP_COLHEADER,
                             col_name,
-                            "",
+                            crate::TYPE_CUSTOM,
                             "",
                             true,
                             false,
@@ -1136,7 +1212,7 @@ impl CalcUtility {
                         col_header = calc_manager.borrow().descriptor_value(
                             crate::GROUP_COLHEADER,
                             col_name,
-                            "",
+                            crate::TYPE_CUSTOM,
                             "",
                             true,
                             false,
@@ -1165,15 +1241,32 @@ impl CalcUtility {
             }
             let col = CoreUtility::get_col_name(col_name_index);
             match col {
+                crate::ColumnType::Sequence |
+                crate::ColumnType::Sort |
+                crate::ColumnType::Value |
+                crate::ColumnType::Decrease |
+                crate::ColumnType::Increase |
+                crate::ColumnType::Periods |
+                crate::ColumnType::SkipPeriods |
+                crate::ColumnType::Intervals |
+                crate::ColumnType::ParameterList |
+                crate::ColumnType::DescriptorList |
+                crate::ColumnType::Interest |
+                crate::ColumnType::SlInterest |
+                crate::ColumnType::IntOnInterest |
+                crate::ColumnType::ValueToInterest |
+                crate::ColumnType::ValueToPrincipal |
+                crate::ColumnType::AccruedBalance |
                 crate::ColumnType::Balance => {
                     format = crate::FormatType::Currency;
                 }
-                crate::ColumnType::EndDate => {
+                crate::ColumnType::EndDate | 
+                crate::ColumnType::Date => {
                     format = crate::FormatType::Date;
                 }
                 _ => {}
             }
-
+      
             list_column.add_column(
                 col_name,
                 col_name_index,
@@ -1205,40 +1298,34 @@ impl CalcUtility {
 
     pub fn parse_summary(calc_manager_param: &Rc<RefCell<CalcManager>>) -> ListSummary {
         let calc_manager = Rc::clone(calc_manager_param);
-        let calc_reg = calc_manager.borrow();
-        let mgr = calc_reg.mgr();
+        let calc_mgr = calc_manager.borrow();
+        let mgr = calc_mgr.mgr();
         let list_locale = mgr.list_locale();
-        let list_cashflow = calc_reg.list_cashflow();
+        let list_cashflow = calc_mgr.list_cashflow();
         let preferences = list_cashflow.preferences();
 
         let mut list_summary = ListSummary::new();
         let locale_str = list_locale.cashflow_locale().locale_str();
 
         let list_parameter: &ListParameter;
-        match preferences.as_ref() {
-            None => {
-                return list_summary;
-            }
-            Some(o) => {
-                list_parameter = o.list_parameter();
-            }
-        }
-
         let list_descriptor: &ListDescriptor;
         match preferences.as_ref() {
             None => {
                 return list_summary;
             }
             Some(o) => {
+                list_parameter = o.list_parameter();
                 list_descriptor = o.list_descriptor();
             }
         }
+
         let mut calc_expression = CalcExpression::new(
             &calc_manager,
-            calc_reg.fiscal_year_start(true),
-            calc_reg.decimal_digits(true),
+            calc_mgr.fiscal_year_start(true),
+            calc_mgr.decimal_digits(true),
         );
-        let mut summary = calc_reg.descriptor_value(
+
+        let mut summary = calc_mgr.descriptor_value(
             crate::GROUP_GENERAL,
             crate::NAME_SUMMARY,
             crate::TYPE_LOCALE,
@@ -1246,11 +1333,12 @@ impl CalcUtility {
             true,
             false,
         );
+
         if summary.is_empty() {
-            summary = calc_reg.descriptor_value(
+            summary = calc_mgr.descriptor_value(
                 crate::GROUP_GENERAL,
                 crate::NAME_SUMMARY,
-                "",
+                crate::TYPE_CUSTOM,
                 "",
                 true,
                 false,
@@ -1259,10 +1347,11 @@ impl CalcUtility {
                 return list_summary;
             }
         }
+
         for summary in summary.split('|') {
             let name = summary.trim();
 
-            let mut text = calc_reg.descriptor_value(
+            let mut text = calc_mgr.descriptor_value(
                 crate::GROUP_SUMMARY,
                 name,
                 crate::TYPE_LOCALE,
@@ -1272,7 +1361,13 @@ impl CalcUtility {
             );
 
             if text.is_empty() {
-                text = calc_reg.descriptor_value(crate::GROUP_SUMMARY, name, "", "", true, false);
+                text = calc_mgr.descriptor_value(
+                    crate::GROUP_SUMMARY, 
+                    name, 
+                    crate::TYPE_CUSTOM, 
+                    "", 
+                    true, 
+                    false);
                 if text.is_empty() {
                     continue;
                 }
@@ -1306,7 +1401,7 @@ impl CalcUtility {
 
             match result {
                 Err(e) => {
-                    let error_string = calc_reg.get_error_string(e);
+                    let error_string = calc_mgr.get_error_string(e);
                     label_str = format!("{}{}", crate::ERROR_PREFIX, error_string);
                 }
                 Ok(o) => {
@@ -1345,7 +1440,7 @@ impl CalcUtility {
             );
             match result {
                 Err(e) => {
-                    let error_string = calc_reg.get_error_string(e);
+                    let error_string = calc_mgr.get_error_string(e);
                     result_str = format!("{}{}", crate::ERROR_PREFIX, error_string);
                 }
                 Ok(o) => {
@@ -1374,6 +1469,7 @@ impl CalcUtility {
                 result_expr.as_str(),
             );
         }
+
         list_summary
     }
 }

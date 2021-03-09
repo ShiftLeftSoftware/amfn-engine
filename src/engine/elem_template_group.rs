@@ -11,7 +11,6 @@ use std::rc::Rc;
 
 use super::{ElemPreferences, ListTemplateEvent};
 use crate::core::CoreManager;
-use crate::ElemLevelType;
 
 pub struct ElemTemplateGroup {
   /// CoreManager element.
@@ -69,7 +68,7 @@ impl ElemTemplateGroup {
       self.group.as_str(),
       self
         .elem_preferences
-        .copy(ElemLevelType::Cashflow, updating_json),
+        .copy(updating_json),
     );
 
     let list_template_event = self.list_template_event.copy(updating_json);

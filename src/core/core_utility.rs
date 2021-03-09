@@ -12,7 +12,7 @@ use math::round;
 use rust_decimal::prelude::*;
 
 use crate::core::ListDescriptor;
-use crate::{ElemLevelType, ElemUpdateType, ListTrait};
+use crate::{ListTrait};
 
 pub struct CoreUtility {}
 
@@ -493,61 +493,6 @@ impl CoreUtility {
             }
         }
         days
-    }
-
-    /// Format and return an update message.
-    ///
-    /// # Arguments
-    ///
-    /// * `elem_update_type` - The update type.
-    /// * `elem_update_level` - The update level.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn format_update(
-        elem_update_type: ElemUpdateType,
-        elem_update_level: ElemLevelType,
-    ) -> String {
-        let update_type: &str;
-        match elem_update_type {
-            crate::ElemUpdateType::Parameter => {
-                update_type = "Parameter";
-            }
-            crate::ElemUpdateType::Preferences => {
-                update_type = "Preferences";
-            }
-            crate::ElemUpdateType::Cashflow => {
-                update_type = "Cashflow";
-            }
-            crate::ElemUpdateType::Event => {
-                update_type = "Event";
-            }
-            crate::ElemUpdateType::Template => {
-                update_type = "Template";
-            }
-            crate::ElemUpdateType::ExchangeRate => {
-                update_type = "ExchangeRate";
-            }
-            _ => {
-                update_type = "Descriptor";
-            }
-        }
-
-        let update_level: &str;
-        match elem_update_level {
-            crate::ElemLevelType::Cashflow => {
-                update_level = "Cashflow";
-            }
-            crate::ElemLevelType::Event => {
-                update_level = "Event";
-            }
-            _ => {
-                update_level = "Engine";
-            }
-        }
-        format!("Update: {}, Level: {}", update_type, update_level)
     }
 
     /// Returns the enumerated value for a function number.

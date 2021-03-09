@@ -12,7 +12,7 @@ use std::cell::Cell;
 use std::cmp::Ordering::Equal;
 
 use super::{ElemAmortization, ElemExtension, ListDescriptor, ListParameter};
-use crate::{ElemLevelType, ExtensionTrait, ListTrait};
+use crate::{ExtensionTrait, ListTrait};
 
 pub struct ListAmortization {
     /// The list of amortization elements.
@@ -302,7 +302,7 @@ impl ListAmortization {
             match elem.list_parameter().as_ref() {
                 None => {}
                 Some(o) => {
-                    list_parameter_opt = Option::from(o.copy(ElemLevelType::Event, updating_json));
+                    list_parameter_opt = Option::from(o.copy(updating_json));
                 }
             }
 
@@ -310,7 +310,7 @@ impl ListAmortization {
                 None => {}
                 Some(o) => {
                     list_descriptor_opt =
-                        Option::from(o.copy(false, ElemLevelType::Event, updating_json));
+                        Option::from(o.copy(false, updating_json));
                 }
             }
 

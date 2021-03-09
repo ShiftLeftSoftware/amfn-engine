@@ -7,15 +7,14 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::{Cell, Ref, RefCell, RefMut};
+use std::cell::{Cell, Ref, RefCell};
 use std::cmp::Ordering::Equal;
 use std::rc::Rc;
 
 use super::{
     CalcExpression, CalcManager, CalcUtility, ElemPreferences, ElemTemplateGroup, ListTemplateEvent,
 };
-use crate::core::CoreUtility;
-use crate::{ElemLevelType, ElemUpdateType, ListTrait};
+use crate::{ListTrait};
 
 pub struct ListTemplateGroup {
     /// Calculator manager element.
@@ -44,8 +43,6 @@ impl ListTrait for ListTemplateGroup {
         self.list_index.set(usize::MAX);
         self.sort_on_add = Cell::new(true);
         self.sort_updated = Cell::new(false);
-
-        self.set_updated();
     }
 
     /// Get the count of the template group list.
@@ -168,28 +165,13 @@ impl ListTemplateGroup {
         }
     }
 
-    /// Returns the matable calculation manager.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    fn calc_mgr_mut(&self) -> RefMut<CalcManager> {
-        match self.calc_manager.as_ref() {
-            None => {
-                panic!("Missing calc manager");
-            }
-            Some(o) => o.borrow_mut(),
-        }
-    }
-
     /// Set the calculation manager.
     ///
     /// # Arguments
     ///
     /// * `calc_manager_param` - Calculation manager.
 
-    pub fn set_calc_reg(&mut self, calc_manager_param: &Rc<RefCell<CalcManager>>) {
+    pub fn set_calc_mgr(&mut self, calc_manager_param: &Rc<RefCell<CalcManager>>) {
         self.calc_manager = Option::from(Rc::clone(calc_manager_param));
     }
 
@@ -213,7 +195,7 @@ impl ListTemplateGroup {
         let prefs = self
             .calc_mgr()
             .preferences()
-            .copy(ElemLevelType::Cashflow, self.calc_mgr().updating_json());
+            .copy(self.calc_mgr().updating_json());
         self.create_template_group(group_param, Option::from(prefs), true)
     }
 
@@ -282,7 +264,6 @@ impl ListTemplateGroup {
                     None,
                     None,
                     false,
-                    ElemLevelType::Cashflow,
                     updating_json,
                 );
             }
@@ -301,7 +282,6 @@ impl ListTemplateGroup {
                     Option::from(o.list_parameter()),
                     Option::from(o.list_descriptor()),
                     copy_propagate,
-                    ElemLevelType::Cashflow,
                     updating_json,
                 );
             }
@@ -352,7 +332,7 @@ impl ListTemplateGroup {
         let mut list_template_group = ListTemplateGroup::new();
         let mut index: usize = 0;
 
-        list_template_group.set_calc_reg(calc_manager_param);
+        list_template_group.set_calc_mgr(calc_manager_param);
         list_template_group.set_sort_on_add(false);
         loop {
             if !self.get_element(index) {
@@ -382,7 +362,7 @@ impl ListTemplateGroup {
         let group = String::from(self.group());
         let prefs = Option::from(
             self.preferences()
-                .copy(ElemLevelType::Cashflow, updating_json),
+                .copy(updating_json),
         );
 
         let result = self.create_template_group(group.as_str(), prefs, false);
@@ -391,7 +371,7 @@ impl ListTemplateGroup {
                 self.calc_mgr().core_manager(),
                 self.group(),
                 self.preferences()
-                    .copy(ElemLevelType::Cashflow, updating_json),
+                    .copy(updating_json),
             ),
             Ok(o) => o,
         }
@@ -565,7 +545,7 @@ impl ListTemplateGroup {
         if self.list_index.get() > 0 {
             self.list_index.set(self.list_index.get() - 1);
         }
-        self.set_updated();
+
         true
     }
 
@@ -607,9 +587,7 @@ impl ListTemplateGroup {
             Some(o) => {
                 self.list_index.set(o);
 
-                if self.sort_on_add.get() {
-                    self.set_updated();
-                } else {
+                if !self.sort_on_add.get() {
                     self.sort_updated.set(true);
                 }
                 true
@@ -651,7 +629,6 @@ impl ListTemplateGroup {
                         }
                         Some(o2) => {
                             self.list_index.set(o2);
-                            self.set_updated();
                         }
                     }
                 }
@@ -674,15 +651,6 @@ impl ListTemplateGroup {
         self.sort_updated.set(sort_updated_param);
 
         true
-    }
-
-    /// Call the updated signal.
-
-    pub fn set_updated(&self) {
-        self.calc_mgr().mgr().notify(CoreUtility::format_update(
-            ElemUpdateType::Template,
-            ElemLevelType::Engine,
-        ));
     }
 
     /// Sort the template group list.

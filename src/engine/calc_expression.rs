@@ -17,7 +17,7 @@ use crate::core::{
     CoreUtility, ElemBalanceResult, ElemSymbol, ListAmortization, ListDescriptor, ListParameter,
     MapSymbol,
 };
-use crate::{ElemLevelType, ListTrait};
+use crate::{ListTrait};
 
 pub struct CalcExpression {
     /// Calculator manager element.
@@ -64,7 +64,7 @@ impl CalcExpression {
             .borrow()
             .preferences()
             .list_descriptor()
-            .copy(false, ElemLevelType::Engine, updating_json);
+            .copy(false, updating_json);
 
         CalcExpression {
             calc_manager: Rc::clone(calc_manager_param),
@@ -104,7 +104,7 @@ impl CalcExpression {
             .borrow()
             .preferences()
             .list_descriptor()
-            .copy(false, ElemLevelType::Engine, updating_json);
+            .copy(false, updating_json);
 
         CalcExpression {
             calc_manager: Rc::clone(calc_manager_param),
@@ -196,14 +196,14 @@ impl CalcExpression {
             None => {}
             Some(o) => {
                 self.list_descriptor_cashflow =
-                    Option::from(o.copy(false, ElemLevelType::Cashflow, updating_json));
+                    Option::from(o.copy(false, updating_json));
             }
         }
         match list_descriptor_event_param {
             None => {}
             Some(o) => {
                 self.list_descriptor_event =
-                    Option::from(o.copy(false, ElemLevelType::Event, updating_json));
+                    Option::from(o.copy(false, updating_json));
             }
         }
 
@@ -1984,8 +1984,8 @@ impl CalcExpression {
             }
         }
 
-        let calc_reg = self.calc_mgr();
-        let cashflow = calc_reg.list_cashflow();
+        let calc_mgr = self.calc_mgr();
+        let cashflow = calc_mgr.list_cashflow();
         let elem_preferences_opt = cashflow.preferences();
         let mut elem_result_symbol = ElemSymbol::new();
         match text.as_str() {

@@ -13,8 +13,8 @@ use std::cmp::Ordering::Equal;
 use std::rc::Rc;
 
 use super::ElemExchangeRate;
-use crate::core::{CoreManager, CoreUtility};
-use crate::{ElemLevelType, ElemUpdateType, ListTrait};
+use crate::core::{CoreManager};
+use crate::{ListTrait};
 
 pub struct ListExchangeRate {
     /// CoreManager element.
@@ -43,7 +43,6 @@ impl ListTrait for ListExchangeRate {
         self.list_index.set(usize::MAX);
         self.sort_on_add = true;
         self.sort_updated = false;
-        self.set_updated();
     }
 
     /// Get the count of the exchange rate list.
@@ -154,8 +153,6 @@ impl ListExchangeRate {
                 }
             }
 
-            self.set_updated();
-
             return true;
         }
 
@@ -177,9 +174,7 @@ impl ListExchangeRate {
                 self.list_index.set(o);
             }
         }
-        if self.sort_on_add {
-            self.set_updated();
-        } else {
+        if !self.sort_on_add {
             self.sort_updated = true;
         }
 
@@ -295,6 +290,26 @@ impl ListExchangeRate {
         }
     }
 
+    /// Get the list of exchange rates.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn list(&self) -> &Vec<ElemExchangeRate> {
+        &self.list_exchange_rate
+    }
+
+    /// Get the mut list of exchange rates.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn list_mut(&mut self) -> &mut Vec<ElemExchangeRate> {
+        &mut self.list_exchange_rate
+    }
+
     /// Get the international currency code "from".
     ///
     /// # Return
@@ -376,7 +391,7 @@ impl ListExchangeRate {
         if self.list_index.get() > 0 {
             self.list_index.set(self.list_index.get() - 1);
         }
-        self.set_updated();
+
         true
     }
 
@@ -422,9 +437,7 @@ impl ListExchangeRate {
             }
         }
 
-        if self.sort_on_add {
-            self.set_updated();
-        } else {
+        if !self.sort_on_add {
             self.set_sort_updated(true);
         }
 
@@ -473,9 +486,7 @@ impl ListExchangeRate {
             }
         }
 
-        if self.sort_on_add {
-            self.set_updated();
-        } else {
+        if !self.sort_on_add {
             self.set_sort_updated(true);
         }
 
@@ -497,7 +508,6 @@ impl ListExchangeRate {
             None => false,
             Some(o) => {
                 o.set_exchange_rate(exchange_rate_param);
-                self.set_updated();
                 true
             }
         }
@@ -535,7 +545,6 @@ impl ListExchangeRate {
                         None => {}
                         Some(o2) => {
                             self.list_index.set(o2);
-                            self.set_updated();
                         }
                     }
                 }
@@ -591,16 +600,5 @@ impl ListExchangeRate {
         }
 
         Equal
-    }
-
-    /// Call the updated signal.
-
-    fn set_updated(&self) {
-        self.core_manager
-            .borrow()
-            .notify(CoreUtility::format_update(
-                ElemUpdateType::ExchangeRate,
-                ElemLevelType::Engine,
-            ));
     }
 }

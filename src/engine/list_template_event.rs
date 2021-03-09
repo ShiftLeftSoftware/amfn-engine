@@ -12,8 +12,8 @@ use std::cmp::Ordering::Equal;
 use std::rc::Rc;
 
 use super::ElemTemplateEvent;
-use crate::core::{CoreManager, CoreUtility, ListEvent};
-use crate::{ElemLevelType, ElemUpdateType, ListTrait};
+use crate::core::{CoreManager, ListEvent};
+use crate::{ListTrait};
 
 pub struct ListTemplateEvent {
     /// CoreManager element.
@@ -42,8 +42,6 @@ impl ListTrait for ListTemplateEvent {
         self.list_index.set(usize::MAX);
         self.sort_on_add = true;
         self.sort_updated = false;
-
-        self.set_updated();
     }
 
     /// Get the count of the template event list.
@@ -200,9 +198,7 @@ impl ListTemplateEvent {
                 self.list_index.set(o);
             }
         }
-        if self.sort_on_add {
-            self.set_updated();
-        } else {
+        if !self.sort_on_add {
             self.sort_updated = true;
         }
         true
@@ -334,7 +330,7 @@ impl ListTemplateEvent {
         if self.list_index.get() > 0 {
             self.list_index.set(self.list_index.get() - 1);
         }
-        self.set_updated();
+
         true
     }
 
@@ -380,9 +376,7 @@ impl ListTemplateEvent {
             }
         }
 
-        if self.sort_on_add {
-            self.set_updated();
-        } else {
+        if !self.sort_on_add {
             self.sort_updated = true;
         }
 
@@ -404,7 +398,6 @@ impl ListTemplateEvent {
             None => false,
             Some(o) => {
                 o.set_initial_event(initial_event_param);
-                self.set_updated();
                 true
             }
         }
@@ -444,7 +437,6 @@ impl ListTemplateEvent {
                         }
                         Some(o2) => {
                             self.list_index.set(o2);
-                            self.set_updated();
                         }
                     }
                 }
@@ -452,17 +444,6 @@ impl ListTemplateEvent {
         }
         self.sort_updated = false;
         true
-    }
-
-    /// Call the updated signal.
-
-    fn set_updated(&self) {
-        self.core_manager
-            .borrow()
-            .notify(CoreUtility::format_update(
-                ElemUpdateType::Template,
-                ElemLevelType::Cashflow,
-            ));
     }
 
     /// Sort the template event list.

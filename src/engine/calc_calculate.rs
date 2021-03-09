@@ -16,7 +16,7 @@ use crate::core::{
     CoreUtility, ElemBalanceResult, ElemExtension, ElemSymbol, ListAmortization, ListDescriptor,
     ListEvent, ListParameter, ListStatisticHelper,
 };
-use crate::{ElemLevelType, ListTrait};
+use crate::{ListTrait};
 
 pub struct CalcCalculate {
     /// Calculator manager element.
@@ -67,7 +67,7 @@ impl CalcCalculate {
                 list_descriptor = None;
             }
             Some(o) => {
-                list_descriptor = Option::from(o.copy(false, ElemLevelType::Cashflow, false));
+                list_descriptor = Option::from(o.copy(false, false));
             }
         }
 
@@ -1865,7 +1865,7 @@ impl CalcCalculate {
                     return Err(crate::ErrorType::Index);
                 }
                 Some(o) => {
-                    list_descriptor_copy = o.copy(false, ElemLevelType::Event, updating_json);
+                    list_descriptor_copy = o.copy(false, updating_json);
                 }
             }
 
@@ -1894,7 +1894,7 @@ impl CalcCalculate {
                     return Err(crate::ErrorType::Index);
                 }
                 Some(o) => {
-                    list_parameter = Option::from(o.copy(ElemLevelType::Event, updating_json));
+                    list_parameter = Option::from(o.copy(updating_json));
                 }
             }
             new_list_am.add_amortization(
@@ -2009,7 +2009,7 @@ impl CalcCalculate {
                     return Err(crate::ErrorType::Index);
                 }
                 Some(o) => {
-                    new_list_parameter = o.copy(ElemLevelType::Event, updating_json);
+                    new_list_parameter = o.copy(updating_json);
                 }
             }
             let mut new_list_descriptor: ListDescriptor;
@@ -2018,7 +2018,7 @@ impl CalcCalculate {
                     return Err(crate::ErrorType::Index);
                 }
                 Some(o) => {
-                    new_list_descriptor = o.copy(false, ElemLevelType::Event, updating_json);
+                    new_list_descriptor = o.copy(false, updating_json);
                 }
             }
 
@@ -2203,7 +2203,7 @@ impl CalcCalculate {
                             return Err(crate::ErrorType::Index);
                         }
                         Some(o) => {
-                            new_list_parameter = o.copy(ElemLevelType::Event, updating_json);
+                            new_list_parameter = o.copy(updating_json);
                         }
                     }
                     let new_list_descriptor: ListDescriptor;
@@ -2213,7 +2213,7 @@ impl CalcCalculate {
                         }
                         Some(o) => {
                             new_list_descriptor =
-                                o.copy(false, ElemLevelType::Event, updating_json);
+                                o.copy(false, updating_json);
                         }
                     }
 
@@ -2273,7 +2273,7 @@ impl CalcCalculate {
                         return Err(crate::ErrorType::Index);
                     }
                     Some(o) => {
-                        new_list_parameter = o.copy(ElemLevelType::Event, updating_json);
+                        new_list_parameter = o.copy(updating_json);
                     }
                 }
                 let new_list_descriptor: ListDescriptor;
@@ -2282,7 +2282,7 @@ impl CalcCalculate {
                         return Err(crate::ErrorType::Index);
                     }
                     Some(o) => {
-                        new_list_descriptor = o.copy(false, ElemLevelType::Event, updating_json);
+                        new_list_descriptor = o.copy(false, updating_json);
                     }
                 }
 
@@ -2404,7 +2404,7 @@ impl CalcCalculate {
                     return Err(crate::ErrorType::Index);
                 }
                 Some(o) => {
-                    list_parameter = o.copy(ElemLevelType::Event, updating_json);
+                    list_parameter = o.copy(updating_json);
                 }
             }
             let mut periods: usize = 0;
@@ -2507,7 +2507,7 @@ impl CalcCalculate {
 
             if !optimize {
                 let mut new_list_parameter =
-                    list_parameter.copy(ElemLevelType::Event, updating_json);
+                    list_parameter.copy(updating_json);
                 new_list_parameter.add_parameter("intDate", updating_json);
                 new_list_parameter.set_integer(orig_date);
                 new_list_parameter.add_parameter("decValue", updating_json);
@@ -2604,10 +2604,9 @@ impl CalcCalculate {
                         event_index,
                         event_sequence,
                         new_elem_extension,
-                        Option::from(list_parameter.copy(ElemLevelType::Event, updating_json)),
+                        Option::from(list_parameter.copy(updating_json)),
                         Option::from(list_descriptor.copy(
                             false,
-                            ElemLevelType::Event,
                             updating_json,
                         )),
                     );
@@ -3006,7 +3005,7 @@ impl CalcCalculate {
                     return Err(crate::ErrorType::Index);
                 }
                 Some(o) => {
-                    new_list_parameter = o.copy(ElemLevelType::Event, updating_json);
+                    new_list_parameter = o.copy(updating_json);
                 }
             }
 
@@ -3016,7 +3015,7 @@ impl CalcCalculate {
                     return Err(crate::ErrorType::Index);
                 }
                 Some(o) => {
-                    new_list_descriptor = o.copy(false, ElemLevelType::Event, updating_json);
+                    new_list_descriptor = o.copy(false, updating_json);
                 }
             }
 
@@ -3050,7 +3049,7 @@ impl CalcCalculate {
                             return Err(crate::ErrorType::Index);
                         }
                         Some(o) => {
-                            list_parameter = o.copy(ElemLevelType::Event, updating_json);
+                            list_parameter = o.copy(updating_json);
                         }
                     }
 
@@ -3060,7 +3059,7 @@ impl CalcCalculate {
                             return Err(crate::ErrorType::Index);
                         }
                         Some(o) => {
-                            list_descriptor = o.copy(false, ElemLevelType::Event, updating_json);
+                            list_descriptor = o.copy(false, updating_json);
                         }
                     }
 
@@ -3176,8 +3175,8 @@ impl CalcCalculate {
                 new_list_event_index,
                 new_event_sequence,
                 new_elem_extension,
-                Option::from(new_list_parameter.copy(ElemLevelType::Event, updating_json)),
-                Option::from(new_list_descriptor.copy(false, ElemLevelType::Event, updating_json)),
+                Option::from(new_list_parameter.copy(updating_json)),
+                Option::from(new_list_descriptor.copy(false, updating_json)),
             );
         }
 
@@ -3207,7 +3206,7 @@ impl CalcCalculate {
                         return Err(crate::ErrorType::Index);
                     }
                     Some(o) => {
-                        list_parameter = o.copy(ElemLevelType::Event, updating_json);
+                        list_parameter = o.copy(updating_json);
                     }
                 }
 
@@ -3217,7 +3216,7 @@ impl CalcCalculate {
                         return Err(crate::ErrorType::Index);
                     }
                     Some(o) => {
-                        list_descriptor = o.copy(false, ElemLevelType::Event, updating_json);
+                        list_descriptor = o.copy(false, updating_json);
                     }
                 }
 
@@ -3513,12 +3512,10 @@ impl CalcCalculate {
                             let new_elem_extension = list_am.elem_extension().copy();
 
                             let new_list_parameter = ListParameter::new(
-                                self.calc_mgr().core_manager(),
-                                ElemLevelType::Event,
+                                self.calc_mgr().core_manager()
                             );
                             let mut new_list_descriptor = ListDescriptor::new(
-                                self.calc_mgr().core_manager(),
-                                ElemLevelType::Event,
+                                self.calc_mgr().core_manager()
                             );
 
                             match list_descriptor.as_ref() {
@@ -3575,12 +3572,10 @@ impl CalcCalculate {
                         let new_elem_extension = list_am.elem_extension().copy();
 
                         let new_list_parameter = ListParameter::new(
-                            self.calc_mgr().core_manager(),
-                            ElemLevelType::Event,
+                            self.calc_mgr().core_manager()
                         );
                         let mut new_list_descriptor = ListDescriptor::new(
-                            self.calc_mgr().core_manager(),
-                            ElemLevelType::Event,
+                            self.calc_mgr().core_manager()
                         );
 
                         match list_descriptor.as_ref() {
@@ -3629,12 +3624,10 @@ impl CalcCalculate {
                             let new_elem_extension = list_am.elem_extension().copy();
 
                             let new_list_parameter = ListParameter::new(
-                                self.calc_mgr().core_manager(),
-                                ElemLevelType::Event,
+                                self.calc_mgr().core_manager()
                             );
                             let mut new_list_descriptor = ListDescriptor::new(
-                                self.calc_mgr().core_manager(),
-                                ElemLevelType::Event,
+                                self.calc_mgr().core_manager()
                             );
                             match list_descriptor.as_ref() {
                                 None => {
@@ -3675,12 +3668,10 @@ impl CalcCalculate {
                         let new_elem_extension = list_am.elem_extension().copy();
 
                         let new_list_parameter = ListParameter::new(
-                            self.calc_mgr().core_manager(),
-                            ElemLevelType::Event,
+                            self.calc_mgr().core_manager()
                         );
                         let mut new_list_descriptor = ListDescriptor::new(
-                            self.calc_mgr().core_manager(),
-                            ElemLevelType::Event,
+                            self.calc_mgr().core_manager()
                         );
 
                         match list_descriptor.as_ref() {
@@ -3724,12 +3715,10 @@ impl CalcCalculate {
                         let new_elem_extension = list_am.elem_extension().copy();
 
                         let new_list_parameter = ListParameter::new(
-                            self.calc_mgr().core_manager(),
-                            ElemLevelType::Event,
+                            self.calc_mgr().core_manager()
                         );
                         let mut new_list_descriptor = ListDescriptor::new(
-                            self.calc_mgr().core_manager(),
-                            ElemLevelType::Event,
+                            self.calc_mgr().core_manager()
                         );
 
                         match list_descriptor.as_ref() {
@@ -3770,9 +3759,9 @@ impl CalcCalculate {
                     let new_elem_extension = list_am.elem_extension().copy();
 
                     let new_list_parameter =
-                        ListParameter::new(self.calc_mgr().core_manager(), ElemLevelType::Event);
+                        ListParameter::new(self.calc_mgr().core_manager());
                     let mut new_list_descriptor =
-                        ListDescriptor::new(self.calc_mgr().core_manager(), ElemLevelType::Event);
+                        ListDescriptor::new(self.calc_mgr().core_manager());
 
                     match list_descriptor.as_ref() {
                         None => {
@@ -3814,12 +3803,10 @@ impl CalcCalculate {
                         let new_elem_extension = list_am.elem_extension().copy();
 
                         let new_list_parameter = ListParameter::new(
-                            self.calc_mgr().core_manager(),
-                            ElemLevelType::Event,
+                            self.calc_mgr().core_manager()
                         );
                         let mut new_list_descriptor = ListDescriptor::new(
-                            self.calc_mgr().core_manager(),
-                            ElemLevelType::Event,
+                            self.calc_mgr().core_manager()
                         );
 
                         match list_descriptor.as_ref() {

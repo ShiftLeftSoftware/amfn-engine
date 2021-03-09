@@ -11,8 +11,8 @@ use rust_decimal::prelude::*;
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use super::{CoreManager, CoreUtility, ElemParameter};
-use crate::{ElemLevelType, ElemUpdateType, ListTrait};
+use super::{CoreManager, ElemParameter};
+use crate::{ListTrait};
 
 pub struct ListParameter {
     /// CoreManager element.
@@ -23,9 +23,6 @@ pub struct ListParameter {
 
     /// The index of the currently selected parameter element.
     list_index: Cell<usize>,
-
-    /// Element level.
-    elem_level: ElemLevelType,
 }
 
 /// List of parameters list implementation.
@@ -36,7 +33,6 @@ impl ListTrait for ListParameter {
     fn clear(&mut self) {
         self.list_parameter.clear();
         self.list_index.set(usize::MAX);
-        self.set_updated();
     }
 
     /// Get the count of the parameter list.
@@ -111,14 +107,12 @@ impl ListParameter {
     /// * See description.
 
     pub fn new(
-        core_manager: &Rc<RefCell<CoreManager>>,
-        elem_level_param: ElemLevelType,
+        core_manager: &Rc<RefCell<CoreManager>>
     ) -> ListParameter {
         ListParameter {
             core_manager: Rc::clone(core_manager),
             list_parameter: Vec::new(),
-            list_index: Cell::new(usize::MAX),
-            elem_level: elem_level_param,
+            list_index: Cell::new(usize::MAX)
         }
     }
 
@@ -165,7 +159,6 @@ impl ListParameter {
                 }
                 Some(o) => {
                     o.set_name(name.as_str());
-                    self.set_updated();
                     return true;
                 }
             }
@@ -182,7 +175,6 @@ impl ListParameter {
             None => false,
             Some(o) => {
                 self.list_index.set(o);
-                self.set_updated();
                 true
             }
         }
@@ -201,10 +193,9 @@ impl ListParameter {
 
     pub fn copy(
         &self,
-        elem_level_param: ElemLevelType,
-        updating_json_param: bool,
+        updating_json_param: bool
     ) -> ListParameter {
-        let mut list_parameter = ListParameter::new(&self.core_manager, elem_level_param);
+        let mut list_parameter = ListParameter::new(&self.core_manager);
 
         self.copy_list_parameter(&mut list_parameter, updating_json_param);
 
@@ -291,16 +282,6 @@ impl ListParameter {
 
     fn list(&self) -> &Vec<ElemParameter> {
         &self.list_parameter
-    }
-
-    /// Get the element level.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn elem_level(&self) -> ElemLevelType {
-        self.elem_level
     }
 
     /// Get the name of the parameter.
@@ -452,7 +433,6 @@ impl ListParameter {
             None => false,
             Some(o) => {
                 self.list_index.set(o);
-                self.set_updated();
                 true
             }
         }
@@ -473,7 +453,7 @@ impl ListParameter {
         if self.list_index.get() > 0 {
             self.list_index.set(self.list_index.get() - 1);
         }
-        self.set_updated();
+
         true
     }
 
@@ -497,7 +477,6 @@ impl ListParameter {
             None => false,
             Some(o) => {
                 o.set_name(name_param);
-                self.set_updated();
                 true
             }
         }
@@ -518,7 +497,6 @@ impl ListParameter {
             None => false,
             Some(o) => {
                 o.set_type(value_param);
-                self.set_updated();
                 true
             }
         }
@@ -539,7 +517,6 @@ impl ListParameter {
             None => false,
             Some(o) => {
                 o.set_integeri(value_param);
-                self.set_updated();
                 true
             }
         }
@@ -574,7 +551,6 @@ impl ListParameter {
             None => false,
             Some(o) => {
                 o.set_decimal(value_param);
-                self.set_updated();
                 true
             }
         }
@@ -595,20 +571,8 @@ impl ListParameter {
             None => false,
             Some(o) => {
                 o.set_string(value_param);
-                self.set_updated();
                 true
             }
         }
-    }
-
-    /// Call the updated signal.
-
-    fn set_updated(&self) {
-        self.core_manager
-            .borrow()
-            .notify(CoreUtility::format_update(
-                ElemUpdateType::Parameter,
-                self.elem_level,
-            ));
     }
 }

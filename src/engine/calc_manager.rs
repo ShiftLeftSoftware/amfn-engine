@@ -15,9 +15,9 @@ use super::{
     CalcExpression, CalcUtility, ElemPreferences, ListCashflow, ListExchangeRate, ListTemplateGroup,
 };
 use crate::core::{
-    CoreManager, CoreUtility, ElemSymbol, ListColumn, ListDescriptor, ListEvent, ListSummary,
+    CoreManager, CoreUtility, ElemColumn, ElemSymbol, ListColumn, ListDescriptor, ListEvent, ListSummary,
 };
-use crate::{ElemLevelType, ListTrait};
+use crate::{ListTrait};
 
 pub struct CalcManager {
     /// Calc manager element (injected from the engine and cloned).
@@ -97,7 +97,6 @@ impl CalcManager {
                     None,
                     None,
                     false,
-                    ElemLevelType::Engine,
                     false,
                 ));
                 self.list_event_pb = Option::from(ListEvent::new(&self.core_manager, false));
@@ -835,6 +834,40 @@ impl CalcManager {
         self.updating_json.get()
     }
 
+    /// Append to the list cashflow.
+    ///
+    /// # Arguments
+    ///
+    /// * `list_cashflow` - See description.
+
+    pub fn append_cashflows(&mut self, mut list_cashflow: ListCashflow) {
+        let cfl = list_cashflow.list_mut();
+
+        loop {
+            match cfl.pop() {
+                None => { break; }
+                Some(o) => { self.list_cashflow.list_mut().push(o); }
+            }
+        }
+    }
+
+    /// Append to the list template group.
+    ///
+    /// # Arguments
+    ///
+    /// * `list_template_group` - See description.
+
+    pub fn append_list_template_group(&mut self, mut list_template_group: ListTemplateGroup) {
+        let tl = list_template_group.list_mut();
+
+        loop {
+            match tl.pop() {
+                None => { break; }
+                Some(o) => { self.list_template_group.list_mut().push(o); }
+            }
+        }
+    }
+
     /// Set the preferences.
     ///
     /// # Arguments
@@ -851,7 +884,7 @@ impl CalcManager {
     ///
     /// * `list_cashflow` - See description.
 
-    pub fn set_cashflow(&mut self, list_cashflow: ListCashflow) {
+    pub fn set_list_cashflow(&mut self, list_cashflow: ListCashflow) {
         self.list_cashflow = list_cashflow;
     }
 
@@ -961,37 +994,16 @@ impl CalcManager {
     /// * See description.
 
     pub fn util_convert_currency_event(&self, value: Decimal) -> Decimal {
-        if self
-            .core_manager
-            .borrow()
-            .list_locale()
-            .event_currency_code()
-            .is_empty()
-            || self
-                .core_manager
-                .borrow()
-                .list_locale()
-                .event_currency_code()
-                == self
-                    .core_manager
-                    .borrow()
-                    .list_locale()
-                    .cashflow_currency_code()
-        {
-            return value;
-        }
+        let mgr = self.mgr();
+        let list_locale = mgr.list_locale();
+        let cashflow_currency_code = list_locale.cashflow_currency_code();
+        let event_currency_code = list_locale.event_currency_code();
 
-        self.list_exchange_rate().convert_currency(
-            value,
-            self.core_manager
-                .borrow()
-                .list_locale()
-                .cashflow_currency_code(),
-            self.core_manager
-                .borrow()
-                .list_locale()
-                .event_currency_code(),
-            self.cross_rate_code(true),
+        CalcUtility::convert_currency_event(
+            &self.calc_mgr(), 
+            cashflow_currency_code,
+            event_currency_code,
+            value
         )
     }
 
@@ -1017,7 +1029,7 @@ impl CalcManager {
     ) -> Decimal {
         if from_code.is_empty() || from_code == to_code {
             return value;
-        }
+        }        
         self.list_exchange_rate().convert_currency(
             value,
             from_code,
@@ -1030,35 +1042,35 @@ impl CalcManager {
     ///
     /// # Arguments
     ///
-    /// * `list_column` - List of columns object.
+    /// * `elem_column` - Column element.
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn util_event_value(&self, list_column: &ListColumn) -> String {
-        CalcUtility::get_event_value(self.calc_manager(), list_column)
+    pub fn util_event_value(&self, elem_column: &ElemColumn) -> String {
+        CalcUtility::get_event_value(self.calc_manager(), elem_column)
     }
 
     /// Get the appropriate amortization list value as a string.
     ///
     /// # Arguments
     ///
-    /// * `list_column` - List of columns object.
+    /// * `elem_column` - Column element.
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn util_am_value(&self, list_column: &ListColumn) -> String {
-        CalcUtility::get_am_value(self.calc_manager(), list_column)
+    pub fn util_am_value(&self, elem_column: &ElemColumn) -> String {
+        CalcUtility::get_am_value(self.calc_manager(), elem_column)
     }
 
     /// Determine if the column is empty.
     ///
     /// # Arguments
     ///
-    /// * `list_column` - List of columns object.
+    /// * `elem_column` - Column element.
     /// * `event_type` - The type of table.
     ///
     /// # Return
@@ -1067,10 +1079,10 @@ impl CalcManager {
 
     pub fn util_is_column_empty(
         &self,
-        list_column: &ListColumn,
+        elem_column: &ElemColumn,
         event_type: crate::TableType,
     ) -> bool {
-        CalcUtility::is_column_empty(self.calc_manager(), list_column, event_type)
+        CalcUtility::is_column_empty(self.calc_manager(), elem_column, event_type)
     }
 
     /// Create and return a column list object.

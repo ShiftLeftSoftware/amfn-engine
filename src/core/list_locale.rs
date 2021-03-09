@@ -160,6 +160,26 @@ impl ListLocale {
         locales
     }
 
+    /// Get the list of locales.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn list(&self) -> &Vec<ElemLocale> {
+        &self.list_locale
+    }
+
+    /// Get the mut list of locales.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn list_mut(&mut self) -> &mut Vec<ElemLocale> {
+        &mut self.list_locale
+    }
+
     /// Clear all locales selects.
 
     pub fn clear(&mut self) {

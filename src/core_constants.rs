@@ -205,8 +205,11 @@ pub const NAME_HEADER_NEXT: &str = "HeaderNext";
 pub const NAME_FOOTER_FIRST: &str = "FooterFirst";
 /// Name - Footer - Next. 
 pub const NAME_FOOTER_NEXT: &str = "FooterNext";
+
 /// Type - Locale. 
 pub const TYPE_LOCALE: &str = "locale";
+/// Type - Custom. 
+pub const TYPE_CUSTOM: &str = "custom";
   
 /// Resource - User event type - Current value (default). 
 pub const USER_EVENT_TYPE_CURRENT_VALUE: &str = "User_Event_Type_Current_Value";
