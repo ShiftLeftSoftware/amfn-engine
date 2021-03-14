@@ -11,7 +11,7 @@ use std::cell::{Cell, Ref, RefCell};
 use std::rc::Rc;
 
 use super::CalcManager;
-use crate::core::{CoreManager, ListDescriptor, ListParameter};
+use crate::core::{ListDescriptor, ListParameter};
 use crate::{ListTrait};
 
 pub struct ElemPreferences {
@@ -90,73 +90,11 @@ impl ElemPreferences {
         copy_propagate_param: bool,
         updating_json: bool,
     ) -> ElemPreferences {
-        ElemPreferences::new_with_calc_manager(
-            calc_manager_param,
-            calc_manager_param.borrow().core_manager(),
-            locale_str_param,
-            cross_rate_code_param,
-            default_encoding_param,
-            group_param,
-            fiscal_year_start_param,
-            decimal_digits_param,
-            combine_principal_param,
-            compress_descriptor_param,
-            statistic_events_param,
-            list_parameter_param,
-            list_descriptor_param,
-            copy_propagate_param,
-            updating_json,
-        )
-    }
-
-    /// Create and return a new preferences element.
-    ///
-    /// # Arguments
-    ///
-    /// * `calc_manager_param` - Calculator manager element.
-    /// * `core_manager_param` - CoreManager element.
-    /// * `locale_str_param` - Locale string.
-    /// * `cross_rate_code_param` - Cross rate code.
-    /// * `default_encoding_param` - Default encoding.
-    /// * `group_param` - Group name.
-    /// * `fiscal_year_start_param` - Fiscal year start.
-    /// * `decimal_digits_param` - Decimal digits.
-    /// * `combine_principal_param` - Combine principal.
-    /// * `compress_descriptor_param` - Compress descriptors.
-    /// * `statistic_events_param` - Statistic events.
-    /// * `list_parameter_param` - List parameter.
-    /// * `list_descriptor_param` - List descriptor.
-    /// * `copy_propagate_param` - Copy propogate.
-    /// * `elem_level_param` - Element level
-    /// * `updating_json` - Updating from Json.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-    #[allow(clippy::too_many_arguments)]
-
-    pub fn new_with_calc_manager(
-        calc_manager_param: &Rc<RefCell<CalcManager>>,
-        core_manager_param: &Rc<RefCell<CoreManager>>,
-        locale_str_param: &str,
-        cross_rate_code_param: &str,
-        default_encoding_param: &str,
-        group_param: &str,
-        fiscal_year_start_param: usize,
-        decimal_digits_param: usize,
-        combine_principal_param: i32,
-        compress_descriptor_param: i32,
-        statistic_events_param: i32,
-        list_parameter_param: Option<&ListParameter>,
-        list_descriptor_param: Option<&ListDescriptor>,
-        copy_propagate_param: bool,
-        updating_json: bool,
-    ) -> ElemPreferences {
         let new_list_parameter: ListParameter;
         let new_list_descriptor: ListDescriptor;
         match list_parameter_param.as_ref() {
             None => {
-                new_list_parameter = ListParameter::new(core_manager_param);
+                new_list_parameter = ListParameter::new();
             }
             Some(o) => {
                 new_list_parameter = o.copy(updating_json);
@@ -165,7 +103,7 @@ impl ElemPreferences {
 
         match list_descriptor_param.as_ref() {
             None => {
-                new_list_descriptor = ListDescriptor::new(core_manager_param);
+                new_list_descriptor = ListDescriptor::new();
             }
             Some(o) => {
                 new_list_descriptor = o.copy(copy_propagate_param, updating_json);

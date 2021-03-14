@@ -584,7 +584,7 @@ impl CalcJsonDeserialize {
                     }
 
                     extension =
-                        ElemExtension::new_current_value(self.calc_mgr().core_manager(), cv);
+                        ElemExtension::new_current_value(cv);
                 }
                 crate::ExtensionType::InterestChange => {
                     let mut ic = ElemInterestChange::new(
@@ -606,7 +606,7 @@ impl CalcJsonDeserialize {
                     }
 
                     extension =
-                        ElemExtension::new_interest_change(self.calc_mgr().core_manager(), ic);
+                        ElemExtension::new_interest_change(ic);
                 }
                 crate::ExtensionType::StatisticValue => {
                     let mut sv = ElemStatisticValue::new("", false, false);
@@ -620,7 +620,7 @@ impl CalcJsonDeserialize {
                     }
 
                     extension =
-                        ElemExtension::new_statistic_value(self.calc_mgr().core_manager(), sv);
+                        ElemExtension::new_statistic_value(sv);
                 }
                 _ => {
                     let mut pc = ElemPrincipalChange::new(
@@ -642,12 +642,12 @@ impl CalcJsonDeserialize {
                     }
 
                     extension =
-                        ElemExtension::new_principal_change(self.calc_mgr().core_manager(), pc);
+                        ElemExtension::new_principal_change(pc);
                 }
             }
 
             let mut params =
-                ListParameter::new(self.calc_mgr().core_manager());
+                ListParameter::new();
             if !ev["parameter-list"].is_null() {
                 let result = self.deserialize_parameter_list(&ev["parameter-list"], &mut params);
                 match result {
@@ -659,7 +659,7 @@ impl CalcJsonDeserialize {
             }
 
             let mut descs =
-                ListDescriptor::new(self.calc_mgr().core_manager());
+                ListDescriptor::new();
             if ev["descriptor-list"].is_null() {
                 return Err(crate::ErrorType::Json);
             }
@@ -691,7 +691,7 @@ impl CalcJsonDeserialize {
                 }
             }
 
-            events.add_event_ex(
+            events.add_event(
                 event_date,
                 event_date_expr,
                 sort_order,
@@ -733,7 +733,7 @@ impl CalcJsonDeserialize {
         &self,
         exch_rates: &JsonValue,
     ) -> Result<ListExchangeRate, crate::ErrorType> {
-        let mut exchange_rates = ListExchangeRate::new(self.calc_mgr().core_manager());
+        let mut exchange_rates = ListExchangeRate::new();
         let mut index: usize = 0;
         exchange_rates.set_sort_on_add(false);
 
@@ -815,10 +815,10 @@ impl CalcJsonDeserialize {
                     "bankers" => {
                         round_balance = crate::RoundType::Bankers;
                     }
-                    "bias_up" => {
+                    "bias-up" => {
                         round_balance = crate::RoundType::BiasUp;
                     }
-                    "bias_down" => {
+                    "bias-down" => {
                         round_balance = crate::RoundType::BiasDown;
                     }
                     "up" => {
@@ -1478,7 +1478,7 @@ impl CalcJsonDeserialize {
                 return Err(crate::ErrorType::Json);
             }
 
-            let mut list_event = ListEvent::new(self.calc_mgr().core_manager(), false);
+            let mut list_event = ListEvent::new(false);
 
             let result = self.deserialize_event_list(&templ_event["event-list"], &mut list_event);
             match result {

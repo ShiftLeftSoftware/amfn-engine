@@ -292,7 +292,6 @@ impl ListTemplateGroup {
             match self.list_template_group.get(self.list_index.get()) {
                 None => {
                     new_elem_template_group = ElemTemplateGroup::new(
-                        self.calc_mgr().core_manager(),
                         group.as_str(),
                         elem_preferences,
                     );
@@ -303,7 +302,6 @@ impl ListTemplateGroup {
             }
         } else {
             new_elem_template_group = ElemTemplateGroup::new(
-                self.calc_mgr().core_manager(),
                 group.as_str(),
                 elem_preferences,
             );
@@ -368,7 +366,6 @@ impl ListTemplateGroup {
         let result = self.create_template_group(group.as_str(), prefs, false);
         match result {
             Err(_e) => ElemTemplateGroup::new(
-                self.calc_mgr().core_manager(),
                 self.group(),
                 self.preferences()
                     .copy(updating_json),

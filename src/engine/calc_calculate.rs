@@ -2830,7 +2830,6 @@ impl CalcCalculate {
         let updating_json = self.calc_mgr().updating_json();
 
         let mut new_list_event = ListEvent::new(
-            self.calc_manager.borrow().core_manager(),
             list_event1.cashflow(),
         );
         new_list_event.set_sort_on_add(false);
@@ -3448,8 +3447,7 @@ impl CalcCalculate {
         let mut cv_present_seen = all_events;
         let updating_json = self.calc_mgr().updating_json();
 
-        let mut new_list_event =
-            ListEvent::new(self.calc_manager.borrow().core_manager(), cashflow);
+        let mut new_list_event = ListEvent::new(cashflow);
         new_list_event.set_sort_on_add(false);
         if !cv_present_seen {
             let mut index: usize = 0;
@@ -3511,12 +3509,8 @@ impl CalcCalculate {
                             list_descriptor = list_am.list_descriptor();
                             let new_elem_extension = list_am.elem_extension().copy();
 
-                            let new_list_parameter = ListParameter::new(
-                                self.calc_mgr().core_manager()
-                            );
-                            let mut new_list_descriptor = ListDescriptor::new(
-                                self.calc_mgr().core_manager()
-                            );
+                            let new_list_parameter = ListParameter::new();
+                            let mut new_list_descriptor = ListDescriptor::new();
 
                             match list_descriptor.as_ref() {
                                 None => {
@@ -3531,7 +3525,7 @@ impl CalcCalculate {
                                 }
                             }
 
-                            new_list_event.add_event_ex(
+                            new_list_event.add_event(
                                 event_date,
                                 "",
                                 sort_order,
@@ -3571,12 +3565,8 @@ impl CalcCalculate {
                         list_descriptor = list_am.list_descriptor();
                         let new_elem_extension = list_am.elem_extension().copy();
 
-                        let new_list_parameter = ListParameter::new(
-                            self.calc_mgr().core_manager()
-                        );
-                        let mut new_list_descriptor = ListDescriptor::new(
-                            self.calc_mgr().core_manager()
-                        );
+                        let new_list_parameter = ListParameter::new();
+                        let mut new_list_descriptor = ListDescriptor::new();
 
                         match list_descriptor.as_ref() {
                             None => {
@@ -3591,7 +3581,7 @@ impl CalcCalculate {
                             }
                         }
 
-                        new_list_event.add_event_ex(
+                        new_list_event.add_event(
                             event_date,
                             "",
                             sort_order,
@@ -3623,12 +3613,8 @@ impl CalcCalculate {
                             let frequency = list_am.frequency();
                             let new_elem_extension = list_am.elem_extension().copy();
 
-                            let new_list_parameter = ListParameter::new(
-                                self.calc_mgr().core_manager()
-                            );
-                            let mut new_list_descriptor = ListDescriptor::new(
-                                self.calc_mgr().core_manager()
-                            );
+                            let new_list_parameter = ListParameter::new();
+                            let mut new_list_descriptor = ListDescriptor::new();
                             match list_descriptor.as_ref() {
                                 None => {
                                     return Err(crate::ErrorType::Index);
@@ -3642,7 +3628,7 @@ impl CalcCalculate {
                                 }
                             }
 
-                            new_list_event.add_event_ex(
+                            new_list_event.add_event(
                                 event_date,
                                 "",
                                 sort_order,
@@ -3667,12 +3653,8 @@ impl CalcCalculate {
                     } else if !after_pv || cv_present_seen {
                         let new_elem_extension = list_am.elem_extension().copy();
 
-                        let new_list_parameter = ListParameter::new(
-                            self.calc_mgr().core_manager()
-                        );
-                        let mut new_list_descriptor = ListDescriptor::new(
-                            self.calc_mgr().core_manager()
-                        );
+                        let new_list_parameter = ListParameter::new();
+                        let mut new_list_descriptor = ListDescriptor::new();
 
                         match list_descriptor.as_ref() {
                             None => {
@@ -3687,7 +3669,7 @@ impl CalcCalculate {
                             }
                         }
 
-                        new_list_event.add_event_ex(
+                        new_list_event.add_event(
                             event_date,
                             "",
                             sort_order,
@@ -3714,12 +3696,8 @@ impl CalcCalculate {
                     if !((after_pv && !cv_present_seen) || omit_interest_events) {
                         let new_elem_extension = list_am.elem_extension().copy();
 
-                        let new_list_parameter = ListParameter::new(
-                            self.calc_mgr().core_manager()
-                        );
-                        let mut new_list_descriptor = ListDescriptor::new(
-                            self.calc_mgr().core_manager()
-                        );
+                        let new_list_parameter = ListParameter::new();
+                        let mut new_list_descriptor = ListDescriptor::new();
 
                         match list_descriptor.as_ref() {
                             None => {
@@ -3734,7 +3712,7 @@ impl CalcCalculate {
                             }
                         }
 
-                        new_list_event.add_event_ex(
+                        new_list_event.add_event(
                             event_date,
                             "",
                             sort_order,
@@ -3758,10 +3736,8 @@ impl CalcCalculate {
                 crate::ExtensionType::StatisticValue => {
                     let new_elem_extension = list_am.elem_extension().copy();
 
-                    let new_list_parameter =
-                        ListParameter::new(self.calc_mgr().core_manager());
-                    let mut new_list_descriptor =
-                        ListDescriptor::new(self.calc_mgr().core_manager());
+                    let new_list_parameter = ListParameter::new();
+                    let mut new_list_descriptor = ListDescriptor::new();
 
                     match list_descriptor.as_ref() {
                         None => {
@@ -3772,7 +3748,7 @@ impl CalcCalculate {
                         }
                     }
 
-                    new_list_event.add_event_ex(
+                    new_list_event.add_event(
                         event_date,
                         "",
                         sort_order,
@@ -3802,12 +3778,8 @@ impl CalcCalculate {
                     if !after_pv || cv_present_seen {
                         let new_elem_extension = list_am.elem_extension().copy();
 
-                        let new_list_parameter = ListParameter::new(
-                            self.calc_mgr().core_manager()
-                        );
-                        let mut new_list_descriptor = ListDescriptor::new(
-                            self.calc_mgr().core_manager()
-                        );
+                        let new_list_parameter = ListParameter::new();
+                        let mut new_list_descriptor = ListDescriptor::new();
 
                         match list_descriptor.as_ref() {
                             None => {
@@ -3822,7 +3794,7 @@ impl CalcCalculate {
                             }
                         }
 
-                        new_list_event.add_event_ex(
+                        new_list_event.add_event(
                             event_date,
                             "",
                             sort_order,

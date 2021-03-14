@@ -244,7 +244,7 @@ impl CalcExpression {
                     elem_symbol.set_integer(list_parameter.param_integer());
                 }
                 crate::TokenType::Decimal => {
-                    elem_symbol.set_decimal(list_parameter.param_float());
+                    elem_symbol.set_decimal(list_parameter.param_decimal());
                 }
                 _ => {
                     elem_symbol.set_string(list_parameter.param_string());
@@ -430,8 +430,7 @@ impl CalcExpression {
                                                 .calc_mgr()
                                                 .mgr()
                                                 .operators()
-                                                .get_element_by_key("~")
-                                            {
+                                                .get_element_by_key("~") {
                                                 // Unary minus
                                                 return Err(crate::ErrorType::InvalidOperator);
                                             }
@@ -2066,7 +2065,7 @@ impl CalcExpression {
             },
             "IntTotal" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.interest_total());
@@ -2074,7 +2073,7 @@ impl CalcExpression {
             },
             "IntBefore" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.interest_total() - o.interest_present());
@@ -2082,7 +2081,7 @@ impl CalcExpression {
             },
             "IntAfter" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.interest_present());
@@ -2090,7 +2089,7 @@ impl CalcExpression {
             },
             "SLIntTotal" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.sl_interest_total());
@@ -2098,7 +2097,7 @@ impl CalcExpression {
             },
             "SLIntBefore" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.sl_interest_total() - o.sl_interest_present());
@@ -2106,7 +2105,7 @@ impl CalcExpression {
             },
             "SLIntAfter" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.sl_interest_present());
@@ -2114,7 +2113,7 @@ impl CalcExpression {
             },
             "AccBal" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.acc_balance());
@@ -2122,7 +2121,7 @@ impl CalcExpression {
             },
             "Balance" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.balance());
@@ -2138,7 +2137,7 @@ impl CalcExpression {
             },
             "StrBal" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_string("");
                 }
                 Some(o) => {
                     let balance = self.calc_mgr().util_round(o.balance());
@@ -2176,7 +2175,7 @@ impl CalcExpression {
             },
             "PrinTotalDecr" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.prin_decrease());
@@ -2184,7 +2183,7 @@ impl CalcExpression {
             },
             "PrinTotalIncr" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.prin_increase());
@@ -2192,7 +2191,7 @@ impl CalcExpression {
             },
             "AuxActiveDecr" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.aux_active_decrease());
@@ -2200,7 +2199,7 @@ impl CalcExpression {
             },
             "AuxActiveIncr" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.aux_active_increase());
@@ -2208,7 +2207,7 @@ impl CalcExpression {
             },
             "AuxPassiveDecr" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.aux_passive_decrease());
@@ -2216,7 +2215,7 @@ impl CalcExpression {
             },
             "AuxPassiveIncr" => match elem_balance_result_opt {
                 None => {
-                    elem_result_symbol.set_integer(0);
+                    elem_result_symbol.set_decimal(dec!(0.0));
                 }
                 Some(o) => {
                     elem_result_symbol.set_decimal(o.aux_passive_increase());
@@ -3585,9 +3584,9 @@ impl CalcExpression {
             if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',')
             {
                 self.scanner_mut().scan_token();
-                round_ctrl = if self.scanner().get_token() == "bias_up" {
+                round_ctrl = if self.scanner().get_token() == "bias-up" {
                     crate::RoundType::BiasUp
-                } else if self.scanner().get_token() == "bias_down" {
+                } else if self.scanner().get_token() == "bias-down" {
                     crate::RoundType::BiasDown
                 } else if self.scanner().get_token() == "up" {
                     crate::RoundType::Up
@@ -3675,9 +3674,9 @@ impl CalcExpression {
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
-            round_ctrl = if self.scanner().get_token() == "bias_up" {
+            round_ctrl = if self.scanner().get_token() == "bias-up" {
                 crate::RoundType::BiasUp
-            } else if self.scanner().get_token() == "bias_down" {
+            } else if self.scanner().get_token() == "bias-down" {
                 crate::RoundType::BiasDown
             } else if self.scanner().get_token() == "up" {
                 crate::RoundType::Up

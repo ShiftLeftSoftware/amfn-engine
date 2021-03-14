@@ -7,18 +7,14 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::{Cell, RefCell};
+use std::cell::{Cell};
 use std::cmp::Ordering::Equal;
-use std::rc::Rc;
 
 use super::ElemTemplateEvent;
-use crate::core::{CoreManager, ListEvent};
+use crate::core::{ListEvent};
 use crate::{ListTrait};
 
 pub struct ListTemplateEvent {
-    /// CoreManager element.
-    core_manager: Rc<RefCell<CoreManager>>,
-
     /// The list of template events.
     list_template_event: Vec<ElemTemplateEvent>,
 
@@ -30,6 +26,20 @@ pub struct ListTemplateEvent {
 
     /// Updated while sort_on_add was false.
     sort_updated: bool,
+}
+
+/// List of template events default implementation.
+
+impl Default for ListTemplateEvent {
+    /// Create a new symbol element.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    fn default() -> Self {
+        ListTemplateEvent::new()
+    }
 }
 
 /// List of template events list implementation.
@@ -106,17 +116,12 @@ impl ListTrait for ListTemplateEvent {
 impl ListTemplateEvent {
     /// Create and return a new list template event elements.
     ///
-    /// # Arguments
-    ///
-    /// * `core_manager_param` - CoreManager element.
-    ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn new(core_manager_param: &Rc<RefCell<CoreManager>>) -> ListTemplateEvent {
+    pub fn new() -> ListTemplateEvent {
         ListTemplateEvent {
-            core_manager: Rc::clone(core_manager_param),
             list_template_event: Vec::new(),
             list_index: Cell::new(usize::MAX),
             sort_on_add: true,
@@ -164,9 +169,9 @@ impl ListTemplateEvent {
 
             name = temp_name;
         }
-        let mut new_elem_template_event = ElemTemplateEvent::new(&self.core_manager, name.as_str());
+        let mut new_elem_template_event = ElemTemplateEvent::new(name.as_str());
         if list_event.is_none() {
-            list_event = Option::from(ListEvent::new(&self.core_manager, false));
+            list_event = Option::from(ListEvent::new(false));
         }
 
         new_elem_template_event.set_name(name.as_str());
@@ -216,7 +221,7 @@ impl ListTemplateEvent {
     /// * See description.
 
     pub fn copy(&self, updating_json: bool) -> ListTemplateEvent {
-        let mut list_template_event = ListTemplateEvent::new(&self.core_manager);
+        let mut list_template_event = ListTemplateEvent::new();
         list_template_event.set_sort_on_add(false);
 
         for elem in self.list_template_event.iter() {

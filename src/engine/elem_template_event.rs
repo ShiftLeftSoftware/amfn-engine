@@ -6,15 +6,10 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
-use std::cell::RefCell;
-use std::rc::Rc;
 
-use crate::core::{CoreManager, ListEvent};
+use crate::core::{ListEvent};
 
 pub struct ElemTemplateEvent {
-    /// CoreManager element.
-    core_manager: Rc<RefCell<CoreManager>>,
-
     /// Name of the template event.
     name: String,
     /// List of events.
@@ -30,7 +25,6 @@ impl ElemTemplateEvent {
     ///
     /// # Arguments
     ///
-    /// * `core_manager_param` - CoreManager element.
     /// * `name_param` - Name of template event.
     ///
     /// # Return
@@ -38,13 +32,11 @@ impl ElemTemplateEvent {
     /// * See description.
 
     pub fn new(
-        core_manager_param: &Rc<RefCell<CoreManager>>,
         name_param: &str,
     ) -> ElemTemplateEvent {
         ElemTemplateEvent {
-            core_manager: Rc::clone(core_manager_param),
             name: String::from(name_param),
-            list_event: ListEvent::new(core_manager_param, false),
+            list_event: ListEvent::new(false),
             initial_event: false,
         }
     }

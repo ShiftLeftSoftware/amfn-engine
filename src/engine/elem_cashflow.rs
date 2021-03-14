@@ -7,18 +7,12 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::RefCell;
-use std::rc::Rc;
-
 use super::{CalcCalculate, ElemPreferences};
 use crate::core::{
-    CoreManager, ElemBalanceResult, ListAmortization, ListEvent, ListStatisticHelper,
+    ElemBalanceResult, ListAmortization, ListEvent, ListStatisticHelper,
 };
 
 pub struct ElemCashflow {
-    /// CoreManager element.
-    core_manager: Rc<RefCell<CoreManager>>,
-
     /// Name of the cashflow.
     name: String,
     /// Cashflow preferences element.
@@ -49,7 +43,6 @@ impl ElemCashflow {
     ///
     /// # Arguments
     ///
-    /// * `core_manager_param` - CoreManager element.
     /// * `name_param` - Name of cashflow.
     /// * `preferences_param` - Cashflow preferences.
     /// * `list_event_param` - Event list.
@@ -60,7 +53,6 @@ impl ElemCashflow {
     /// * See description.
 
     pub fn new(
-        core_manager_param: &Rc<RefCell<CoreManager>>,
         name_param: &str,
         preferences_param: ElemPreferences,
         list_event_param: Option<ListEvent>,
@@ -69,7 +61,7 @@ impl ElemCashflow {
         let tlist_event: ListEvent;
         match list_event_param {
             None => {
-                tlist_event = ListEvent::new(core_manager_param, true);
+                tlist_event = ListEvent::new(true);
             }
             Some(o) => {
                 tlist_event = o;
@@ -77,7 +69,6 @@ impl ElemCashflow {
         }
 
         ElemCashflow {
-            core_manager: Rc::clone(core_manager_param),
             name: String::from(name_param),
             preferences: preferences_param,
             list_event: tlist_event,

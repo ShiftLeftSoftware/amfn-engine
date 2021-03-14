@@ -102,7 +102,7 @@ impl ElemParameter {
     ///
     /// * See description.
 
-    pub fn param_float(&self) -> Decimal {
+    pub fn param_decimal(&self) -> Decimal {
         self.symbol.sym_decimal()
     }
 

@@ -82,9 +82,8 @@ impl CalcManager {
                 panic!("Calculator manager not set");
             }
             Some(o) => {
-                self.elem_preferences = Option::from(ElemPreferences::new_with_calc_manager(
+                self.elem_preferences = Option::from(ElemPreferences::new(
                     o,
-                    &self.core_manager,
                     "",
                     "",
                     "",
@@ -99,8 +98,8 @@ impl CalcManager {
                     false,
                     false,
                 ));
-                self.list_event_pb = Option::from(ListEvent::new(&self.core_manager, false));
-                self.list_exchange_rate = Option::from(ListExchangeRate::new(&self.core_manager));
+                self.list_event_pb = Option::from(ListEvent::new(false));
+                self.list_exchange_rate = Option::from(ListExchangeRate::new());
             }
         }
     }
@@ -223,7 +222,7 @@ impl CalcManager {
             return Err(crate::ErrorType::Element);
         }
 
-        let mut new_list_event = ListEvent::new(self.core_manager(), true);
+        let mut new_list_event = ListEvent::new(true);
 
         let orig_index = list_template_event_list_event.index();
 

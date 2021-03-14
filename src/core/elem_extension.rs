@@ -8,11 +8,9 @@
 // except according to those terms.
 
 use rust_decimal::prelude::*;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 use super::{
-    CoreManager, ElemCurrentValue, ElemInterestChange, ElemPrincipalChange,
+    ElemCurrentValue, ElemInterestChange, ElemPrincipalChange,
     ElemStatisticValue,
 };
 
@@ -26,9 +24,6 @@ pub enum ExtensionValue {
 /// The extension element of an event.
 
 pub struct ElemExtension {
-    /// CoreManager element.
-    core_manager: Rc<RefCell<CoreManager>>,
-
     /// Extension value.
     extension_value: ExtensionValue,
 }
@@ -47,11 +42,9 @@ impl ElemExtension {
     /// * See description.
 
     pub fn new_current_value(
-        core_manager_param: &Rc<RefCell<CoreManager>>,
         current_value_param: ElemCurrentValue,
     ) -> ElemExtension {
         ElemExtension::new(
-            core_manager_param,
             ExtensionValue::CurrentValue(current_value_param),
         )
     }
@@ -67,11 +60,9 @@ impl ElemExtension {
     /// * See description.
 
     pub fn new_interest_change(
-        core_manager_param: &Rc<RefCell<CoreManager>>,
         interest_change_param: ElemInterestChange,
     ) -> ElemExtension {
         ElemExtension::new(
-            core_manager_param,
             ExtensionValue::InterestChange(interest_change_param),
         )
     }
@@ -87,11 +78,9 @@ impl ElemExtension {
     /// * See description.
 
     pub fn new_principal_change(
-        core_manager_param: &Rc<RefCell<CoreManager>>,
         principal_change_param: ElemPrincipalChange,
     ) -> ElemExtension {
         ElemExtension::new(
-            core_manager_param,
             ExtensionValue::PrincipalChange(principal_change_param),
         )
     }
@@ -107,11 +96,9 @@ impl ElemExtension {
     /// * See description.
 
     pub fn new_statistic_value(
-        core_manager_param: &Rc<RefCell<CoreManager>>,
         statistic_value_param: ElemStatisticValue,
     ) -> ElemExtension {
         ElemExtension::new(
-            core_manager_param,
             ExtensionValue::StatisticValue(statistic_value_param),
         )
     }
@@ -127,11 +114,9 @@ impl ElemExtension {
     /// * See description.
 
     fn new(
-        core_manager_param: &Rc<RefCell<CoreManager>>,
         extension_value_param: ExtensionValue,
     ) -> ElemExtension {
         ElemExtension {
-            core_manager: Rc::clone(core_manager_param),
             extension_value: extension_value_param,
         }
     }
@@ -145,17 +130,16 @@ impl ElemExtension {
     pub fn copy(&self) -> ElemExtension {
         match self.extension_value() {
             ExtensionValue::PrincipalChange(o) => ElemExtension::new(
-                &self.core_manager,
                 ExtensionValue::PrincipalChange(o.copy()),
             ),
             ExtensionValue::CurrentValue(o) => {
-                ElemExtension::new(&self.core_manager, ExtensionValue::CurrentValue(o.copy()))
+                ElemExtension::new(ExtensionValue::CurrentValue(o.copy()))
             }
             ExtensionValue::InterestChange(o) => {
-                ElemExtension::new(&self.core_manager, ExtensionValue::InterestChange(o.copy()))
+                ElemExtension::new(ExtensionValue::InterestChange(o.copy()))
             }
             ExtensionValue::StatisticValue(o) => {
-                ElemExtension::new(&self.core_manager, ExtensionValue::StatisticValue(o.copy()))
+                ElemExtension::new(ExtensionValue::StatisticValue(o.copy()))
             }
         }
     }

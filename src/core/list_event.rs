@@ -8,19 +8,16 @@
 // except according to those terms.
 
 use rust_decimal::prelude::*;
-use std::cell::{Cell, RefCell};
+use std::cell::{Cell};
 use std::cmp::Ordering::Equal;
-use std::rc::Rc;
 
 use super::{
-    CoreManager, ElemCurrentValue, ElemEvent, ElemExtension, ElemInterestChange,
+    ElemCurrentValue, ElemEvent, ElemExtension, ElemInterestChange,
     ElemPrincipalChange, ElemStatisticValue, ListDescriptor, ListParameter,
 };
 use crate::{ExtensionTrait, ListTrait};
 
 pub struct ListEvent {
-    /// CoreManager element.
-    core_manager: Rc<RefCell<CoreManager>>,
     /// The list of events.
     list_event: Vec<ElemEvent>,
     /// The index of the currently selected event element.
@@ -109,123 +106,20 @@ impl ListEvent {
     ///
     /// # Arguments
     ///
-    /// * `core_manager_param` - CoreManager parameter.
     /// * `cashflow_param` - Originated from cashflow.
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn new(core_manager_param: &Rc<RefCell<CoreManager>>, cashflow_param: bool) -> ListEvent {
+    pub fn new(cashflow_param: bool) -> ListEvent {
         ListEvent {
-            core_manager: Rc::clone(core_manager_param),
             list_event: Vec::new(),
             list_index: Cell::new(usize::MAX),
             sort_on_add: Cell::new(true),
             sort_updated: Cell::new(false),
             cashflow: cashflow_param,
         }
-    }
-
-    /// Add a new event into the event list.
-    ///
-    /// # Arguments
-    ///
-    /// * `event_type_param` - Event type.
-    /// * `event_date_param` - Event date.
-    /// * `date_expr_param` - Date expression.
-    /// * `sort_order_param` - Sort order.
-    /// * `value_param` - Value parameter.
-    /// * `value_expr_param` - Value expression parameter.
-    /// * `value_expr_balance_param` - Value expression balance.
-    /// * `periods_param` - Periods parameter.
-    /// * `periods_expr_param` - Periods expression.
-    /// * `skip_mask_len_param` - Skip mask length.
-    /// * `skip_mask_param` - Skip mask.
-    /// * `intervals_param` - Intervals parameter.
-    /// * `frequency_param` - Frequency parameter.
-    /// * `extension_param` - Extension (current value, interest change, principal change, statistic value).
-    /// * `event_name_param` - Optional event name.
-    /// * `next_name_param` - Optional next event name.
-    /// * `updating_json_param` - Updating from json.
-    ///
-    /// # Return
-    ///
-    /// * True if successful, otherwise false.
-    #[allow(clippy::too_many_arguments)]
-
-    pub fn add_event(
-        &mut self,
-        event_date_param: usize,
-        date_expr_param: &str,
-        sort_order_param: usize,
-        value_param: Decimal,
-        value_expr_param: &str,
-        value_expr_balance_param: bool,
-        periods_param: usize,
-        periods_expr_param: &str,
-        skip_mask_len_param: usize,
-        skip_mask_param: u128,
-        intervals_param: usize,
-        frequency_param: crate::FrequencyType,
-        elem_extension_param: ElemExtension,
-        event_name_param: &str,
-        next_name_param: &str,
-        updating_json_param: bool,
-    ) -> bool {
-        let group;
-        let event_type_expr;
-        match elem_extension_param.extension_type() {
-            crate::ExtensionType::CurrentValue => {
-                group = String::from(crate::GROUP_CURRENT_VALUE);
-                event_type_expr = self.get_resource(crate::USER_EVENT_TYPE_CURRENT_VALUE);
-            }
-            crate::ExtensionType::InterestChange => {
-                group = String::from(crate::GROUP_INTEREST_CHANGE);
-                event_type_expr = self.get_resource(crate::USER_EVENT_TYPE_INTEREST_CHANGE);
-            }
-            crate::ExtensionType::StatisticValue => {
-                group = String::from(crate::GROUP_STATISTIC_VALUE);
-                event_type_expr = self.get_resource(crate::USER_EVENT_TYPE_STATISTIC_VALUE);
-            }
-            _ => {
-                group = String::from(crate::GROUP_PRINCIPAL_CHANGE);
-                event_type_expr = self.get_resource(crate::USER_EVENT_TYPE_PRINCIPAL_CHANGE);
-            }
-        }
-
-        let mut list_descriptor: ListDescriptor =
-            ListDescriptor::new(&self.core_manager);
-        list_descriptor.add_descriptor(
-            group.as_str(),
-            crate::NAME_EVENT_TYPE,
-            "",
-            "",
-            event_type_expr,
-            "",
-            false,
-            updating_json_param,
-        );
-
-        self.add_event_ex(
-            event_date_param,
-            date_expr_param,
-            sort_order_param,
-            value_param,
-            value_expr_param,
-            value_expr_balance_param,
-            periods_param,
-            periods_expr_param,
-            skip_mask_len_param,
-            skip_mask_param,
-            intervals_param,
-            frequency_param,
-            elem_extension_param,
-            None,
-            Option::from(list_descriptor),
-            event_name_param,
-            next_name_param,
-        )
     }
 
     /// Add a new event into the event list.
@@ -256,7 +150,7 @@ impl ListEvent {
     /// * True if successful, otherwise false.
     #[allow(clippy::too_many_arguments)]
 
-    pub fn add_event_ex(
+    pub fn add_event(
         &mut self,
         event_date_param: usize,
         date_expr_param: &str,
@@ -280,13 +174,11 @@ impl ListEvent {
         let extension_type = elem_extension.extension_type();
         if list_parameter_param.is_none() {
             list_parameter_param =
-                Option::from(ListParameter::new(&self.core_manager));
+                Option::from(ListParameter::new());
         }
 
         if list_descriptor_param.is_none() {
-            list_descriptor_param = Option::from(ListDescriptor::new(
-                &self.core_manager
-            ));
+            list_descriptor_param = Option::from(ListDescriptor::new());
         }
 
         let new_elem_event: ElemEvent = ElemEvent::new(
@@ -343,7 +235,7 @@ impl ListEvent {
     /// * See description.
 
     pub fn copy(&self, updating_json_param: bool) -> ListEvent {
-        let mut list_event = ListEvent::new(&self.core_manager, self.cashflow);
+        let mut list_event = ListEvent::new(self.cashflow);
 
         let result = self.copy_list_event(&mut list_event, updating_json_param);
 
@@ -490,7 +382,7 @@ impl ListEvent {
                             Option::from(o2.copy(false, updating_json_param));
                     }
                 }
-                list_event.add_event_ex(
+                list_event.add_event(
                     o.event_date(),
                     o.date_expr(),
                     o.sort_order(),
@@ -938,19 +830,6 @@ impl ListEvent {
         }
 
         false
-    }
-
-    /// Get a cashflow or user resource string.
-    ///
-    /// # Arguments
-    ///
-    /// * `key` - The resource key to locate.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-    pub fn get_resource(&self, key: &str) -> String {
-        String::from(self.core_manager.borrow().list_locale().get_resource(key))
     }
 
     /// Remove the selected event from the event list.

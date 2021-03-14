@@ -6,16 +6,10 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
-use std::cell::RefCell;
-use std::rc::Rc;
 
 use super::{ElemPreferences, ListTemplateEvent};
-use crate::core::CoreManager;
 
 pub struct ElemTemplateGroup {
-  /// CoreManager element.
-  core_manager: Rc<RefCell<CoreManager>>,
-
   /// Group name of the template group.
   group: String,
   /// Preferences element.
@@ -31,7 +25,6 @@ impl ElemTemplateGroup {
   ///
   /// # Arguments
   ///
-  /// * `core_manager_param` - CoreManager element.
   /// * `group_param` - Name of template group.
   /// * `preferences_param` - Group preferences.
   ///
@@ -40,15 +33,13 @@ impl ElemTemplateGroup {
   /// * See description.
 
   pub fn new(
-    core_manager_param: &Rc<RefCell<CoreManager>>,
     group_param: &str,
     preferences_param: ElemPreferences,
   ) -> ElemTemplateGroup {
     ElemTemplateGroup {
-      core_manager: Rc::clone(core_manager_param),
       group: String::from(group_param),
       elem_preferences: preferences_param,
-      list_template_event: ListTemplateEvent::new(core_manager_param),
+      list_template_event: ListTemplateEvent::new(),
     }
   }
 
@@ -64,7 +55,6 @@ impl ElemTemplateGroup {
 
   pub fn copy(&self, updating_json: bool) -> ElemTemplateGroup {
     let mut template_group = ElemTemplateGroup::new(
-      &self.core_manager,
       self.group.as_str(),
       self
         .elem_preferences

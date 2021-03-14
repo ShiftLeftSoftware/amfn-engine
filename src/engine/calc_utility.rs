@@ -73,8 +73,7 @@ impl CalcUtility {
         elem_extension: &ElemExtension,
     ) -> ListParameter {
         let calc_manager = Rc::clone(calc_manager_param);
-        let mut list_parameter =
-            ListParameter::new(calc_manager.borrow().core_manager());
+        let mut list_parameter = ListParameter::new();
         let updating_json = calc_manager.borrow().updating_json();
         match elem_type {
             crate::ExtensionType::CurrentValue => {
@@ -212,7 +211,9 @@ impl CalcUtility {
             );
 
             let elem_result_symbol: ElemSymbol;
-            let result = expression.borrow().evaluate(None, None);
+            let result = expression.borrow().evaluate(
+                mgr.list_cashflow().list_amortization(), 
+                mgr.list_cashflow().elem_balance_result());
             match result {
                 Err(e) => {
                     let error_string = mgr.get_error_string(e);
@@ -267,7 +268,7 @@ impl CalcUtility {
 
     pub fn evaluate_expression(
         calc_manager_param: &Rc<RefCell<CalcManager>>,
-        list_parameter: &ListParameter,
+        list_parameter: Option<&ListParameter>,
         expression_str: &str,
         cashflow: bool,
     ) -> ElemSymbol {
@@ -291,12 +292,14 @@ impl CalcUtility {
         expression.init_expression(
             list_descriptor_cashflow,
             None,
-            Option::from(list_parameter),
+            list_parameter,
             expression_str,
         );
 
         let mut elem_result_symbol: ElemSymbol;
-        let result = expression.evaluate(None, None);
+        let result = expression.evaluate(
+            mgr.list_cashflow().list_amortization(), 
+            mgr.list_cashflow().elem_balance_result());
         match result {
             Err(e) => {
                 elem_result_symbol = ElemSymbol::new();
@@ -1396,7 +1399,7 @@ impl CalcUtility {
             let mut elem_result_symbol: ElemSymbol;
             let result = calc_expression.evaluate(
                 list_cashflow.list_amortization(),
-                list_cashflow.elem_balance_result(),
+                list_cashflow.elem_balance_result()
             );
 
             match result {
@@ -1436,7 +1439,7 @@ impl CalcUtility {
             let mut result_str = String::from("");
             let result = calc_expression.evaluate(
                 list_cashflow.list_amortization(),
-                list_cashflow.elem_balance_result(),
+                list_cashflow.elem_balance_result()
             );
             match result {
                 Err(e) => {

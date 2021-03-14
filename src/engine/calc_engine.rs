@@ -216,7 +216,7 @@ impl CalcEngine {
             .calc_manager()
             .borrow()
             .list_exchange_rate()
-            .copy_with_calc_manager(calc_engine.calc_manager().borrow().core_manager());
+            .copy_with_calc_manager();
         calc_engine
             .calc_mgr_mut()
             .set_list_exchange_rate(list_exchange_rate);
@@ -245,17 +245,17 @@ impl CalcEngine {
                     break;
                 }
 
-                let locale = self.calc_mgr().locale(true);
-                calc_engine
-                    .calc_manager()
-                    .borrow()
-                    .mgr()
-                    .list_locale_mut()
-                    .select_cashflow_locale(locale.as_str());
-                self.evaluate_cashflow_descriptors();
-                self.evaluate_cashflow_event_type_all();
-
                 if !self.calc_mgr().list_cashflow().cashflow_valid() {
+                    let locale = self.calc_mgr().locale(true);
+                    calc_engine
+                        .calc_manager()
+                        .borrow()
+                        .mgr()
+                        .list_locale_mut()
+                        .select_cashflow_locale(locale.as_str());
+                    self.evaluate_cashflow_descriptors();
+                    self.evaluate_cashflow_event_type_all();
+
                     match self.balance_cashflow() {
                         Err(_e) => {}
                         Ok(_o) => {}
@@ -339,7 +339,7 @@ impl CalcEngine {
                     list_descriptor_opt = Option::from(o2.copy(false, true));
                 }
             }
-            list_event.add_event_ex(
+            list_event.add_event(
                 event.event_date(),
                 event.date_expr(),
                 event.sort_order(),
@@ -1855,19 +1855,19 @@ impl CalcEngine {
                         match elem.elem_type() {
                             crate::ExtensionType::CurrentValue => {
                                 event_type_expr =
-                                    list_event.get_resource(crate::USER_EVENT_TYPE_CURRENT_VALUE);
+                                    String::from(self.calc_mgr().mgr().list_locale().get_resource(crate::USER_EVENT_TYPE_CURRENT_VALUE));
                             }
                             crate::ExtensionType::StatisticValue => {
                                 event_type_expr =
-                                    list_event.get_resource(crate::USER_EVENT_TYPE_STATISTIC_VALUE);
+                                    String::from(self.calc_mgr().mgr().list_locale().get_resource(crate::USER_EVENT_TYPE_STATISTIC_VALUE));
                             }
                             crate::ExtensionType::InterestChange => {
                                 event_type_expr =
-                                    list_event.get_resource(crate::USER_EVENT_TYPE_INTEREST_CHANGE);
+                                    String::from(self.calc_mgr().mgr().list_locale().get_resource(crate::USER_EVENT_TYPE_INTEREST_CHANGE));
                             }
                             _ => {
-                                event_type_expr = list_event
-                                    .get_resource(crate::USER_EVENT_TYPE_PRINCIPAL_CHANGE);
+                                event_type_expr = 
+                                    String::from(self.calc_mgr().mgr().list_locale().get_resource(crate::USER_EVENT_TYPE_PRINCIPAL_CHANGE));
                             }
                         }
                     }
@@ -1977,6 +1977,30 @@ impl CalcEngine {
                 }
             }
         }
+    }
+
+    /// Evaluate the expression.
+    ///
+    /// # Arguments
+    ///
+    /// * `calc_manager_param` - Calculation manager.
+    /// * `list_parameter` - List of parameters used with evaluation.
+    /// * `expression_str` - The expression to evaluate.
+    /// * `cashflow` - Search the cashflow preferences.
+    ///
+    /// # Return
+    ///
+    /// * Resulting symbol if successful, otherwise an error
+    ///     message in the symbol.
+
+    pub fn evaluate_expression(
+        &self,
+        list_parameter: Option<&ListParameter>,
+        expression_str: &str,
+        cashflow: bool,
+    ) -> ElemSymbol {
+        CalcUtility::evaluate_expression(
+            self.calc_manager(), list_parameter, expression_str, cashflow)
     }
 
     /// Format and return a date string.

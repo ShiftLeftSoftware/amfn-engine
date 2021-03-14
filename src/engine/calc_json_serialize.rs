@@ -1281,7 +1281,7 @@ impl CalcJsonSerialize {
                 buf.push_str(crate::LINE_ENDING);
                 buf.push_str(self.indent().as_str());
                 buf.push_str("\"parameter-type\": \"");
-                buf.push_str(self.get_param_type(list_parameter.param_type()));
+                buf.push_str(CoreUtility::get_param_type(list_parameter.param_type()).as_str());
                 buf.push_str("\",");
                 buf.push_str(crate::LINE_ENDING);
                 buf.push_str(self.indent().as_str());
@@ -1292,7 +1292,7 @@ impl CalcJsonSerialize {
                         buf.push_str(list_parameter.param_integer().to_string().as_str());
                     }
                     crate::TokenType::Decimal => {
-                        buf.push_str(list_parameter.param_float().to_string().as_str());
+                        buf.push_str(list_parameter.param_decimal().to_string().as_str());
                     }
                     _ => {
                         buf.push_str(self.escape_string(list_parameter.param_string()).as_str());
@@ -1674,24 +1674,6 @@ impl CalcJsonSerialize {
             event_date / 100 % 100,
             event_date % 100
         );
-    }
-
-    /// Serialize a parameter type.
-    ///
-    /// # Arguments
-    ///
-    /// * `param_type` - Parameter type value.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    fn get_param_type(&self, param_type: crate::TokenType) -> &str {
-        match param_type {
-            crate::TokenType::Integer => "integer",
-            crate::TokenType::Decimal => "decimal",
-            _ => "string",
-        }
     }
 
     /// Serialize a polarity value.

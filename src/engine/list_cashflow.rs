@@ -265,7 +265,7 @@ impl ListCashflow {
 
         let mut list_event_opt = list_event_param;
         if list_event_opt.is_none() {
-            list_event_opt = Option::from(ListEvent::new(self.calc_mgr().core_manager(), true));
+            list_event_opt = Option::from(ListEvent::new(true));
         }
 
         let elem_cashflow: ElemCashflow;
@@ -275,7 +275,6 @@ impl ListCashflow {
             }
             Some(o) => {
                 elem_cashflow = ElemCashflow::new(
-                    self.calc_mgr().core_manager(),
                     name.as_str(),
                     o,
                     list_event_opt,

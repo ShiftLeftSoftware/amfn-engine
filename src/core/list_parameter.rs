@@ -8,21 +8,31 @@
 // except according to those terms.
 
 use rust_decimal::prelude::*;
-use std::cell::{Cell, RefCell};
-use std::rc::Rc;
+use std::cell::{Cell};
 
-use super::{CoreManager, ElemParameter};
+use super::{ElemParameter};
 use crate::{ListTrait};
 
 pub struct ListParameter {
-    /// CoreManager element.
-    core_manager: Rc<RefCell<CoreManager>>,
-
     /// The list of parameters.
     list_parameter: Vec<ElemParameter>,
 
     /// The index of the currently selected parameter element.
     list_index: Cell<usize>,
+}
+
+/// List of parameters default implementation.
+
+impl Default for ListParameter {
+    /// Create a new symbol element.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    fn default() -> Self {
+        ListParameter::new()
+    }
 }
 
 /// List of parameters list implementation.
@@ -99,18 +109,14 @@ impl ListParameter {
     ///
     /// # Arguments
     ///
-    /// * `core_manager` - CoreManager element.
     /// * `elem_level_param` - Element level
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn new(
-        core_manager: &Rc<RefCell<CoreManager>>
-    ) -> ListParameter {
+    pub fn new() -> ListParameter {
         ListParameter {
-            core_manager: Rc::clone(core_manager),
             list_parameter: Vec::new(),
             list_index: Cell::new(usize::MAX)
         }
@@ -195,7 +201,7 @@ impl ListParameter {
         &self,
         updating_json_param: bool
     ) -> ListParameter {
-        let mut list_parameter = ListParameter::new(&self.core_manager);
+        let mut list_parameter = ListParameter::new();
 
         self.copy_list_parameter(&mut list_parameter, updating_json_param);
 
@@ -226,7 +232,7 @@ impl ListParameter {
                     list_parameter.set_integeri(elem.param_integeri());
                 }
                 crate::TokenType::Decimal => {
-                    list_parameter.set_decimal(elem.param_float());
+                    list_parameter.set_decimal(elem.param_decimal());
                 }
                 _ => {
                     list_parameter.set_string(elem.param_string());
@@ -280,7 +286,7 @@ impl ListParameter {
     ///
     /// * See description.
 
-    fn list(&self) -> &Vec<ElemParameter> {
+    pub fn list(&self) -> &Vec<ElemParameter> {
         &self.list_parameter
     }
 
@@ -346,12 +352,12 @@ impl ListParameter {
     ///
     /// * See description.
 
-    pub fn param_float(&self) -> Decimal {
+    pub fn param_decimal(&self) -> Decimal {
         match self.list_parameter.get(self.list_index.get()) {
             None => {
                 panic!("Parameter list index not set");
             }
-            Some(o) => o.param_float(),
+            Some(o) => o.param_decimal(),
         }
     }
 

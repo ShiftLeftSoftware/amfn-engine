@@ -559,8 +559,8 @@
 					"enum": [
 						"none",
 						"bankers",
-						"bias_up",
-						"bias_down",
+						"bias-up",
+						"bias-down",
 						"up",
 						"truncate",
 						"yes",

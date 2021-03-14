@@ -8,18 +8,13 @@
 // except according to those terms.
 
 use rust_decimal::prelude::*;
-use std::cell::{Cell, RefCell};
+use std::cell::{Cell};
 use std::cmp::Ordering::Equal;
-use std::rc::Rc;
 
 use super::ElemExchangeRate;
-use crate::core::{CoreManager};
 use crate::{ListTrait};
 
 pub struct ListExchangeRate {
-    /// CoreManager element.
-    core_manager: Rc<RefCell<CoreManager>>,
-
     /// The list of exchange rates.
     list_exchange_rate: Vec<ElemExchangeRate>,
 
@@ -31,6 +26,20 @@ pub struct ListExchangeRate {
 
     /// Updated while sort_on_add was false.
     sort_updated: bool,
+}
+
+/// List of exchange rates default implementation.
+
+impl Default for ListExchangeRate {
+    /// Create a new symbol element.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    fn default() -> Self {
+        ListExchangeRate::new()
+    }
 }
 
 /// List of exchange rates list implementation.
@@ -107,17 +116,12 @@ impl ListTrait for ListExchangeRate {
 impl ListExchangeRate {
     /// Create and return a new list exchange rate.
     ///
-    /// # Arguments
-    ///
-    /// * `core_manager_param` - CoreManager element.
-    ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn new(core_manager_param: &Rc<RefCell<CoreManager>>) -> ListExchangeRate {
+    pub fn new() -> ListExchangeRate {
         ListExchangeRate {
-            core_manager: Rc::clone(core_manager_param),
             list_exchange_rate: Vec::new(),
             list_index: Cell::new(usize::MAX),
             sort_on_add: true,
@@ -184,19 +188,12 @@ impl ListExchangeRate {
     /// Copy all exchange rates from the exchange rate list
     /// and return a new exchange rate list.
     ///
-    /// # Arguments
-    ///
-    /// * `core_manager_param` - CoreManager element.
-    ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn copy_with_calc_manager(
-        &self,
-        core_manager_param: &Rc<RefCell<CoreManager>>,
-    ) -> ListExchangeRate {
-        let mut exch = ListExchangeRate::new(core_manager_param);
+    pub fn copy_with_calc_manager(&self) -> ListExchangeRate {
+        let mut exch = ListExchangeRate::new();
         let mut index: usize = 0;
 
         loop {
@@ -224,7 +221,7 @@ impl ListExchangeRate {
     /// * See description.
 
     pub fn copy(&self) -> ListExchangeRate {
-        self.copy_with_calc_manager(&self.core_manager)
+        self.copy_with_calc_manager()
     }
 
     /// Convert a value from one currency to another.

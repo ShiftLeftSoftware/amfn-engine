@@ -7,17 +7,13 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::{Cell, RefCell};
+use std::cell::{Cell};
 use std::cmp::Ordering::Equal;
-use std::rc::Rc;
 
-use super::{CoreManager, ElemDescriptor};
+use super::{ElemDescriptor};
 use crate::{ListTrait};
 
 pub struct ListDescriptor {
-    /// CoreManager element.
-    core_manager: Rc<RefCell<CoreManager>>,
-
     /// The list of descriptors.
     list_descriptor: Vec<ElemDescriptor>,
 
@@ -100,6 +96,20 @@ impl ListTrait for ListDescriptor {
     }
 }
 
+/// List of descriptors default implementation.
+
+impl Default for ListDescriptor {
+    /// Create a new symbol element.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    fn default() -> Self {
+        ListDescriptor::new()
+    }
+}
+
 /// List of descriptors implementation.
 
 impl ListDescriptor {
@@ -107,18 +117,14 @@ impl ListDescriptor {
     ///
     /// # Arguments
     ///
-    /// * `core_manager` - CoreManager element.
     /// * `elem_level_param` - Element level
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn new(
-        core_manager: &Rc<RefCell<CoreManager>>
-    ) -> ListDescriptor {
+    pub fn new() -> ListDescriptor {
         ListDescriptor {
-            core_manager: Rc::clone(core_manager),
             list_descriptor: Vec::new(),
             list_index: Cell::new(usize::MAX),
             sort_on_add: true,
@@ -258,7 +264,7 @@ impl ListDescriptor {
         copy_propagate: bool,
         updating_json_param: bool,
     ) -> ListDescriptor {
-        let mut list_descriptor = ListDescriptor::new(&self.core_manager);
+        let mut list_descriptor = ListDescriptor::new();
         self.copy_list_descriptor(&mut list_descriptor, copy_propagate, updating_json_param);
 
         list_descriptor
@@ -356,7 +362,7 @@ impl ListDescriptor {
     ///
     /// * See description.
 
-    fn list(&self) -> &Vec<ElemDescriptor> {
+    pub fn list(&self) -> &Vec<ElemDescriptor> {
         &self.list_descriptor
     }
 

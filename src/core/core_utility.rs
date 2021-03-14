@@ -1057,6 +1057,24 @@ impl CoreUtility {
         }
     }
 
+    /// Returns the parameter type.
+    ///
+    /// # Arguments
+    ///
+    /// * `param_type` - Parameter type value.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn get_param_type(param_type: crate::TokenType) -> String {
+        match param_type {
+            crate::TokenType::Integer => String::from("integer"),
+            crate::TokenType::Decimal => String::from("decimal"),
+            _ => String::from("string"),
+        }
+    }
+
     /// Returns the constant value for a principal type mnemonic.
     ///
     /// # Arguments
@@ -1129,8 +1147,8 @@ impl CoreUtility {
     pub fn get_round_balance(round_bal: crate::RoundType) -> String {
         match round_bal {
             crate::RoundType::Bankers => String::from("bankers"),
-            crate::RoundType::BiasUp => String::from("bias_up"),
-            crate::RoundType::BiasDown => String::from("bias_down"),
+            crate::RoundType::BiasUp => String::from("bias-up"),
+            crate::RoundType::BiasDown => String::from("bias-down"),
             crate::RoundType::Up => String::from("up"),
             crate::RoundType::Truncate => String::from("truncate"),
             _ => String::from("none"),
