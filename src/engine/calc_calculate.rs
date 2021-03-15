@@ -1911,6 +1911,7 @@ impl CalcCalculate {
                 dec!(0.0),
                 list_am.list_event_index(),
                 list_am.event_sequence(),
+                list_am.stat_sequence(),
                 new_elem_extension,
                 list_parameter,
                 Option::from(list_descriptor_copy),
@@ -2146,6 +2147,7 @@ impl CalcCalculate {
                     new_balance,
                     new_list_event_index,
                     am_index_start,
+                    0,
                     new_elem_extension,
                     Option::from(new_list_parameter),
                     Option::from(new_list_descriptor),
@@ -2193,6 +2195,7 @@ impl CalcCalculate {
                     let new_balance = rollup_list_am.balance();
                     let new_list_event_index = rollup_list_am.list_event_index();
                     let new_event_sequence = list_am.event_sequence();
+                    let new_stat_sequence = list_am.stat_sequence();
                     let new_periods = rollup_list_am.periods();
                     let new_intervals = rollup_list_am.intervals();
                     let new_frequency = rollup_list_am.frequency();
@@ -2237,6 +2240,7 @@ impl CalcCalculate {
                         new_balance,
                         new_list_event_index,
                         new_event_sequence,
+                        new_stat_sequence,
                         new_elem_extension,
                         Option::from(new_list_parameter),
                         Option::from(new_list_descriptor),
@@ -2262,6 +2266,7 @@ impl CalcCalculate {
                 let new_balance = list_am.balance();
                 let new_list_event_index = list_am.list_event_index();
                 let new_event_sequence = list_am.event_sequence();
+                let new_stat_sequence = list_am.stat_sequence();
                 let new_periods = 1;
                 let new_intervals = list_am.intervals();
                 let new_frequency = list_am.frequency();
@@ -2306,6 +2311,7 @@ impl CalcCalculate {
                     new_balance,
                     new_list_event_index,
                     new_event_sequence,
+                    new_stat_sequence,
                     new_elem_extension,
                     Option::from(new_list_parameter),
                     Option::from(new_list_descriptor),
@@ -2603,6 +2609,7 @@ impl CalcCalculate {
                         principal_increase,
                         event_index,
                         event_sequence,
+                        0,
                         new_elem_extension,
                         Option::from(list_parameter.copy(updating_json)),
                         Option::from(list_descriptor.copy(
@@ -2974,6 +2981,7 @@ impl CalcCalculate {
 
             let new_list_event_index = list_am.list_event_index();
             let new_event_sequence = list_am.event_sequence();
+            let new_stat_sequence = list_am.stat_sequence();
 
             if new_type == crate::ExtensionType::StatisticValue {
                 let stat_name = list_am.elem_extension().sv_name();
@@ -3076,6 +3084,7 @@ impl CalcCalculate {
                         dec!(0.0),
                         list_am.list_event_index(),
                         list_am.event_sequence(),
+                        list_am.stat_sequence(),
                         elem_extension,
                         Option::from(list_parameter),
                         Option::from(list_descriptor),
@@ -3173,6 +3182,7 @@ impl CalcCalculate {
                 principal_increase,
                 new_list_event_index,
                 new_event_sequence,
+                new_stat_sequence,
                 new_elem_extension,
                 Option::from(new_list_parameter.copy(updating_json)),
                 Option::from(new_list_descriptor.copy(false, updating_json)),
@@ -3233,6 +3243,7 @@ impl CalcCalculate {
                     dec!(0.0),
                     list_am.list_event_index(),
                     list_am.event_sequence(),
+                    list_am.stat_sequence(),
                     elem_extension,
                     Option::from(list_parameter),
                     Option::from(list_descriptor),

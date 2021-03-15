@@ -1088,7 +1088,6 @@ impl CalcExpression {
                 }
             }
             if elem_symbol_opt.is_none() {
-                elem_symbol_opt = Option::from(ElemSymbol::new());
 
                 let calc_expression = CalcExpression::new_with_symbol_table(
                     &self.calc_manager,
@@ -1103,7 +1102,9 @@ impl CalcExpression {
                     Err(e) => {
                         return Err(e);
                     }
-                    Ok(_o) => {}
+                    Ok(o) => {
+                        elem_symbol_opt = Option::from(o);
+                    }
                 }
             }
 
@@ -1567,17 +1568,17 @@ impl CalcExpression {
         {
             index = self.calc_mgr().mgr().map_col_names().value();
         } else if col_name == "StrBal" {
-            index = 1000;
+            index = crate::COL_LABEL_STRBAL;
         } else if col_name == "EAR" {
-            index = 1001;
+            index = crate::COL_LABEL_EAR;
         } else if col_name == "PR" {
-            index = 1002;
+            index = crate::COL_LABEL_PR;
         } else if col_name == "DR" {
-            index = 1003;
+            index = crate::COL_LABEL_DR;
         } else {
             return Err(crate::ErrorType::Element);
         }
-
+        
         let mut elem_result_symbol = ElemSymbol::new();
 
         if list_am_opt.is_none() || elem_balance_result_opt.is_none() {
@@ -1842,6 +1843,7 @@ impl CalcExpression {
                 return Err(crate::ErrorType::Element);
             }
         }
+        
         match CoreUtility::get_col_name(index) {
             crate::ColumnType::EventType => {
                 elem_result_symbol.set_string(list_am.event_type());

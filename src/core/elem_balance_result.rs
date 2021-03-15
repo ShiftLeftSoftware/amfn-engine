@@ -7,6 +7,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use std::cell::Cell;
+
 use rust_decimal::prelude::*;
 
 pub struct ElemBalanceResult {
@@ -67,7 +69,7 @@ pub struct ElemBalanceResult {
     int_last_index: usize,
 
     /// Last yield calculated.
-    last_yield: Decimal,
+    last_yield: Cell<Decimal>,
 }
 
 /// Balance result definition default implementation.
@@ -122,7 +124,7 @@ impl ElemBalanceResult {
             cur_first_pv_index: usize::MAX,
             int_first_index: usize::MAX,
             int_last_index: usize::MAX,
-            last_yield: dec!(0.0),
+            last_yield: Cell::new(dec!(-1.0)),
         }
     }
 
@@ -161,7 +163,7 @@ impl ElemBalanceResult {
             cur_first_pv_index: self.cur_first_pv_index,
             int_first_index: self.int_first_index,
             int_last_index: self.int_last_index,
-            last_yield: self.last_yield,
+            last_yield: Cell::new(self.last_yield.get()),
         }
     }
 
@@ -475,7 +477,7 @@ impl ElemBalanceResult {
     /// * See description.
 
     pub fn last_yield(&self) -> Decimal {
-        self.last_yield
+        self.last_yield.get()
     }
 
     /// Increment the total number of TYPE_PRINCIPAL_CHANGEs with statistics set.
@@ -765,7 +767,7 @@ impl ElemBalanceResult {
     ///
     /// * `param` - See description.
 
-    pub fn set_last_yield(&mut self, param: Decimal) {
-        self.last_yield = param;
+    pub fn set_last_yield(&self, param: Decimal) {
+        self.last_yield.set(param);
     }
 }

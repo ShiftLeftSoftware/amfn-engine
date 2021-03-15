@@ -541,6 +541,10 @@ impl CoreUtility {
             x if x == crate::ColumnType::Balance as usize => crate::ColumnType::Balance,
             x if x == crate::ColumnType::EventName as usize => crate::ColumnType::EventName,
             x if x == crate::ColumnType::NextName as usize => crate::ColumnType::NextName,
+            x if x == crate::ColumnType::StrBal as usize => crate::ColumnType::StrBal,
+            x if x == crate::ColumnType::Ear as usize => crate::ColumnType::Ear,
+            x if x == crate::ColumnType::Pr as usize => crate::ColumnType::Pr,
+            x if x == crate::ColumnType::Dr as usize => crate::ColumnType::Dr,
             _ => crate::ColumnType::None,
         }
     }

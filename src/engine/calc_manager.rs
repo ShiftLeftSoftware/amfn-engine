@@ -15,7 +15,7 @@ use super::{
     CalcExpression, CalcUtility, ElemPreferences, ListCashflow, ListExchangeRate, ListTemplateGroup,
 };
 use crate::core::{
-    CoreManager, CoreUtility, ElemColumn, ElemSymbol, ListColumn, ListDescriptor, ListEvent, ListSummary,
+    CoreManager, CoreUtility, ElemColumn, ElemSymbol, ListColumn, ListDescriptor, ListEvent, ListAmortization, ListSummary,
 };
 use crate::{ListTrait};
 
@@ -1056,32 +1056,32 @@ impl CalcManager {
     /// # Arguments
     ///
     /// * `elem_column` - Column element.
+    /// * `list_am_opt` - Amortization list.
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn util_am_value(&self, elem_column: &ElemColumn) -> String {
-        CalcUtility::get_am_value(self.calc_manager(), elem_column)
+    pub fn util_am_value(&self, elem_column: &ElemColumn, 
+        list_am_opt: &ListAmortization) -> String {
+        CalcUtility::get_am_value(self.calc_manager(), elem_column, list_am_opt)
     }
 
-    /// Determine if the column is empty.
+    /// Determine if the event column is empty.
     ///
     /// # Arguments
     ///
     /// * `elem_column` - Column element.
-    /// * `event_type` - The type of table.
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn util_is_column_empty(
+    pub fn util_is_event_column_empty(
         &self,
-        elem_column: &ElemColumn,
-        event_type: crate::TableType,
+        elem_column: &ElemColumn
     ) -> bool {
-        CalcUtility::is_column_empty(self.calc_manager(), elem_column, event_type)
+        CalcUtility::is_event_column_empty(self.calc_manager(), elem_column)
     }
 
     /// Create and return a column list object.

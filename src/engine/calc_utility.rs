@@ -14,7 +14,8 @@ use std::rc::Rc;
 use super::{CalcExpression, CalcManager};
 use crate::core::{
     CoreUtility, ElemBalanceResult, ElemColumn, ElemExtension, ElemSymbol,
-    ListAmortization, ListColumn, ListDescriptor, ListParameter, ListEvent, ListSummary
+    ListAmortization, ListStatisticHelper, ListColumn, ListDescriptor, 
+    ListParameter, ListEvent, ListSummary
 };
 use crate::{ListTrait};
 
@@ -536,6 +537,7 @@ impl CalcUtility {
     ///
     /// * `calc_manager_param` - Calculation manager.
     /// * `elem_column` - Column element.
+    /// * `list_am_opt` - Amortization list.
     ///
     /// # Return
     ///
@@ -544,6 +546,7 @@ impl CalcUtility {
     pub fn get_am_value(
         calc_manager_param: &Rc<RefCell<CalcManager>>,
         elem_column: &ElemColumn,
+        list_am: &ListAmortization
     ) -> String {
         let calc_manager = Rc::clone(calc_manager_param);
         let calc_mgr = calc_manager.borrow();
@@ -553,18 +556,7 @@ impl CalcUtility {
         let cashflow_currency_code = String::from(list_locale.cashflow_currency_code());
         let event_currency_code = String::from(list_locale.event_currency_code());
         let list_cashflow = calc_mgr.list_cashflow();
-        let list_am_opt = list_cashflow.list_amortization();
         let elem_balance_result_opt = list_cashflow.elem_balance_result();
-
-        let list_am: &ListAmortization;
-        match list_am_opt.as_ref() {
-            None => {
-                return String::from("");
-            }
-            Some(o) => {
-                list_am = o;
-            }
-        }
 
         let elem_balance_result: &ElemBalanceResult;
         match elem_balance_result_opt.as_ref() {
@@ -868,7 +860,7 @@ impl CalcUtility {
         result
     }
 
-    /// Determine if the column is empty.
+    /// Determine if the event column is empty.
     ///
     /// # Arguments
     ///
@@ -880,64 +872,39 @@ impl CalcUtility {
     ///
     /// * See description.
 
-    pub fn is_column_empty(
+    pub fn is_event_column_empty(
         calc_manager_param: &Rc<RefCell<CalcManager>>,
-        elem_column: &ElemColumn,
-        elem_type: crate::TableType,
+        elem_column: &ElemColumn
     ) -> bool {
         let calc_manager = Rc::clone(calc_manager_param);
         let mgr = calc_manager.borrow();
         let list_cashflow = mgr.list_cashflow();
-        let list_am_opt = list_cashflow.list_amortization();
         let list_event_opt = list_cashflow.list_event();
         let count;
 
-        match elem_type {
-            crate::TableType::Amortization => match list_am_opt.as_ref() {
-                None => {
-                    return false;
-                }
-                Some(o) => {
-                    count = o.count();
-                }
-            },
-            _ => match list_event_opt.as_ref() {
-                None => {
-                    return false;
-                }
-                Some(o) => {
-                    count = o.count();
-                }
-            },
+        match list_event_opt.as_ref() {
+            None => {
+                return false;
+            }
+            Some(o) => {
+                count = o.count();
+            }
         }
 
         let mut result: String;
         let mut index: usize = 0;
 
         while index < count {
-            match elem_type {
-                crate::TableType::Amortization => match list_am_opt.as_ref() {
-                    None => {
-                        return false;
+            match list_event_opt.as_ref() {
+                None => {
+                    return false;
+                }
+                Some(o) => {
+                    if !o.get_element(index) {
+                        break;
                     }
-                    Some(o) => {
-                        if !o.get_element(index) {
-                            break;
-                        }
-                        result = CalcUtility::get_am_value(&calc_manager, elem_column);
-                    }
-                },
-                _ => match list_event_opt.as_ref() {
-                    None => {
-                        return false;
-                    }
-                    Some(o) => {
-                        if !o.get_element(index) {
-                            break;
-                        }
-                        result = CalcUtility::get_event_value(&calc_manager, elem_column);
-                    }
-                },
+                    result = CalcUtility::get_event_value(&calc_manager, elem_column);
+                }
             }
 
             index += 1;
@@ -1306,7 +1273,7 @@ impl CalcUtility {
         let list_locale = mgr.list_locale();
         let list_cashflow = calc_mgr.list_cashflow();
         let preferences = list_cashflow.preferences();
-
+    
         let mut list_summary = ListSummary::new();
         let locale_str = list_locale.cashflow_locale().locale_str();
 
@@ -1327,6 +1294,50 @@ impl CalcUtility {
             calc_mgr.fiscal_year_start(true),
             calc_mgr.decimal_digits(true),
         );
+
+        let mut last_yield: Decimal;
+        match list_cashflow.elem_balance_result() {
+            None => { last_yield = dec!(0.0); }
+            Some(o) => { last_yield = o.last_yield();
+            }
+        }
+
+        if last_yield < dec!(0.0) {
+            let list_event: &ListEvent;
+            match list_cashflow.list_event() {
+                None => { return list_summary; }
+                Some(o) => { list_event = o;}
+            }
+
+            let mut list_am: ListAmortization;
+            match list_cashflow.list_amortization() {
+                None => { return list_summary; }
+                Some(o) => { list_am = o.copy(true); }
+            }
+
+            let mut list_stat_helper: ListStatisticHelper;
+            match list_cashflow.list_statistic_helper() {
+                None => { return list_summary; }
+                Some(o) => { list_stat_helper = o.copy(); }
+            }
+
+            match list_cashflow.calculate().calculate_yield(
+                list_event, &mut list_am,
+                &mut list_stat_helper, dec!(0.0)
+            ) {
+                Err(_e) => { last_yield = dec!(0.0); }
+                Ok(o) => { last_yield = o.last_yield(); }
+            }
+
+            if last_yield > dec!(0.0) {
+                match list_cashflow.elem_balance_result() {
+                    None => { }
+                    Some(o) => { o.set_last_yield(last_yield); }
+                }
+            }
+        }
+
+        calc_expression.set_symbol_decimal("decYield", last_yield);
 
         let mut summary = calc_mgr.descriptor_value(
             crate::GROUP_GENERAL,

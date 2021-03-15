@@ -572,6 +572,21 @@ impl ListCashflow {
         }
     }
 
+    /// Get the calculate object of the selected cashflow.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn calculate(&self) -> &CalcCalculate {
+        match self.list_cashflow.get(self.list_index.get()) {
+            None => {
+                panic!("Cashflow list index not set");
+            }
+            Some(o) => o.calculate()
+        }
+    }
+
     /// Get the statistic helper of the selected cashflow.
     ///
     /// # Return

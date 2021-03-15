@@ -132,6 +132,7 @@ impl ListAmortization {
     /// * `principal_increase_param` - Principal increase.
     /// * `list_event_index_param` - List event index.
     /// * `event_sequence_param` - Event sequence.
+    /// * `stat_sequence_param` - Event stat sequence.
     /// * `extension_param` - Extension (current value, interest change,
     ///   principal change, statistic value).
     /// * `list_parameter_param` - List parameter.
@@ -157,6 +158,7 @@ impl ListAmortization {
         principal_increase_param: Decimal,
         list_event_index_param: usize,
         event_sequence_param: usize,
+        stat_sequence_param: usize,
         elem_extension_param: ElemExtension,
         list_parameter_param: Option<ListParameter>,
         list_descriptor_param: Option<ListDescriptor>,
@@ -181,6 +183,7 @@ impl ListAmortization {
             dec!(0.0),
             list_event_index_param,
             event_sequence_param,
+            stat_sequence_param,
             elem_extension_param,
             list_parameter_param,
             list_descriptor_param,
@@ -210,6 +213,7 @@ impl ListAmortization {
     /// * `balance_param` - Beginning active balance at start of event.
     /// * `list_event_index_param` - List event index.
     /// * `event_sequence_param` - Event sequence.
+    /// * `stat_sequence_param` - Event stat sequence.
     /// * `extension_param` - Extension (current value, interest change, principal change,
     ///   statistic value).
     /// * `list_parameter_param` - List parameter.
@@ -241,6 +245,7 @@ impl ListAmortization {
         balance_param: Decimal,
         list_event_index_param: usize,
         event_sequence_param: usize,
+        stat_sequence_param: usize,
         elem_extension_param: ElemExtension,
         list_parameter_param: Option<ListParameter>,
         list_descriptor_param: Option<ListDescriptor>,
@@ -266,7 +271,7 @@ impl ListAmortization {
             balance_param,
             list_event_index_param,
             event_sequence_param,
-            0,
+            stat_sequence_param,
             elem_extension_param,
             list_parameter_param,
             list_descriptor_param,
@@ -334,6 +339,7 @@ impl ListAmortization {
                 elem.balance(),
                 elem.list_event_index(),
                 elem.event_sequence(),
+                elem.stat_sequence(),
                 new_extension,
                 list_parameter_opt,
                 list_descriptor_opt,

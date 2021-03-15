@@ -145,6 +145,15 @@ pub const COL_LABEL_EVENT_NAME: &str = "Col_Label_Event_Name";
 /// Column labels - Next-name. 
 pub const COL_LABEL_NEXT_NAME: &str = "Col_Label_Next_Name";
 
+/// Column indexes - StrBal. 
+pub const COL_LABEL_STRBAL: usize = 1000;
+/// Column indexes - EAR. 
+pub const COL_LABEL_EAR: usize = 1001;
+/// Column indexes - PR. 
+pub const COL_LABEL_PR: usize = 1002;
+/// Column indexes - DR. 
+pub const COL_LABEL_DR: usize = 1003;
+
 /// Group - General. 
 pub const GROUP_GENERAL: &str = "General";
 /// Group - Font. 
