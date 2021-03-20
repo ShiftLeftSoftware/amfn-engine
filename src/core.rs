@@ -44,6 +44,7 @@ pub mod elem_interest_change;
 pub use elem_interest_change::ElemInterestChange;
 
 pub mod elem_locale;
+pub use elem_locale::ElemLocaleFormat;
 pub use elem_locale::ElemLocale;
 
 pub mod elem_parameter;

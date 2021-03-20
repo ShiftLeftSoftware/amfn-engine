@@ -20,7 +20,7 @@ use super::{
 };
 use crate::core::{
     CoreUtility, ElemCurrentValue, ElemExtension, ElemInterestChange, ElemPrincipalChange,
-    ElemStatisticValue, ListDescriptor, ListEvent, ListLocale, ListParameter,
+    ElemStatisticValue, ElemLocaleFormat, ListDescriptor, ListEvent, ListLocale, ListParameter,
 };
 use crate::{ListTrait};
 
@@ -658,8 +658,7 @@ impl CalcJsonDeserialize {
                 }
             }
 
-            let mut descs =
-                ListDescriptor::new();
+            let mut descs = ListDescriptor::new();
             if ev["descriptor-list"].is_null() {
                 return Err(crate::ErrorType::Json);
             }
@@ -939,11 +938,10 @@ impl CalcJsonDeserialize {
     /// # Arguments
     ///
     /// * `locales` - Json value for locales.
-    /// * `list_locale` - List of locales.
     ///
     /// # Return
     ///
-    /// * ERROR_NONE if successful, otherwise error code.
+    /// * List of locales if successful, otherwise error code.
 
     fn deserialize_locales(&self, locales: &JsonValue) -> Result<ListLocale, crate::ErrorType> {
         let mut list_locale = ListLocale::new();
@@ -983,84 +981,22 @@ impl CalcJsonDeserialize {
                 }
             }
 
-            let date_regex: &str;
-            match locale["format"]["date-regex"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    date_regex = o;
-                }
+            let format_in: ElemLocaleFormat;
+            if locale["format-in"].is_null() {
+                return Err(crate::ErrorType::Json);
+            }
+            match self.deserialize_locale_format(&locale["format-in"]) {
+                Err(e) => { return Err(e); }
+                Ok(o) => { format_in = o; }
             }
 
-            let date_replace: &str;
-            match locale["format"]["date-replace"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    date_replace = o;
-                }
+            let format_out: ElemLocaleFormat;
+            if locale["format-out"].is_null() {
+                return Err(crate::ErrorType::Json);
             }
-
-            let integer_regex: &str;
-            match locale["format"]["integer-regex"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    integer_regex = o;
-                }
-            }
-
-            let integer_replace: &str;
-            match locale["format"]["integer-replace"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    integer_replace = o;
-                }
-            }
-
-            let float_regex: &str;
-            match locale["format"]["decimal-regex"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    float_regex = o;
-                }
-            }
-
-            let float_replace: &str;
-            match locale["format"]["decimal-replace"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    float_replace = o;
-                }
-            }
-
-            let currency_regex: &str;
-            match locale["format"]["currency-regex"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    currency_regex = o;
-                }
-            }
-
-            let currency_replace: &str;
-            match locale["format"]["currency-replace"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    currency_replace = o;
-                }
+            match self.deserialize_locale_format(&locale["format-out"]) {
+                Err(e) => { return Err(e); }
+                Ok(o) => { format_out = o; }
             }
 
             let mut resources: HashMap<String, String> = HashMap::new();
@@ -1097,20 +1033,115 @@ impl CalcJsonDeserialize {
                 locale_str,
                 currency_code,
                 decimal_digits,
-                date_regex,
-                date_replace,
-                integer_regex,
-                integer_replace,
-                float_regex,
-                float_replace,
-                currency_regex,
-                currency_replace,
-                &resources,
+                format_in,
+                format_out,
+                resources,
             );
+            
             index += 1;
         }
 
         Ok(list_locale)
+    }
+
+    /// Deserialize and ingest Json locale format.
+    ///
+    /// # Arguments
+    ///
+    /// * `locale_format` - Json value for locale format.
+    ///
+    /// # Return
+    ///
+    /// * Locale format element if successful, otherwise error code.
+
+    fn deserialize_locale_format(&self, locale_format: &JsonValue) -> Result<ElemLocaleFormat, crate::ErrorType> {
+        let date_regex: &str;
+        match locale_format["date-regex"].as_str() {
+            None => {
+                return Err(crate::ErrorType::Json);
+            }
+            Some(o) => {
+                date_regex = o;
+            }
+        }
+
+        let date_replace: &str;
+        match locale_format["date-replace"].as_str() {
+            None => {
+                return Err(crate::ErrorType::Json);
+            }
+            Some(o) => {
+                date_replace = o;
+            }
+        }
+        let integer_regex: &str;
+        match locale_format["integer-regex"].as_str() {
+            None => {
+                return Err(crate::ErrorType::Json);
+            }
+            Some(o) => {
+                integer_regex = o;
+            }
+        }
+
+        let integer_replace: &str;
+        match locale_format["integer-replace"].as_str() {
+            None => {
+                return Err(crate::ErrorType::Json);
+            }
+            Some(o) => {
+                integer_replace = o;
+            }
+        }
+        let decimal_regex: &str;
+        match locale_format["decimal-regex"].as_str() {
+            None => {
+                return Err(crate::ErrorType::Json);
+            }
+            Some(o) => {
+                decimal_regex = o;
+            }
+        }
+
+        let decimal_replace: &str;
+        match locale_format["decimal-replace"].as_str() {
+            None => {
+                return Err(crate::ErrorType::Json);
+            }
+            Some(o) => {
+                decimal_replace = o;
+            }
+        }
+        let currency_regex: &str;
+        match locale_format["currency-regex"].as_str() {
+            None => {
+                return Err(crate::ErrorType::Json);
+            }
+            Some(o) => {
+                currency_regex = o;
+            }
+        }
+
+        let currency_replace: &str;
+        match locale_format["currency-replace"].as_str() {
+            None => {
+                return Err(crate::ErrorType::Json);
+            }
+            Some(o) => {
+                currency_replace = o;
+            }
+        }
+
+        Ok(ElemLocaleFormat::new(
+            date_regex,
+            date_replace,
+            integer_regex,
+            integer_replace,
+            decimal_regex,
+            decimal_replace,
+            currency_regex,
+            currency_replace
+        ))
     }
 
     /// Deserialize and ingest Json parameters.

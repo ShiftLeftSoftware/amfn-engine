@@ -12,7 +12,7 @@ use rust_decimal::prelude::*;
 use std::cell::Cell;
 use std::collections::HashMap;
 
-use super::{CoreUtility, ElemLocale};
+use super::{CoreUtility, ElemLocaleFormat, ElemLocale};
 
 pub struct ListLocale {
     list_locale: Vec<ElemLocale>,
@@ -62,49 +62,30 @@ impl ListLocale {
     ///
     /// # Arguments
     ///
-    /// * `locale_str_param` - Locale string.
-    /// * `currency_code_param` - Currency code.
-    /// * `decimal_digits_param` - Decimal digits.
-    /// * `date_regex_param` - Date regular expression.
-    /// * `date_replace_param` - Date replace expression.
-    /// * `integer_regex_param` - Integer regular expression.
-    /// * `integer_replace_param` - Integer replace expression.
-    /// * `decimal_regex_param` - Decimal regular expression.
-    /// * `decimal_replace_param` - Decimal replace expression.
-    /// * `currency_regex_param` - Currency regular expression.
-    /// * `currency_replace_param` - Currency replace expression.
+    /// * `locale_str_param` - ISO language code (ISO 639)_ISO country code (ISO 3166).
+    /// * `currency_code_param` - ISO currency code (ISO 4217).
+    /// * `decimal_digits_param` - Currency decimal digits.
+    /// * `date_in_format` - Date in format.
+    /// * `date_out_format` - Date out format.
     /// * `resources_param` - Resources hash map.
-    #[allow(clippy::too_many_arguments)]
 
     pub fn add_locale(
         &mut self,
         locale_str_param: &str,
         currency_code_param: &str,
         decimal_digits_param: usize,
-        date_regex_param: &str,
-        date_replace_param: &str,
-        integer_regex_param: &str,
-        integer_replace_param: &str,
-        decimal_regex_param: &str,
-        decimal_replace_param: &str,
-        currency_regex_param: &str,
-        currency_replace_param: &str,
-        resources_param: &HashMap<String, String>,
+        date_in_format_param: ElemLocaleFormat,
+        date_out_format_param: ElemLocaleFormat,
+        resources_param: HashMap<String, String>,
     ) {
-        let resources = resources_param.clone();
+        let resources = resources_param;
 
         self.list_locale.push(ElemLocale::new(
             locale_str_param,
             currency_code_param,
             decimal_digits_param,
-            date_regex_param,
-            date_replace_param,
-            integer_regex_param,
-            integer_replace_param,
-            decimal_regex_param,
-            decimal_replace_param,
-            currency_regex_param,
-            currency_replace_param,
+            date_in_format_param,
+            date_out_format_param,
             resources,
         ));
     }
@@ -123,37 +104,13 @@ impl ListLocale {
         let mut locales = ListLocale::new();
 
         for locale in self.list_locale.iter() {
-            let locale_str = locale.locale_str();
-            let currency_code = locale.currency_code();
-            let decimal_digits = locale.decimal_digits();
-
-            let date_regex = locale.date_regex();
-            let date_replace = locale.date_replace();
-
-            let integer_regex = locale.integer_regex();
-            let integer_replace = locale.integer_replace();
-
-            let decimal_regex = locale.decimal_regex();
-            let decimal_replace = locale.decimal_replace();
-
-            let currency_regex = locale.currency_regex();
-            let currency_replace = locale.currency_replace();
-
-            let resources = locale.resources();
-
             locales.add_locale(
-                locale_str,
-                currency_code,
-                decimal_digits,
-                date_regex,
-                date_replace,
-                integer_regex,
-                integer_replace,
-                decimal_regex,
-                decimal_replace,
-                currency_regex,
-                currency_replace,
-                resources,
+                locale.locale_str(),
+                locale.currency_code(),
+                locale.decimal_digits(),
+                locale.format_in().copy(),
+                locale.format_out().copy(),
+                locale.resources().clone(),
             );
         }
 
@@ -245,7 +202,7 @@ impl ListLocale {
         }
     }
 
-    /// Get the date regex.
+    /// Get the format in.
     ///
     /// # Arguments
     ///
@@ -255,16 +212,16 @@ impl ListLocale {
     ///
     /// * See description.
 
-    pub fn date_regex(&self, event: bool) -> &str {
+    pub fn format_in(&self, event: bool) -> &ElemLocaleFormat {
         match self.list_locale.get(self.get_locale_index(event)) {
             None => {
                 panic!("Locale list index not set");
             }
-            Some(o) => o.date_regex(),
+            Some(o) => o.format_in(),
         }
     }
 
-    /// Get the date replace.
+    /// Get the format out.
     ///
     /// # Arguments
     ///
@@ -274,126 +231,12 @@ impl ListLocale {
     ///
     /// * See description.
 
-    pub fn date_replace(&self, event: bool) -> &str {
+    pub fn format_out(&self, event: bool) -> &ElemLocaleFormat {
         match self.list_locale.get(self.get_locale_index(event)) {
             None => {
                 panic!("Locale list index not set");
             }
-            Some(o) => o.date_replace(),
-        }
-    }
-
-    /// Get the integer regex.
-    ///
-    /// # Arguments
-    ///
-    /// * `event` - Check event level.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn integer_regex(&self, event: bool) -> &str {
-        match self.list_locale.get(self.get_locale_index(event)) {
-            None => {
-                panic!("Locale list index not set");
-            }
-            Some(o) => o.integer_regex(),
-        }
-    }
-
-    /// Get the integer replace.
-    ///
-    /// # Arguments
-    ///
-    /// * `event` - Check event level.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn integer_replace(&self, event: bool) -> &str {
-        match self.list_locale.get(self.get_locale_index(event)) {
-            None => {
-                panic!("Locale list index not set");
-            }
-            Some(o) => o.integer_replace(),
-        }
-    }
-
-    /// Get the decimal regex.
-    ///
-    /// # Arguments
-    ///
-    /// * `event` - Check event level.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn decimal_regex(&self, event: bool) -> &str {
-        match self.list_locale.get(self.get_locale_index(event)) {
-            None => {
-                panic!("Locale list index not set");
-            }
-            Some(o) => o.decimal_regex(),
-        }
-    }
-
-    /// Get the decimal replace.
-    ///
-    /// # Arguments
-    ///
-    /// * `event` - Check event level.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn decimal_replace(&self, event: bool) -> &str {
-        match self.list_locale.get(self.get_locale_index(event)) {
-            None => {
-                panic!("Locale list index not set");
-            }
-            Some(o) => o.decimal_replace(),
-        }
-    }
-
-    /// Get the currency regex.
-    ///
-    /// # Arguments
-    ///
-    /// * `event` - Check event level.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn currency_regex(&self, event: bool) -> &str {
-        match self.list_locale.get(self.get_locale_index(event)) {
-            None => {
-                panic!("Locale list index not set");
-            }
-            Some(o) => o.currency_regex(),
-        }
-    }
-
-    /// Get the currency replace.
-    ///
-    /// # Arguments
-    ///
-    /// * `event` - Check event level.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn currency_replace(&self, event: bool) -> &str {
-        match self.list_locale.get(self.get_locale_index(event)) {
-            None => {
-                panic!("Locale list index not set");
-            }
-            Some(o) => o.currency_replace(),
+            Some(o) => o.format_out(),
         }
     }
 
@@ -494,10 +337,10 @@ impl ListLocale {
     pub fn format_date(&self, val: usize) -> String {
         let text = format!("{:04}-{:02}-{:02}", val / 10000, val / 100 % 100, val % 100);
 
-        match Regex::new(self.get_locale(true).date_regex()) {
+        match Regex::new(self.get_locale(true).format_out().date_regex()) {
             Err(_e) => String::from(text.as_str()),
             Ok(o) => o
-                .replace(text.as_str(), self.get_locale(true).date_replace())
+                .replace(text.as_str(), self.get_locale(true).format_out().date_replace())
                 .to_string(),
         }
     }
@@ -515,10 +358,10 @@ impl ListLocale {
     pub fn format_integeri(&self, val: i32) -> String {
         let text = val.to_string();
 
-        match Regex::new(self.get_locale(true).integer_regex()) {
+        match Regex::new(self.get_locale(true).format_out().integer_regex()) {
             Err(_e) => String::from(text.as_str()),
             Ok(o) => o
-                .replace(text.as_str(), self.get_locale(true).integer_replace())
+                .replace(text.as_str(), self.get_locale(true).format_out().integer_replace())
                 .to_string(),
         }
     }
@@ -550,10 +393,10 @@ impl ListLocale {
     pub fn format_decimal(&self, val: Decimal) -> String {
         let text = CoreUtility::util_round(val, crate::MAXIMUM_DISPLAY_DECIMAL_DIGITS).to_string();
 
-        match Regex::new(self.get_locale(true).decimal_regex()) {
+        match Regex::new(self.get_locale(true).format_out().decimal_regex()) {
             Err(_e) => String::from(text.as_str()),
             Ok(o) => o
-                .replace(text.as_str(), self.get_locale(true).decimal_replace())
+                .replace(text.as_str(), self.get_locale(true).format_out().decimal_replace())
                 .to_string(),
         }
     }
@@ -579,10 +422,10 @@ impl ListLocale {
             text = format!("{}.00", text);
         }
 
-        match Regex::new(self.get_locale(true).currency_regex()) {
+        match Regex::new(self.get_locale(true).format_out().currency_regex()) {
             Err(_e) => String::from(text.as_str()),
             Ok(o) => o
-                .replace(text.as_str(), self.get_locale(true).currency_replace())
+                .replace(text.as_str(), self.get_locale(true).format_out().currency_replace())
                 .to_string(),
         }
     }

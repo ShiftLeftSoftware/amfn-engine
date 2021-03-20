@@ -634,16 +634,19 @@
 		"locale": {
 			"additionalProperties": false,
 			"properties": {
-				"locale_str": {
+				"locale-str": {
 					"type": "string"
 				},
-				"currency_code": {
+				"currency-code": {
 					"type": "string"
 				},
 				"decimal-digits": {
 					"type": "number"
 				},
-				"format": {
+				"format-in": {
+					"$ref": "#/definitions/locale-format"
+				},
+				"format-out": {
 					"$ref": "#/definitions/locale-format"
 				},
 				"resources": {
@@ -651,9 +654,10 @@
 				}
 			},
 			"required": [
-				"locale_str",
-				"currency_code",
-				"format",
+				"locale-str",
+				"currency-code",
+				"format-in",
+				"format-out",
 				"resources"
 			],
 			"type": "object"
@@ -679,10 +683,10 @@
 				"integer-replace": {
 					"type": "string"
 				},
-				"float-regex": {
+				"decimal-regex": {
 					"type": "string"
 				},
-				"float-replace": {
+				"decimal-replace": {
 					"type": "string"
 				},
 				"currency-regex": {
@@ -697,8 +701,8 @@
 				"date-replace",
 				"integer-regex",
 				"integer-replace",
-				"float-regex",
-				"float-replace",
+				"decimal-regex",
+				"decimal-replace",
 				"currency-regex",
 				"currency-replace"
 			],

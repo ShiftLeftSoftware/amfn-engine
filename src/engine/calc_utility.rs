@@ -336,8 +336,6 @@ impl CalcUtility {
         let decimal_digits = calc_mgr.decimal_digits(true);
         let mgr = calc_mgr.mgr();
         let mut list_locale = mgr.list_locale_mut();
-        let cashflow_currency_code = String::from(list_locale.cashflow_currency_code());
-        let event_currency_code = String::from(list_locale.event_currency_code());
         let list_cashflow = calc_mgr.list_cashflow();
         let list_event_opt = list_cashflow.list_event();
         let mut result = String::from("");
@@ -395,11 +393,7 @@ impl CalcUtility {
                                     Err(_e) => {}
                                     Ok(o2) => {
                                         result = list_locale.format_currency(
-                                            CalcUtility::convert_currency_event(
-                                                &calc_mgr, 
-                                                cashflow_currency_code.as_str(), 
-                                                event_currency_code.as_str(), 
-                                                o2),
+                                            o2,
                                             decimal_digits
                                         );
                                     }
@@ -429,11 +423,7 @@ impl CalcUtility {
             crate::ColumnType::Value => match list_event.elem_type() {
                 crate::ExtensionType::PrincipalChange => {
                     result = list_locale.format_currency(
-                        CalcUtility::convert_currency_event(
-                            &calc_mgr, 
-                            cashflow_currency_code.as_str(), 
-                            event_currency_code.as_str(), 
-                            list_event.value()),
+                        list_event.value(),
                         decimal_digits
                     );
                 }
