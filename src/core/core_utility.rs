@@ -12,7 +12,7 @@ use math::round;
 use rust_decimal::prelude::*;
 
 use crate::core::ListDescriptor;
-use crate::{ListTrait};
+use crate::ListTrait;
 
 pub struct CoreUtility {}
 

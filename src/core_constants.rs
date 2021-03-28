@@ -253,14 +253,16 @@ pub const JSON_SERIALIZE_TEMPLATES: usize = 2;
 pub const JSON_SERIALIZE_EXCHANGE_RATES: usize = 4;
 /// Serialize cashflow preferences.
 pub const JSON_SERIALIZE_CASHFLOW_PREFERENCES: usize = 8;
+/// Serialize selected cashflow.
+pub const JSON_SERIALIZE_CASHFLOW_SELECTED: usize = 16;
 /// Serialize cashflows with event list.
-pub const JSON_SERIALIZE_EVENT_LIST: usize = 16;
+pub const JSON_SERIALIZE_EVENT_LIST: usize = 32;
 /// Serialize cashflows with amortization list and balance results
-pub const JSON_SERIALIZE_AMORTIZATION_LIST: usize = 32;
+pub const JSON_SERIALIZE_AMORTIZATION_LIST: usize = 64;
 /// Serialize cashflows with amortization list (with rollup elements)
-pub const JSON_SERIALIZE_AMORTIZATION_LIST_ROLLUPS: usize = 64;
+pub const JSON_SERIALIZE_AMORTIZATION_LIST_ROLLUPS: usize = 128;
 /// Serialize cashflows with amortization list (with rollup and detail elements)
-pub const JSON_SERIALIZE_AMORTIZATION_LIST_DETAILS: usize = 128;
+pub const JSON_SERIALIZE_AMORTIZATION_LIST_DETAILS: usize = 256;
 
 /// Json line ending. 
 pub const LINE_ENDING: &str = "\n";

@@ -17,7 +17,7 @@ use crate::core::{
     CoreUtility, ElemBalanceResult, ElemSymbol, ListAmortization, ListDescriptor, ListParameter,
     MapSymbol,
 };
-use crate::{ListTrait};
+use crate::ListTrait;
 
 pub struct CalcExpression {
     /// Calculator manager element.
@@ -195,15 +195,13 @@ impl CalcExpression {
         match list_descriptor_cashflow_param {
             None => {}
             Some(o) => {
-                self.list_descriptor_cashflow =
-                    Option::from(o.copy(false, updating_json));
+                self.list_descriptor_cashflow = Option::from(o.copy(false, updating_json));
             }
         }
         match list_descriptor_event_param {
             None => {}
             Some(o) => {
-                self.list_descriptor_event =
-                    Option::from(o.copy(false, updating_json));
+                self.list_descriptor_event = Option::from(o.copy(false, updating_json));
             }
         }
 
@@ -430,7 +428,8 @@ impl CalcExpression {
                                                 .calc_mgr()
                                                 .mgr()
                                                 .operators()
-                                                .get_element_by_key("~") {
+                                                .get_element_by_key("~")
+                                            {
                                                 // Unary minus
                                                 return Err(crate::ErrorType::InvalidOperator);
                                             }
@@ -1088,7 +1087,6 @@ impl CalcExpression {
                 }
             }
             if elem_symbol_opt.is_none() {
-
                 let calc_expression = CalcExpression::new_with_symbol_table(
                     &self.calc_manager,
                     &self.symbol_table,
@@ -1578,7 +1576,7 @@ impl CalcExpression {
         } else {
             return Err(crate::ErrorType::Element);
         }
-        
+
         let mut elem_result_symbol = ElemSymbol::new();
 
         if list_am_opt.is_none() || elem_balance_result_opt.is_none() {
@@ -1843,7 +1841,7 @@ impl CalcExpression {
                 return Err(crate::ErrorType::Element);
             }
         }
-        
+
         match CoreUtility::get_col_name(index) {
             crate::ColumnType::EventType => {
                 elem_result_symbol.set_string(list_am.event_type());

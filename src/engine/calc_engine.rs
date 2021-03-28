@@ -16,7 +16,7 @@ use std::rc::Rc;
 use super::{CalcExpression, CalcManager, CalcUtility, ElemCashflowStats, ElemPreferences};
 use crate::core::{
     CoreManager, CoreUtility, ElemBalanceResult, ElemSymbol, ListAmortization, ListDescriptor,
-    ListEvent, ListParameter, ListStatisticHelper
+    ListEvent, ListParameter, ListStatisticHelper,
 };
 use crate::{ExtensionTrait, ListTrait};
 
@@ -27,7 +27,7 @@ pub struct CalcEngine {
 
 /// The main default implementation of the AmFn engine component.
 
-impl Default for CalcEngine {    
+impl Default for CalcEngine {
     /// Create and return a new AmFn engine.
     ///
     /// # Return
@@ -157,14 +157,14 @@ impl CalcEngine {
     /// # Arguments
     ///
     /// * `index` - Cashflow index to initialize.
-    /// 
+    ///
     /// # Return
-    /// 
+    ///
     /// * True if successful, otherwise false.
 
     pub fn init_cashflow(&self, index: u32) -> bool {
-        if !self.calc_mgr().list_cashflow().get_element(index as usize) { 
-            return false; 
+        if !self.calc_mgr().list_cashflow().get_element(index as usize) {
+            return false;
         }
 
         if !self.calc_mgr().list_cashflow().cashflow_valid() {
@@ -177,8 +177,10 @@ impl CalcEngine {
             self.evaluate_cashflow_event_type_all();
 
             match self.balance_cashflow() {
-                Err(_e) => { return false; }
-                Ok(_o) => { }
+                Err(_e) => {
+                    return false;
+                }
+                Ok(_o) => {}
             }
         }
 
@@ -897,8 +899,7 @@ impl CalcEngine {
                     }
                 }
                 if elem_preferences_opt.is_none() {
-                    elem_preferences_opt =
-                        Option::from(o.preferences().copy(true));
+                    elem_preferences_opt = Option::from(o.preferences().copy(true));
                 }
             }
         }
@@ -1096,8 +1097,7 @@ impl CalcEngine {
                     }
                 }
                 if elem_preferences_opt.is_none() {
-                    elem_preferences_opt =
-                        Option::from(o.preferences().copy(true));
+                    elem_preferences_opt = Option::from(o.preferences().copy(true));
                 }
             }
         }
@@ -1365,9 +1365,7 @@ impl CalcEngine {
                     let list_template_group = calc_mgr.list_template_group();
                     if list_template_group.get_element_by_group(new_group.as_str(), true) {
                         let list_parameter = o.preferences().list_parameter();
-                        let mut elem_preferences = list_template_group
-                            .preferences()
-                            .copy(true);
+                        let mut elem_preferences = list_template_group.preferences().copy(true);
                         if list_parameter.get_element_by_name(crate::PARAM_DESCRIPTION, true) {
                             if !elem_preferences
                                 .list_parameter()
@@ -1403,8 +1401,7 @@ impl CalcEngine {
                     }
                 }
                 if elem_preferences_opt.is_none() {
-                    elem_preferences_opt =
-                        Option::from(o.preferences().copy(true));
+                    elem_preferences_opt = Option::from(o.preferences().copy(true));
                 }
             }
         }
@@ -1854,20 +1851,36 @@ impl CalcEngine {
                     if event_type_expr.is_empty() {
                         match elem.elem_type() {
                             crate::ExtensionType::CurrentValue => {
-                                event_type_expr =
-                                    String::from(self.calc_mgr().mgr().list_locale().get_resource(crate::USER_EVENT_TYPE_CURRENT_VALUE));
+                                event_type_expr = String::from(
+                                    self.calc_mgr()
+                                        .mgr()
+                                        .list_locale()
+                                        .get_resource(crate::USER_EVENT_TYPE_CURRENT_VALUE),
+                                );
                             }
                             crate::ExtensionType::StatisticValue => {
-                                event_type_expr =
-                                    String::from(self.calc_mgr().mgr().list_locale().get_resource(crate::USER_EVENT_TYPE_STATISTIC_VALUE));
+                                event_type_expr = String::from(
+                                    self.calc_mgr()
+                                        .mgr()
+                                        .list_locale()
+                                        .get_resource(crate::USER_EVENT_TYPE_STATISTIC_VALUE),
+                                );
                             }
                             crate::ExtensionType::InterestChange => {
-                                event_type_expr =
-                                    String::from(self.calc_mgr().mgr().list_locale().get_resource(crate::USER_EVENT_TYPE_INTEREST_CHANGE));
+                                event_type_expr = String::from(
+                                    self.calc_mgr()
+                                        .mgr()
+                                        .list_locale()
+                                        .get_resource(crate::USER_EVENT_TYPE_INTEREST_CHANGE),
+                                );
                             }
                             _ => {
-                                event_type_expr = 
-                                    String::from(self.calc_mgr().mgr().list_locale().get_resource(crate::USER_EVENT_TYPE_PRINCIPAL_CHANGE));
+                                event_type_expr = String::from(
+                                    self.calc_mgr()
+                                        .mgr()
+                                        .list_locale()
+                                        .get_resource(crate::USER_EVENT_TYPE_PRINCIPAL_CHANGE),
+                                );
                             }
                         }
                     }
@@ -2000,7 +2013,11 @@ impl CalcEngine {
         cashflow: bool,
     ) -> ElemSymbol {
         CalcUtility::evaluate_expression(
-            self.calc_manager(), list_parameter, expression_str, cashflow)
+            self.calc_manager(),
+            list_parameter,
+            expression_str,
+            cashflow,
+        )
     }
 
     /// Format and return a date string.

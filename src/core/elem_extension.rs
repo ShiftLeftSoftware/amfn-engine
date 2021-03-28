@@ -9,10 +9,7 @@
 
 use rust_decimal::prelude::*;
 
-use super::{
-    ElemCurrentValue, ElemInterestChange, ElemPrincipalChange,
-    ElemStatisticValue,
-};
+use super::{ElemCurrentValue, ElemInterestChange, ElemPrincipalChange, ElemStatisticValue};
 
 pub enum ExtensionValue {
     PrincipalChange(ElemPrincipalChange),
@@ -41,12 +38,8 @@ impl ElemExtension {
     ///
     /// * See description.
 
-    pub fn new_current_value(
-        current_value_param: ElemCurrentValue,
-    ) -> ElemExtension {
-        ElemExtension::new(
-            ExtensionValue::CurrentValue(current_value_param),
-        )
+    pub fn new_current_value(current_value_param: ElemCurrentValue) -> ElemExtension {
+        ElemExtension::new(ExtensionValue::CurrentValue(current_value_param))
     }
 
     /// Return a new interest change event.
@@ -59,12 +52,8 @@ impl ElemExtension {
     ///
     /// * See description.
 
-    pub fn new_interest_change(
-        interest_change_param: ElemInterestChange,
-    ) -> ElemExtension {
-        ElemExtension::new(
-            ExtensionValue::InterestChange(interest_change_param),
-        )
+    pub fn new_interest_change(interest_change_param: ElemInterestChange) -> ElemExtension {
+        ElemExtension::new(ExtensionValue::InterestChange(interest_change_param))
     }
 
     /// Return a new principal change event.
@@ -77,12 +66,8 @@ impl ElemExtension {
     ///
     /// * See description.
 
-    pub fn new_principal_change(
-        principal_change_param: ElemPrincipalChange,
-    ) -> ElemExtension {
-        ElemExtension::new(
-            ExtensionValue::PrincipalChange(principal_change_param),
-        )
+    pub fn new_principal_change(principal_change_param: ElemPrincipalChange) -> ElemExtension {
+        ElemExtension::new(ExtensionValue::PrincipalChange(principal_change_param))
     }
 
     /// Return a new statistic value event.
@@ -95,12 +80,8 @@ impl ElemExtension {
     ///
     /// * See description.
 
-    pub fn new_statistic_value(
-        statistic_value_param: ElemStatisticValue,
-    ) -> ElemExtension {
-        ElemExtension::new(
-            ExtensionValue::StatisticValue(statistic_value_param),
-        )
+    pub fn new_statistic_value(statistic_value_param: ElemStatisticValue) -> ElemExtension {
+        ElemExtension::new(ExtensionValue::StatisticValue(statistic_value_param))
     }
 
     /// Create a extension element.
@@ -113,9 +94,7 @@ impl ElemExtension {
     ///
     /// * See description.
 
-    fn new(
-        extension_value_param: ExtensionValue,
-    ) -> ElemExtension {
+    fn new(extension_value_param: ExtensionValue) -> ElemExtension {
         ElemExtension {
             extension_value: extension_value_param,
         }
@@ -129,9 +108,9 @@ impl ElemExtension {
 
     pub fn copy(&self) -> ElemExtension {
         match self.extension_value() {
-            ExtensionValue::PrincipalChange(o) => ElemExtension::new(
-                ExtensionValue::PrincipalChange(o.copy()),
-            ),
+            ExtensionValue::PrincipalChange(o) => {
+                ElemExtension::new(ExtensionValue::PrincipalChange(o.copy()))
+            }
             ExtensionValue::CurrentValue(o) => {
                 ElemExtension::new(ExtensionValue::CurrentValue(o.copy()))
             }

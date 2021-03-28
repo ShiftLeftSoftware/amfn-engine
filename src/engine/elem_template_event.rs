@@ -7,7 +7,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::core::{ListEvent};
+use crate::core::ListEvent;
 
 pub struct ElemTemplateEvent {
     /// Name of the template event.
@@ -31,9 +31,7 @@ impl ElemTemplateEvent {
     ///
     /// * See description.
 
-    pub fn new(
-        name_param: &str,
-    ) -> ElemTemplateEvent {
+    pub fn new(name_param: &str) -> ElemTemplateEvent {
         ElemTemplateEvent {
             name: String::from(name_param),
             list_event: ListEvent::new(false),

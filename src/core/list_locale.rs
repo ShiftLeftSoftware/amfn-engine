@@ -12,7 +12,7 @@ use rust_decimal::prelude::*;
 use std::cell::Cell;
 use std::collections::HashMap;
 
-use super::{CoreUtility, ElemLocaleFormat, ElemLocale};
+use super::{CoreUtility, ElemLocale, ElemLocaleFormat};
 
 pub struct ListLocale {
     list_locale: Vec<ElemLocale>,
@@ -340,7 +340,10 @@ impl ListLocale {
         match Regex::new(self.get_locale(true).format_out().date_regex()) {
             Err(_e) => String::from(text.as_str()),
             Ok(o) => o
-                .replace(text.as_str(), self.get_locale(true).format_out().date_replace())
+                .replace(
+                    text.as_str(),
+                    self.get_locale(true).format_out().date_replace(),
+                )
                 .to_string(),
         }
     }
@@ -361,7 +364,10 @@ impl ListLocale {
         match Regex::new(self.get_locale(true).format_out().integer_regex()) {
             Err(_e) => String::from(text.as_str()),
             Ok(o) => o
-                .replace(text.as_str(), self.get_locale(true).format_out().integer_replace())
+                .replace(
+                    text.as_str(),
+                    self.get_locale(true).format_out().integer_replace(),
+                )
                 .to_string(),
         }
     }
@@ -396,7 +402,10 @@ impl ListLocale {
         match Regex::new(self.get_locale(true).format_out().decimal_regex()) {
             Err(_e) => String::from(text.as_str()),
             Ok(o) => o
-                .replace(text.as_str(), self.get_locale(true).format_out().decimal_replace())
+                .replace(
+                    text.as_str(),
+                    self.get_locale(true).format_out().decimal_replace(),
+                )
                 .to_string(),
         }
     }
@@ -425,7 +434,10 @@ impl ListLocale {
         match Regex::new(self.get_locale(true).format_out().currency_regex()) {
             Err(_e) => String::from(text.as_str()),
             Ok(o) => o
-                .replace(text.as_str(), self.get_locale(true).format_out().currency_replace())
+                .replace(
+                    text.as_str(),
+                    self.get_locale(true).format_out().currency_replace(),
+                )
                 .to_string(),
         }
     }

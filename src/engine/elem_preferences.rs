@@ -12,7 +12,7 @@ use std::rc::Rc;
 
 use super::CalcManager;
 use crate::core::{ListDescriptor, ListParameter};
-use crate::{ListTrait};
+use crate::ListTrait;
 
 pub struct ElemPreferences {
     /// Calculator manager element.
@@ -122,7 +122,7 @@ impl ElemPreferences {
             compress_descriptor: compress_descriptor_param,
             statistic_events: statistic_events_param,
             list_parameter: new_list_parameter,
-            list_descriptor: new_list_descriptor
+            list_descriptor: new_list_descriptor,
         }
     }
 
@@ -196,11 +196,7 @@ impl ElemPreferences {
             self.compress_descriptor,
             self.statistic_events,
             Option::from(&self.list_parameter.copy(updating_json)),
-            Option::from(
-                &self
-                    .list_descriptor
-                    .copy(false, updating_json),
-            ),
+            Option::from(&self.list_descriptor.copy(false, updating_json)),
             false,
             updating_json,
         )

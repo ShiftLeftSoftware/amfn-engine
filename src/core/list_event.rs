@@ -8,12 +8,12 @@
 // except according to those terms.
 
 use rust_decimal::prelude::*;
-use std::cell::{Cell};
+use std::cell::Cell;
 use std::cmp::Ordering::Equal;
 
 use super::{
-    ElemCurrentValue, ElemEvent, ElemExtension, ElemInterestChange,
-    ElemPrincipalChange, ElemStatisticValue, ListDescriptor, ListParameter,
+    ElemCurrentValue, ElemEvent, ElemExtension, ElemInterestChange, ElemPrincipalChange,
+    ElemStatisticValue, ListDescriptor, ListParameter,
 };
 use crate::{ExtensionTrait, ListTrait};
 
@@ -173,8 +173,7 @@ impl ListEvent {
         let elem_extension = &elem_extension_param;
         let extension_type = elem_extension.extension_type();
         if list_parameter_param.is_none() {
-            list_parameter_param =
-                Option::from(ListParameter::new());
+            list_parameter_param = Option::from(ListParameter::new());
         }
 
         if list_descriptor_param.is_none() {
@@ -369,8 +368,7 @@ impl ListEvent {
                 match o.list_parameter().as_ref() {
                     None => {}
                     Some(o2) => {
-                        list_parameter_opt =
-                            Option::from(o2.copy(updating_json_param));
+                        list_parameter_opt = Option::from(o2.copy(updating_json_param));
                     }
                 }
 
@@ -378,8 +376,7 @@ impl ListEvent {
                 match o.list_descriptor().as_ref() {
                     None => {}
                     Some(o2) => {
-                        list_descriptor_opt =
-                            Option::from(o2.copy(false, updating_json_param));
+                        list_descriptor_opt = Option::from(o2.copy(false, updating_json_param));
                     }
                 }
                 list_event.add_event(

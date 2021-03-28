@@ -8,9 +8,7 @@
 // except according to those terms.
 
 use super::{CalcCalculate, ElemPreferences};
-use crate::core::{
-    ElemBalanceResult, ListAmortization, ListEvent, ListStatisticHelper,
-};
+use crate::core::{ElemBalanceResult, ListAmortization, ListEvent, ListStatisticHelper};
 
 pub struct ElemCashflow {
     /// Name of the cashflow.

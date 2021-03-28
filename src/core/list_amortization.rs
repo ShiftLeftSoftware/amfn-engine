@@ -314,8 +314,7 @@ impl ListAmortization {
             match elem.list_descriptor().as_ref() {
                 None => {}
                 Some(o) => {
-                    list_descriptor_opt =
-                        Option::from(o.copy(false, updating_json));
+                    list_descriptor_opt = Option::from(o.copy(false, updating_json));
                 }
             }
 

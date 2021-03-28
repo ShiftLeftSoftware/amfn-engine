@@ -7,12 +7,12 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::{Cell};
+use std::cell::Cell;
 use std::cmp::Ordering::Equal;
 
 use super::ElemTemplateEvent;
-use crate::core::{ListEvent};
-use crate::{ListTrait};
+use crate::core::ListEvent;
+use crate::ListTrait;
 
 pub struct ListTemplateEvent {
     /// The list of template events.

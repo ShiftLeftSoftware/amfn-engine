@@ -12,9 +12,7 @@ use std::cmp::Ordering::Equal;
 use std::rc::Rc;
 
 use super::{CalcCalculate, CalcManager, ElemCashflow, ElemCashflowStats, ElemPreferences};
-use crate::core::{
-    ElemBalanceResult, ListAmortization, ListEvent, ListStatisticHelper,
-};
+use crate::core::{ElemBalanceResult, ListAmortization, ListEvent, ListStatisticHelper};
 use crate::{ExtensionTrait, ListTrait};
 
 pub struct ListCashflow {
@@ -274,12 +272,7 @@ impl ListCashflow {
                 return Err(crate::ErrorType::Cashflow);
             }
             Some(o) => {
-                elem_cashflow = ElemCashflow::new(
-                    name.as_str(),
-                    o,
-                    list_event_opt,
-                    calculate,
-                );
+                elem_cashflow = ElemCashflow::new(name.as_str(), o, list_event_opt, calculate);
             }
         }
 
@@ -583,7 +576,7 @@ impl ListCashflow {
             None => {
                 panic!("Cashflow list index not set");
             }
-            Some(o) => o.calculate()
+            Some(o) => o.calculate(),
         }
     }
 

@@ -887,8 +887,12 @@ impl CoreManager {
 
         loop {
             match ll.pop() {
-                None => { break; }
-                Some(o) => { self.list_locale.borrow_mut().list_mut().push(o); }
+                None => {
+                    break;
+                }
+                Some(o) => {
+                    self.list_locale.borrow_mut().list_mut().push(o);
+                }
             }
         }
     }

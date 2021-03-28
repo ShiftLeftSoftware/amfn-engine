@@ -19,10 +19,10 @@ use super::{
     ListTemplateGroup,
 };
 use crate::core::{
-    CoreUtility, ElemCurrentValue, ElemExtension, ElemInterestChange, ElemPrincipalChange,
-    ElemStatisticValue, ElemLocaleFormat, ListDescriptor, ListEvent, ListLocale, ListParameter,
+    CoreUtility, ElemCurrentValue, ElemExtension, ElemInterestChange, ElemLocaleFormat,
+    ElemPrincipalChange, ElemStatisticValue, ListDescriptor, ListEvent, ListLocale, ListParameter,
 };
-use crate::{ListTrait};
+use crate::ListTrait;
 
 pub struct CalcJsonDeserialize {
     /// Calculator manager element.
@@ -116,7 +116,10 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager.borrow_mut().mgr_mut().append_list_locale(o);
+                    self.calc_manager
+                        .borrow_mut()
+                        .mgr_mut()
+                        .append_list_locale(o);
                 }
             }
         }
@@ -184,10 +187,7 @@ impl CalcJsonDeserialize {
                 }
             }
 
-            let preferences = self
-                .calc_mgr()
-                .preferences()
-                .copy(true);
+            let preferences = self.calc_mgr().preferences().copy(true);
             let result = cashflows.add_cashflow(name, None, Option::from(preferences), "");
             match result {
                 Err(_e) => {
@@ -209,7 +209,8 @@ impl CalcJsonDeserialize {
                 match cashflows.preferences_mut() {
                     None => {}
                     Some(o) => {
-                        let result = self.deserialize_preferences_with_prefs(&cf["preferences"], o, true);
+                        let result =
+                            self.deserialize_preferences_with_prefs(&cf["preferences"], o, true);
                         match result {
                             Err(e) => {
                                 return Err(e);
@@ -583,8 +584,7 @@ impl CalcJsonDeserialize {
                         Ok(_o) => {}
                     }
 
-                    extension =
-                        ElemExtension::new_current_value(cv);
+                    extension = ElemExtension::new_current_value(cv);
                 }
                 crate::ExtensionType::InterestChange => {
                     let mut ic = ElemInterestChange::new(
@@ -605,8 +605,7 @@ impl CalcJsonDeserialize {
                         Ok(_o) => {}
                     }
 
-                    extension =
-                        ElemExtension::new_interest_change(ic);
+                    extension = ElemExtension::new_interest_change(ic);
                 }
                 crate::ExtensionType::StatisticValue => {
                     let mut sv = ElemStatisticValue::new("", false, false);
@@ -619,8 +618,7 @@ impl CalcJsonDeserialize {
                         Ok(_o) => {}
                     }
 
-                    extension =
-                        ElemExtension::new_statistic_value(sv);
+                    extension = ElemExtension::new_statistic_value(sv);
                 }
                 _ => {
                     let mut pc = ElemPrincipalChange::new(
@@ -641,13 +639,11 @@ impl CalcJsonDeserialize {
                         Ok(_o) => {}
                     }
 
-                    extension =
-                        ElemExtension::new_principal_change(pc);
+                    extension = ElemExtension::new_principal_change(pc);
                 }
             }
 
-            let mut params =
-                ListParameter::new();
+            let mut params = ListParameter::new();
             if !ev["parameter-list"].is_null() {
                 let result = self.deserialize_parameter_list(&ev["parameter-list"], &mut params);
                 match result {
@@ -986,8 +982,12 @@ impl CalcJsonDeserialize {
                 return Err(crate::ErrorType::Json);
             }
             match self.deserialize_locale_format(&locale["format-in"]) {
-                Err(e) => { return Err(e); }
-                Ok(o) => { format_in = o; }
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    format_in = o;
+                }
             }
 
             let format_out: ElemLocaleFormat;
@@ -995,8 +995,12 @@ impl CalcJsonDeserialize {
                 return Err(crate::ErrorType::Json);
             }
             match self.deserialize_locale_format(&locale["format-out"]) {
-                Err(e) => { return Err(e); }
-                Ok(o) => { format_out = o; }
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    format_out = o;
+                }
             }
 
             let mut resources: HashMap<String, String> = HashMap::new();
@@ -1037,7 +1041,7 @@ impl CalcJsonDeserialize {
                 format_out,
                 resources,
             );
-            
+
             index += 1;
         }
 
@@ -1054,7 +1058,10 @@ impl CalcJsonDeserialize {
     ///
     /// * Locale format element if successful, otherwise error code.
 
-    fn deserialize_locale_format(&self, locale_format: &JsonValue) -> Result<ElemLocaleFormat, crate::ErrorType> {
+    fn deserialize_locale_format(
+        &self,
+        locale_format: &JsonValue,
+    ) -> Result<ElemLocaleFormat, crate::ErrorType> {
         let date_regex: &str;
         match locale_format["date-regex"].as_str() {
             None => {
@@ -1140,7 +1147,7 @@ impl CalcJsonDeserialize {
             decimal_regex,
             decimal_replace,
             currency_regex,
-            currency_replace
+            currency_replace,
         ))
     }
 
@@ -1231,7 +1238,7 @@ impl CalcJsonDeserialize {
 
     fn deserialize_preferences(
         &self,
-        prefs: &JsonValue
+        prefs: &JsonValue,
     ) -> Result<ElemPreferences, crate::ErrorType> {
         let mut preferences = ElemPreferences::new(
             &self.calc_manager,
@@ -1272,7 +1279,7 @@ impl CalcJsonDeserialize {
         &self,
         prefs: &JsonValue,
         preferences: &mut ElemPreferences,
-        cashflow_level: bool
+        cashflow_level: bool,
     ) -> Result<(), crate::ErrorType> {
         match prefs["combine-principal"].as_i32() {
             None => {}
@@ -1596,7 +1603,7 @@ impl CalcJsonDeserialize {
                 let result = self.deserialize_preferences_with_prefs(
                     &templ_group["preferences"],
                     template_groups.preferences_mut(),
-                    false
+                    false,
                 );
                 match result {
                     Err(_e) => {

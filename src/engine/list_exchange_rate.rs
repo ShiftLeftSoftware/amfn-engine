@@ -8,11 +8,11 @@
 // except according to those terms.
 
 use rust_decimal::prelude::*;
-use std::cell::{Cell};
+use std::cell::Cell;
 use std::cmp::Ordering::Equal;
 
 use super::ElemExchangeRate;
-use crate::{ListTrait};
+use crate::ListTrait;
 
 pub struct ListExchangeRate {
     /// The list of exchange rates.

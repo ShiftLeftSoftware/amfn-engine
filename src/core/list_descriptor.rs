@@ -7,11 +7,11 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::{Cell};
+use std::cell::Cell;
 use std::cmp::Ordering::Equal;
 
-use super::{ElemDescriptor};
-use crate::{ListTrait};
+use super::ElemDescriptor;
+use crate::ListTrait;
 
 pub struct ListDescriptor {
     /// The list of descriptors.
@@ -259,11 +259,7 @@ impl ListDescriptor {
     ///
     /// * See description.
 
-    pub fn copy(
-        &self,
-        copy_propagate: bool,
-        updating_json_param: bool,
-    ) -> ListDescriptor {
+    pub fn copy(&self, copy_propagate: bool, updating_json_param: bool) -> ListDescriptor {
         let mut list_descriptor = ListDescriptor::new();
         self.copy_list_descriptor(&mut list_descriptor, copy_propagate, updating_json_param);
 

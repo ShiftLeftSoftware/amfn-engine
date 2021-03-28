@@ -15,9 +15,10 @@ use super::{
     CalcExpression, CalcUtility, ElemPreferences, ListCashflow, ListExchangeRate, ListTemplateGroup,
 };
 use crate::core::{
-    CoreManager, CoreUtility, ElemColumn, ElemSymbol, ListColumn, ListDescriptor, ListEvent, ListAmortization, ListSummary,
+    CoreManager, CoreUtility, ElemColumn, ElemSymbol, ListAmortization, ListColumn, ListDescriptor,
+    ListEvent, ListSummary,
 };
-use crate::{ListTrait};
+use crate::ListTrait;
 
 pub struct CalcManager {
     /// Calc manager element (injected from the engine and cloned).
@@ -844,8 +845,12 @@ impl CalcManager {
 
         loop {
             match cfl.pop() {
-                None => { break; }
-                Some(o) => { self.list_cashflow.list_mut().push(o); }
+                None => {
+                    break;
+                }
+                Some(o) => {
+                    self.list_cashflow.list_mut().push(o);
+                }
             }
         }
     }
@@ -861,8 +866,12 @@ impl CalcManager {
 
         loop {
             match tl.pop() {
-                None => { break; }
-                Some(o) => { self.list_template_group.list_mut().push(o); }
+                None => {
+                    break;
+                }
+                Some(o) => {
+                    self.list_template_group.list_mut().push(o);
+                }
             }
         }
     }
@@ -999,10 +1008,10 @@ impl CalcManager {
         let event_currency_code = list_locale.event_currency_code();
 
         CalcUtility::convert_currency_event(
-            &self.calc_mgr(), 
+            &self.calc_mgr(),
             cashflow_currency_code,
             event_currency_code,
-            value
+            value,
         )
     }
 
@@ -1028,7 +1037,7 @@ impl CalcManager {
     ) -> Decimal {
         if from_code.is_empty() || from_code == to_code {
             return value;
-        }        
+        }
         self.list_exchange_rate().convert_currency(
             value,
             from_code,
@@ -1062,8 +1071,11 @@ impl CalcManager {
     ///
     /// * See description.
 
-    pub fn util_am_value(&self, elem_column: &ElemColumn, 
-        list_am_opt: &ListAmortization) -> String {
+    pub fn util_am_value(
+        &self,
+        elem_column: &ElemColumn,
+        list_am_opt: &ListAmortization,
+    ) -> String {
         CalcUtility::get_am_value(self.calc_manager(), elem_column, list_am_opt)
     }
 
@@ -1077,10 +1089,7 @@ impl CalcManager {
     ///
     /// * See description.
 
-    pub fn util_is_event_column_empty(
-        &self,
-        elem_column: &ElemColumn
-    ) -> bool {
+    pub fn util_is_event_column_empty(&self, elem_column: &ElemColumn) -> bool {
         CalcUtility::is_event_column_empty(self.calc_manager(), elem_column)
     }
 

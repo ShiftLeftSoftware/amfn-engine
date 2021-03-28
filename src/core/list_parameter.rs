@@ -8,10 +8,10 @@
 // except according to those terms.
 
 use rust_decimal::prelude::*;
-use std::cell::{Cell};
+use std::cell::Cell;
 
-use super::{ElemParameter};
-use crate::{ListTrait};
+use super::ElemParameter;
+use crate::ListTrait;
 
 pub struct ListParameter {
     /// The list of parameters.
@@ -118,7 +118,7 @@ impl ListParameter {
     pub fn new() -> ListParameter {
         ListParameter {
             list_parameter: Vec::new(),
-            list_index: Cell::new(usize::MAX)
+            list_index: Cell::new(usize::MAX),
         }
     }
 
@@ -197,10 +197,7 @@ impl ListParameter {
     ///
     /// * See description.
 
-    pub fn copy(
-        &self,
-        updating_json_param: bool
-    ) -> ListParameter {
+    pub fn copy(&self, updating_json_param: bool) -> ListParameter {
         let mut list_parameter = ListParameter::new();
 
         self.copy_list_parameter(&mut list_parameter, updating_json_param);

@@ -16,7 +16,7 @@ use crate::core::{
     CoreUtility, ElemBalanceResult, ElemExtension, ElemSymbol, ListAmortization, ListDescriptor,
     ListEvent, ListParameter, ListStatisticHelper,
 };
-use crate::{ListTrait};
+use crate::ListTrait;
 
 pub struct CalcCalculate {
     /// Calculator manager element.
@@ -2215,8 +2215,7 @@ impl CalcCalculate {
                             return Err(crate::ErrorType::Index);
                         }
                         Some(o) => {
-                            new_list_descriptor =
-                                o.copy(false, updating_json);
+                            new_list_descriptor = o.copy(false, updating_json);
                         }
                     }
 
@@ -2512,8 +2511,7 @@ impl CalcCalculate {
             }
 
             if !optimize {
-                let mut new_list_parameter =
-                    list_parameter.copy(updating_json);
+                let mut new_list_parameter = list_parameter.copy(updating_json);
                 new_list_parameter.add_parameter("intDate", updating_json);
                 new_list_parameter.set_integer(orig_date);
                 new_list_parameter.add_parameter("decValue", updating_json);
@@ -2612,10 +2610,7 @@ impl CalcCalculate {
                         0,
                         new_elem_extension,
                         Option::from(list_parameter.copy(updating_json)),
-                        Option::from(list_descriptor.copy(
-                            false,
-                            updating_json,
-                        )),
+                        Option::from(list_descriptor.copy(false, updating_json)),
                     );
 
                     event_sequence += 1;
@@ -2836,9 +2831,7 @@ impl CalcCalculate {
         let mut next_element2: bool = true;
         let updating_json = self.calc_mgr().updating_json();
 
-        let mut new_list_event = ListEvent::new(
-            list_event1.cashflow(),
-        );
+        let mut new_list_event = ListEvent::new(list_event1.cashflow());
         new_list_event.set_sort_on_add(false);
 
         loop {

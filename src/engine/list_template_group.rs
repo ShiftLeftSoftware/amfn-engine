@@ -14,7 +14,7 @@ use std::rc::Rc;
 use super::{
     CalcExpression, CalcManager, CalcUtility, ElemPreferences, ElemTemplateGroup, ListTemplateEvent,
 };
-use crate::{ListTrait};
+use crate::ListTrait;
 
 pub struct ListTemplateGroup {
     /// Calculator manager element.
@@ -291,20 +291,15 @@ impl ListTemplateGroup {
         if update_element {
             match self.list_template_group.get(self.list_index.get()) {
                 None => {
-                    new_elem_template_group = ElemTemplateGroup::new(
-                        group.as_str(),
-                        elem_preferences,
-                    );
+                    new_elem_template_group =
+                        ElemTemplateGroup::new(group.as_str(), elem_preferences);
                 }
                 Some(o) => {
                     new_elem_template_group = o.copy(updating_json);
                 }
             }
         } else {
-            new_elem_template_group = ElemTemplateGroup::new(
-                group.as_str(),
-                elem_preferences,
-            );
+            new_elem_template_group = ElemTemplateGroup::new(group.as_str(), elem_preferences);
         }
         if update_element {
             self.sort_updated.set(true);
@@ -358,18 +353,11 @@ impl ListTemplateGroup {
     pub fn copy_selected(&self) -> ElemTemplateGroup {
         let updating_json = self.calc_mgr().updating_json();
         let group = String::from(self.group());
-        let prefs = Option::from(
-            self.preferences()
-                .copy(updating_json),
-        );
+        let prefs = Option::from(self.preferences().copy(updating_json));
 
         let result = self.create_template_group(group.as_str(), prefs, false);
         match result {
-            Err(_e) => ElemTemplateGroup::new(
-                self.group(),
-                self.preferences()
-                    .copy(updating_json),
-            ),
+            Err(_e) => ElemTemplateGroup::new(self.group(), self.preferences().copy(updating_json)),
             Ok(o) => o,
         }
     }

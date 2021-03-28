@@ -585,7 +585,12 @@ impl CalcJsonSerialize {
         buf.push_str(crate::LINE_ENDING);
         self.increment_depth();
 
-        let mut index: usize = 0;
+        let orig_index = cashflows.index();
+        let mut index = 0;
+        if options & crate::JSON_SERIALIZE_CASHFLOW_SELECTED != 0 {
+            index = orig_index;
+        }
+
         if cashflows.get_element(index) {
             let mut deserialize_list = true;
 
@@ -629,7 +634,6 @@ impl CalcJsonSerialize {
 
                 if is_am_list {
                     self.serialize_am_list(is_am_rollups, is_am_details, buf, true);
-
                     match cashflows.elem_balance_result() {
                         None => {}
                         Some(o) => {
@@ -637,9 +641,13 @@ impl CalcJsonSerialize {
                         }
                     }
                 }
-                index += 1;
 
-                deserialize_list = cashflows.get_element(index);
+                if options & crate::JSON_SERIALIZE_CASHFLOW_SELECTED != 0 {
+                    deserialize_list = false;
+                } else {
+                    index += 1;
+                    deserialize_list = cashflows.get_element(index);
+                }
 
                 self.decrement_depth();
                 buf.push_str(self.indent().as_str());
@@ -658,6 +666,8 @@ impl CalcJsonSerialize {
             buf.push(',');
         }
         buf.push_str(crate::LINE_ENDING);
+
+        cashflows.get_element(orig_index);
     }
 
     /// Serialize current value element.

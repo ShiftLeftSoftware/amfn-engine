@@ -58,7 +58,7 @@ impl ElemLocaleFormat {
         decimal_regex_param: &str,
         decimal_replace_param: &str,
         currency_regex_param: &str,
-        currency_replace_param: &str
+        currency_replace_param: &str,
     ) -> ElemLocaleFormat {
         ElemLocaleFormat {
             date_regex: String::from(date_regex_param),
@@ -68,7 +68,7 @@ impl ElemLocaleFormat {
             decimal_regex: String::from(decimal_regex_param),
             decimal_replace: String::from(decimal_replace_param),
             currency_regex: String::from(currency_regex_param),
-            currency_replace: String::from(currency_replace_param)
+            currency_replace: String::from(currency_replace_param),
         }
     }
 
@@ -87,7 +87,7 @@ impl ElemLocaleFormat {
             self.decimal_regex(),
             self.decimal_replace(),
             self.currency_regex(),
-            self.currency_replace()
+            self.currency_replace(),
         )
     }
 
