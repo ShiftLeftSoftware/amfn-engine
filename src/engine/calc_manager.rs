@@ -12,10 +12,10 @@ use std::cell::{Cell, Ref, RefCell, RefMut};
 use std::rc::Rc;
 
 use super::{
-    CalcExpression, CalcUtility, ElemPreferences, ListCashflow, ListExchangeRate, ListTemplateGroup,
+    CalcExpression, CalcUtility, ElemPreferences, ListLocale, ListCashflow, ListExchangeRate, ListTemplateGroup,
 };
 use crate::core::{
-    CoreManager, CoreUtility, ElemColumn, ElemSymbol, ListAmortization, ListColumn, ListDescriptor,
+    CoreManager, CoreUtility, ElemColumn, ElemSymbol, ElemExtension, ListAmortization, ListColumn, ListDescriptor,
     ListEvent, ListSummary,
 };
 use crate::ListTrait;
@@ -25,6 +25,9 @@ pub struct CalcManager {
     calc_manager: Option<Rc<RefCell<CalcManager>>>,
     /// Core manager element.
     core_manager: Rc<RefCell<CoreManager>>,
+
+    /// List of locales.
+    list_locale: ListLocale,
 
     /// User preferences element.
     elem_preferences: Option<ElemPreferences>,
@@ -59,6 +62,7 @@ impl CalcManager {
         CalcManager {
             calc_manager: None,
             core_manager: Rc::new(RefCell::new(core_manager_param)),
+            list_locale: ListLocale::new(),
             elem_preferences: None,
             list_cashflow: ListCashflow::new(),
             list_event_pb: None,
@@ -603,6 +607,16 @@ impl CalcManager {
         ""
     }
 
+    /// Get the locale list.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn list_locale(&self) -> &ListLocale {
+        &self.list_locale
+    }
+
     /// Get the user preferences element.
     ///
     /// # Return
@@ -751,7 +765,7 @@ impl CalcManager {
         }
 
         let key = mgr.map_error().key();
-        let fs = String::from(mgr.list_locale().get_resource(key));
+        let fs = String::from(self.list_locale.get_resource(key));
 
         fs
     }
@@ -785,10 +799,7 @@ impl CalcManager {
         }
 
         String::from(
-            self.core_manager
-                .borrow()
-                .list_locale()
-                .get_locale_str(false),
+            self.list_locale.get_locale_str(false),
         )
     }
 
@@ -855,6 +866,27 @@ impl CalcManager {
         }
     }
 
+    /// Append to the list locale.
+    ///
+    /// # Arguments
+    ///
+    /// * `list_locale` - See description.
+
+    pub fn append_list_locale(&mut self, mut list_locale: ListLocale) {
+        let ll = list_locale.list_mut();
+
+        loop {
+            match ll.pop() {
+                None => {
+                    break;
+                }
+                Some(o) => {
+                    self.list_locale.list_mut().push(o);
+                }
+            }
+        }
+    }
+
     /// Append to the list template group.
     ///
     /// # Arguments
@@ -874,6 +906,16 @@ impl CalcManager {
                 }
             }
         }
+    }
+
+    /// Set the list locale.
+    ///
+    /// # Arguments
+    ///
+    /// * `list_locale` - See description.
+
+    pub fn set_list_locale(&mut self, list_locale: ListLocale) {
+        self.list_locale = list_locale;
     }
 
     /// Set the preferences.
@@ -1002,10 +1044,8 @@ impl CalcManager {
     /// * See description.
 
     pub fn util_convert_currency_event(&self, value: Decimal) -> Decimal {
-        let mgr = self.mgr();
-        let list_locale = mgr.list_locale();
-        let cashflow_currency_code = list_locale.cashflow_currency_code();
-        let event_currency_code = list_locale.event_currency_code();
+        let cashflow_currency_code = self.list_locale.cashflow_currency_code();
+        let event_currency_code = self.list_locale.event_currency_code();
 
         CalcUtility::convert_currency_event(
             &self.calc_mgr(),
@@ -1079,20 +1119,6 @@ impl CalcManager {
         CalcUtility::get_am_value(self.calc_manager(), elem_column, list_am_opt)
     }
 
-    /// Determine if the event column is empty.
-    ///
-    /// # Arguments
-    ///
-    /// * `elem_column` - Column element.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn util_is_event_column_empty(&self, elem_column: &ElemColumn) -> bool {
-        CalcUtility::is_event_column_empty(self.calc_manager(), elem_column)
-    }
-
     /// Create and return a column list object.
     ///
     /// # Arguments
@@ -1115,6 +1141,47 @@ impl CalcManager {
 
     pub fn util_parse_summary(&self) -> ListSummary {
         CalcUtility::parse_summary(self.calc_manager())
+    }
+
+    /// Set the appropriate event list value and 
+    /// return it as a string.
+    ///
+    /// # Arguments
+    ///
+    /// * `elem_column` - Column element.
+    /// * `index` - Event row index.
+    /// * `value_param` - Value to set as a string.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn util_set_event_value(
+        &self, 
+        elem_column: &ElemColumn,
+        index: usize,
+        value_param: &str
+    ) -> String {
+        CalcUtility::set_event_value(self.calc_manager(), elem_column, index, value_param)
+    }
+
+    /// Set the appropriate event list extension values.
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - Event row index.
+    /// * `ext_param` - Extension values to set.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
+
+    pub fn util_set_extension_values(
+        &self,
+        index: usize,
+        ext_param: &ElemExtension
+    ) -> bool {
+        CalcUtility::set_extension_values(self.calc_manager(), index, ext_param)
     }
 
     /// Calculates number of intervals between two dates.

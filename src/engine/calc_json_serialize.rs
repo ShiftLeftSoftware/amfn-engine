@@ -145,8 +145,7 @@ impl CalcJsonSerialize {
     ) {
         let calc_mgr = self.calc_mgr();
         let decimal_digits = calc_mgr.decimal_digits(true);
-        let mgr = calc_mgr.mgr();
-        let list_locale = mgr.list_locale();
+        let list_locale = calc_mgr.list_locale();
 
         let compress_descriptor = calc_mgr.compress_descriptor(true);
         let omit_statistic_events = calc_mgr.statistic_events(true);
@@ -192,7 +191,7 @@ impl CalcJsonSerialize {
                 }
                 buf.push_str(self.indent().as_str());
                 buf.push_str("\"date\": \"");
-                buf.push_str(list_locale.format_date(list_am.event_date()).as_str());
+                buf.push_str(list_locale.format_date_out(list_am.event_date()).as_str());
                 buf.push_str("\",");
                 buf.push_str(crate::LINE_ENDING);
                 buf.push_str(self.indent().as_str());
@@ -202,12 +201,12 @@ impl CalcJsonSerialize {
                 buf.push_str(crate::LINE_ENDING);
                 buf.push_str(self.indent().as_str());
                 buf.push_str("\"intervals\": ");
-                buf.push_str(list_locale.format_integer(list_am.intervals()).as_str());
+                buf.push_str(list_locale.format_integer_out(list_am.intervals()).as_str());
                 buf.push(',');
                 buf.push_str(crate::LINE_ENDING);
                 buf.push_str(self.indent().as_str());
                 buf.push_str("\"periods\": ");
-                buf.push_str(list_locale.format_integer(list_am.periods()).as_str());
+                buf.push_str(list_locale.format_integer_out(list_am.periods()).as_str());
                 buf.push(',');
                 buf.push_str(crate::LINE_ENDING);
                 buf.push_str(self.indent().as_str());
@@ -215,12 +214,12 @@ impl CalcJsonSerialize {
 
                 match ext {
                     ExtensionValue::InterestChange(_o) => {
-                        buf.push_str(list_locale.format_decimal(list_am.value()).as_str());
+                        buf.push_str(list_locale.format_decimal_out(list_am.value()).as_str());
                     }
                     _ => {
                         buf.push_str(
                             list_locale
-                                .format_currency(list_am.value(), decimal_digits)
+                                .format_currency_out(list_am.value(), decimal_digits)
                                 .as_str(),
                         );
                     }
@@ -232,7 +231,7 @@ impl CalcJsonSerialize {
                 buf.push_str("\"value-to-interest\": \"");
                 buf.push_str(
                     list_locale
-                        .format_currency(list_am.value_to_interest(), decimal_digits)
+                        .format_currency_out(list_am.value_to_interest(), decimal_digits)
                         .as_str(),
                 );
                 buf.push_str("\",");
@@ -241,7 +240,7 @@ impl CalcJsonSerialize {
                 buf.push_str("\"value-to-principal\": \"");
                 buf.push_str(
                     list_locale
-                        .format_currency(list_am.value_to_principal(), decimal_digits)
+                        .format_currency_out(list_am.value_to_principal(), decimal_digits)
                         .as_str(),
                 );
                 buf.push_str("\",");
@@ -250,7 +249,7 @@ impl CalcJsonSerialize {
                 buf.push_str("\"principal-decrease\": \"");
                 buf.push_str(
                     list_locale
-                        .format_currency(list_am.principal_decrease(), decimal_digits)
+                        .format_currency_out(list_am.principal_decrease(), decimal_digits)
                         .as_str(),
                 );
                 buf.push_str("\",");
@@ -259,7 +258,7 @@ impl CalcJsonSerialize {
                 buf.push_str("\"principal-increase\": \"");
                 buf.push_str(
                     list_locale
-                        .format_currency(list_am.principal_increase(), decimal_digits)
+                        .format_currency_out(list_am.principal_increase(), decimal_digits)
                         .as_str(),
                 );
                 buf.push_str("\",");
@@ -268,7 +267,7 @@ impl CalcJsonSerialize {
                 buf.push_str("\"interest\": \"");
                 buf.push_str(
                     list_locale
-                        .format_currency(list_am.interest(), decimal_digits)
+                        .format_currency_out(list_am.interest(), decimal_digits)
                         .as_str(),
                 );
                 buf.push_str("\",");
@@ -277,7 +276,7 @@ impl CalcJsonSerialize {
                 buf.push_str("\"sl-interest\": \"");
                 buf.push_str(
                     list_locale
-                        .format_currency(list_am.sl_interest(), decimal_digits)
+                        .format_currency_out(list_am.sl_interest(), decimal_digits)
                         .as_str(),
                 );
                 buf.push_str("\",");
@@ -286,7 +285,7 @@ impl CalcJsonSerialize {
                 buf.push_str("\"accrued-balance\": \"");
                 buf.push_str(
                     list_locale
-                        .format_currency(list_am.acc_balance(), decimal_digits)
+                        .format_currency_out(list_am.acc_balance(), decimal_digits)
                         .as_str(),
                 );
                 buf.push_str("\",");
@@ -295,14 +294,14 @@ impl CalcJsonSerialize {
                 buf.push_str("\"balance\": \"");
                 buf.push_str(
                     list_locale
-                        .format_currency(list_am.balance(), decimal_digits)
+                        .format_currency_out(list_am.balance(), decimal_digits)
                         .as_str(),
                 );
                 buf.push_str("\",");
                 buf.push_str(crate::LINE_ENDING);
                 buf.push_str(self.indent().as_str());
                 buf.push_str("\"sort-order\": ");
-                buf.push_str(list_locale.format_integer(list_am.sort_order()).as_str());
+                buf.push_str(list_locale.format_integer_out(list_am.sort_order()).as_str());
                 buf.push(',');
                 buf.push_str(crate::LINE_ENDING);
 
@@ -380,8 +379,7 @@ impl CalcJsonSerialize {
     ) {
         let calc_mgr = self.calc_mgr();
         let decimal_digits = calc_mgr.decimal_digits(true);
-        let mgr = calc_mgr.mgr();
-        let list_locale = mgr.list_locale();
+        let list_locale = calc_mgr.list_locale();
 
         buf.push_str(self.indent().as_str());
         buf.push_str("\"balance-result\": {");
@@ -409,7 +407,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"auxiliary-active-decrease\": \"");
         buf.push_str(
             list_locale
-                .format_currency(balance_result.aux_active_decrease(), decimal_digits)
+                .format_currency_out(balance_result.aux_active_decrease(), decimal_digits)
                 .as_str(),
         );
         buf.push_str("\",");
@@ -419,7 +417,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"auxiliary-active-increase\": \"");
         buf.push_str(
             list_locale
-                .format_currency(balance_result.aux_active_increase(), decimal_digits)
+                .format_currency_out(balance_result.aux_active_increase(), decimal_digits)
                 .as_str(),
         );
         buf.push_str("\",");
@@ -429,7 +427,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"auxiliary-passive-decrease\": \"");
         buf.push_str(
             list_locale
-                .format_currency(balance_result.aux_passive_decrease(), decimal_digits)
+                .format_currency_out(balance_result.aux_passive_decrease(), decimal_digits)
                 .as_str(),
         );
         buf.push_str("\",");
@@ -439,7 +437,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"auxiliary-passive-increase\": \"");
         buf.push_str(
             list_locale
-                .format_currency(balance_result.aux_passive_increase(), decimal_digits)
+                .format_currency_out(balance_result.aux_passive_increase(), decimal_digits)
                 .as_str(),
         );
         buf.push_str("\",");
@@ -449,7 +447,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"final-accrued-balance\": \"");
         buf.push_str(
             list_locale
-                .format_currency(balance_result.acc_balance(), decimal_digits)
+                .format_currency_out(balance_result.acc_balance(), decimal_digits)
                 .as_str(),
         );
         buf.push_str("\",");
@@ -459,7 +457,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"final-balance\": \"");
         buf.push_str(
             list_locale
-                .format_currency(balance_result.balance(), decimal_digits)
+                .format_currency_out(balance_result.balance(), decimal_digits)
                 .as_str(),
         );
         buf.push_str("\",");
@@ -469,7 +467,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"final-balance-date\": \"");
         buf.push_str(
             list_locale
-                .format_date(balance_result.balance_date())
+                .format_date_out(balance_result.balance_date())
                 .as_str(),
         );
         buf.push_str("\",");
@@ -479,7 +477,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"interest-present\": \"");
         buf.push_str(
             list_locale
-                .format_currency(balance_result.interest_present(), decimal_digits)
+                .format_currency_out(balance_result.interest_present(), decimal_digits)
                 .as_str(),
         );
         buf.push_str("\",");
@@ -489,7 +487,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"interest-total\": \"");
         buf.push_str(
             list_locale
-                .format_currency(balance_result.interest_total(), decimal_digits)
+                .format_currency_out(balance_result.interest_total(), decimal_digits)
                 .as_str(),
         );
         buf.push_str("\",");
@@ -499,7 +497,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"sl-interest-present\": \"");
         buf.push_str(
             list_locale
-                .format_currency(balance_result.sl_interest_present(), decimal_digits)
+                .format_currency_out(balance_result.sl_interest_present(), decimal_digits)
                 .as_str(),
         );
         buf.push_str("\",");
@@ -509,7 +507,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"sl-interest-total\": \"");
         buf.push_str(
             list_locale
-                .format_currency(balance_result.sl_interest_total(), decimal_digits)
+                .format_currency_out(balance_result.sl_interest_total(), decimal_digits)
                 .as_str(),
         );
         buf.push_str("\",");
@@ -519,7 +517,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"principal-changes-present\": ");
         buf.push_str(
             list_locale
-                .format_integer(balance_result.prin_present())
+                .format_integer_out(balance_result.prin_present())
                 .as_str(),
         );
         buf.push(',');
@@ -529,7 +527,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"principal-changes-total\": ");
         buf.push_str(
             list_locale
-                .format_integer(balance_result.prin_total())
+                .format_integer_out(balance_result.prin_total())
                 .as_str(),
         );
         buf.push(',');
@@ -539,7 +537,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"principal-total-decrease\": \"");
         buf.push_str(
             list_locale
-                .format_currency(balance_result.prin_decrease(), decimal_digits)
+                .format_currency_out(balance_result.prin_decrease(), decimal_digits)
                 .as_str(),
         );
         buf.push_str("\",");
@@ -549,7 +547,7 @@ impl CalcJsonSerialize {
         buf.push_str("\"principal-total-increase\": \"");
         buf.push_str(
             list_locale
-                .format_currency(balance_result.prin_increase(), decimal_digits)
+                .format_currency_out(balance_result.prin_increase(), decimal_digits)
                 .as_str(),
         );
         buf.push('"');
@@ -1118,8 +1116,7 @@ impl CalcJsonSerialize {
     ) {
         let calc_mgr = self.calc_mgr();
         let decimal_digits = calc_mgr.decimal_digits(false);
-        let mgr = calc_mgr.mgr();
-        let list_locale = mgr.list_locale();
+        let list_locale = calc_mgr.list_locale();
 
         buf.push_str(self.indent().as_str());
         buf.push_str("\"interest-change\": {");
@@ -1173,7 +1170,7 @@ impl CalcJsonSerialize {
             buf.push_str("\"interest-statistics-dr\": \"");
             buf.push_str(
                 list_locale
-                    .format_decimal(
+                    .format_decimal_out(
                         CoreUtility::rate_nar_to_dr(
                             nar / dec!(100.0),
                             interest_change.days_in_year(),
@@ -1187,7 +1184,7 @@ impl CalcJsonSerialize {
             buf.push_str("\"interest-statistics-ear\": \"");
             buf.push_str(
                 list_locale
-                    .format_decimal(
+                    .format_decimal_out(
                         CoreUtility::rate_nar_to_ear(
                             nar / dec!(100.0),
                             frequency,
@@ -1202,7 +1199,7 @@ impl CalcJsonSerialize {
             buf.push_str("\"interest-statistics-pr\": \"");
             buf.push_str(
                 list_locale
-                    .format_decimal(
+                    .format_decimal_out(
                         CoreUtility::rate_nar_to_pr(
                             nar / dec!(100.0),
                             frequency,

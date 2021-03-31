@@ -110,10 +110,9 @@ impl CalcEngine {
     pub fn init_engine(&self, locale_str_param: &str) {
         if !locale_str_param.is_empty() {
             self.calc_mgr()
-                .mgr()
-                .list_locale_mut()
+                .list_locale()
                 .select_user_locale(locale_str_param);
-            let decimal_digits = self.calc_mgr().mgr().list_locale().decimal_digits(false);
+            let decimal_digits = self.calc_mgr().list_locale().decimal_digits(false);
             self.calc_mgr()
                 .preferences()
                 .set_decimal_digits(decimal_digits, false);
@@ -134,8 +133,7 @@ impl CalcEngine {
             if !self.calc_mgr().list_cashflow().cashflow_valid() {
                 let locale = self.calc_mgr().locale(true);
                 self.calc_mgr()
-                    .mgr()
-                    .list_locale_mut()
+                    .list_locale()
                     .select_cashflow_locale(locale.as_str());
                 self.evaluate_cashflow_descriptors();
                 self.evaluate_cashflow_event_type_all();
@@ -170,8 +168,7 @@ impl CalcEngine {
         if !self.calc_mgr().list_cashflow().cashflow_valid() {
             let locale = self.calc_mgr().locale(true);
             self.calc_mgr()
-                .mgr()
-                .list_locale_mut()
+                .list_locale()
                 .select_cashflow_locale(locale.as_str());
             self.evaluate_cashflow_descriptors();
             self.evaluate_cashflow_event_type_all();
@@ -208,10 +205,9 @@ impl CalcEngine {
             .copy_with_calc_manager(calc_engine.calc_manager(), true);
         calc_engine.calc_mgr_mut().set_preferences(preferences);
 
-        let list_locale = self.calc_manager().borrow().mgr().list_locale().copy();
+        let list_locale = self.calc_manager().borrow().list_locale().copy();
         calc_engine
             .calc_mgr_mut()
-            .mgr_mut()
             .set_list_locale(list_locale);
 
         let list_exchange_rate = self
@@ -250,10 +246,8 @@ impl CalcEngine {
                 if !self.calc_mgr().list_cashflow().cashflow_valid() {
                     let locale = self.calc_mgr().locale(true);
                     calc_engine
-                        .calc_manager()
-                        .borrow()
-                        .mgr()
-                        .list_locale_mut()
+                        .calc_mgr()
+                        .list_locale()
                         .select_cashflow_locale(locale.as_str());
                     self.evaluate_cashflow_descriptors();
                     self.evaluate_cashflow_event_type_all();
@@ -390,8 +384,7 @@ impl CalcEngine {
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         match self.calc_mgr().list_cashflow().list().get(cf_index) {
@@ -521,8 +514,7 @@ impl CalcEngine {
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         let elem_balance_result: ElemBalanceResult;
@@ -599,8 +591,7 @@ impl CalcEngine {
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         match self.calc_mgr().list_cashflow().list().get(cf_index) {
@@ -702,8 +693,7 @@ impl CalcEngine {
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         match self.calc_mgr().list_cashflow().list().get(cf_index) {
@@ -791,7 +781,6 @@ impl CalcEngine {
         if new_name.is_empty() {
             new_name = String::from(
                 self.calc_mgr()
-                    .mgr()
                     .list_locale()
                     .get_resource(crate::USER_NEW),
             );
@@ -802,8 +791,7 @@ impl CalcEngine {
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         self.calc_mgr().set_updating_json(false);
@@ -937,8 +925,7 @@ impl CalcEngine {
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         self.evaluate_cashflow_descriptors();
@@ -1018,7 +1005,6 @@ impl CalcEngine {
         if new_name.is_empty() {
             new_name = String::from(
                 self.calc_mgr()
-                    .mgr()
                     .list_locale()
                     .get_resource(crate::USER_NEW),
             );
@@ -1029,8 +1015,7 @@ impl CalcEngine {
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         self.calc_mgr().set_updating_json(true);
@@ -1135,8 +1120,7 @@ impl CalcEngine {
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         self.evaluate_cashflow_descriptors();
@@ -1197,8 +1181,7 @@ impl CalcEngine {
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         self.calc_mgr().set_updating_json(true);
@@ -1280,7 +1263,6 @@ impl CalcEngine {
         if new_name.is_empty() {
             new_name = String::from(
                 self.calc_mgr()
-                    .mgr()
                     .list_locale()
                     .get_resource(crate::USER_NEW),
             );
@@ -1293,8 +1275,7 @@ impl CalcEngine {
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         self.calc_mgr().set_updating_json(true);
@@ -1439,8 +1420,7 @@ impl CalcEngine {
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         self.evaluate_cashflow_descriptors();
@@ -1679,8 +1659,7 @@ impl CalcEngine {
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         self.evaluate_cashflow_descriptors();
@@ -1825,10 +1804,10 @@ impl CalcEngine {
                 let locale_str: String;
                 if list_event.cashflow() {
                     locale_str =
-                        String::from(calc_mgr.mgr().list_locale().cashflow_locale().locale_str());
+                        String::from(calc_mgr.list_locale().cashflow_locale().locale_str());
                 } else {
                     locale_str =
-                        String::from(calc_mgr.mgr().list_locale().user_locale().locale_str());
+                        String::from(calc_mgr.list_locale().user_locale().locale_str());
                 }
                 let mut event_type_expr = calc_mgr.descriptor_value(
                     group.as_str(),
@@ -1853,7 +1832,6 @@ impl CalcEngine {
                             crate::ExtensionType::CurrentValue => {
                                 event_type_expr = String::from(
                                     self.calc_mgr()
-                                        .mgr()
                                         .list_locale()
                                         .get_resource(crate::USER_EVENT_TYPE_CURRENT_VALUE),
                                 );
@@ -1861,7 +1839,6 @@ impl CalcEngine {
                             crate::ExtensionType::StatisticValue => {
                                 event_type_expr = String::from(
                                     self.calc_mgr()
-                                        .mgr()
                                         .list_locale()
                                         .get_resource(crate::USER_EVENT_TYPE_STATISTIC_VALUE),
                                 );
@@ -1869,7 +1846,6 @@ impl CalcEngine {
                             crate::ExtensionType::InterestChange => {
                                 event_type_expr = String::from(
                                     self.calc_mgr()
-                                        .mgr()
                                         .list_locale()
                                         .get_resource(crate::USER_EVENT_TYPE_INTEREST_CHANGE),
                                 );
@@ -1877,7 +1853,6 @@ impl CalcEngine {
                             _ => {
                                 event_type_expr = String::from(
                                     self.calc_mgr()
-                                        .mgr()
                                         .list_locale()
                                         .get_resource(crate::USER_EVENT_TYPE_PRINCIPAL_CHANGE),
                                 );
@@ -2030,10 +2005,10 @@ impl CalcEngine {
     ///
     /// * See description.
 
-    pub fn format_date(&self, val: usize) -> String {
+    pub fn format_date_out(&self, val: usize) -> String {
         let calc_mgr = self.calc_mgr();
 
-        let fs = calc_mgr.mgr().list_locale().format_date(val);
+        let fs = calc_mgr.list_locale().format_date_out(val);
 
         fs
     }
@@ -2048,10 +2023,10 @@ impl CalcEngine {
     ///
     /// * See description.
 
-    pub fn format_integeri(&self, val: i32) -> String {
+    pub fn format_integeri_out(&self, val: i32) -> String {
         let calc_mgr = self.calc_mgr();
 
-        let fs = calc_mgr.mgr().list_locale().format_integeri(val);
+        let fs = calc_mgr.list_locale().format_integeri_out(val);
 
         fs
     }
@@ -2066,8 +2041,8 @@ impl CalcEngine {
     ///
     /// * See description.
 
-    pub fn format_integer(&self, val: usize) -> String {
-        self.format_integeri(val as i32)
+    pub fn format_integer_out(&self, val: usize) -> String {
+        self.format_integeri_out(val as i32)
     }
 
     /// Format and return a decimal string.
@@ -2080,10 +2055,10 @@ impl CalcEngine {
     ///
     /// * See description.
 
-    pub fn format_decimal(&self, val: Decimal) -> String {
+    pub fn format_decimal_out(&self, val: Decimal) -> String {
         let calc_mgr = self.calc_mgr();
 
-        let fs = calc_mgr.mgr().list_locale().format_decimal(val);
+        let fs = calc_mgr.list_locale().format_decimal_out(val);
 
         fs
     }
@@ -2098,14 +2073,13 @@ impl CalcEngine {
     ///
     /// * See description.
 
-    pub fn format_currency(&self, val: Decimal) -> String {
+    pub fn format_currency_out(&self, val: Decimal) -> String {
         let calc_mgr = self.calc_mgr();
         let decimal_digits = calc_mgr.decimal_digits(false);
 
         let fs = calc_mgr
-            .mgr()
             .list_locale()
-            .format_currency(val, decimal_digits);
+            .format_currency_out(val, decimal_digits);
 
         fs
     }

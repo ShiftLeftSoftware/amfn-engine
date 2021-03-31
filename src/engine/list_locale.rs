@@ -12,7 +12,8 @@ use rust_decimal::prelude::*;
 use std::cell::Cell;
 use std::collections::HashMap;
 
-use super::{CoreUtility, ElemLocale, ElemLocaleFormat};
+use crate::core::CoreUtility; 
+use super::{ElemLocale, ElemLocaleFormat};
 
 pub struct ListLocale {
     list_locale: Vec<ElemLocale>,
@@ -127,7 +128,7 @@ impl ListLocale {
         &self.list_locale
     }
 
-    /// Get the mut list of locales.
+    /// Get the mutable list of locales.
     ///
     /// # Return
     ///
@@ -139,7 +140,7 @@ impl ListLocale {
 
     /// Clear all locales selects.
 
-    pub fn clear(&mut self) {
+    pub fn clear(&self) {
         self.list_index_user.set(usize::MAX);
         self.list_index_cashflow.set(usize::MAX);
         self.list_index_event.set(usize::MAX);
@@ -323,6 +324,104 @@ impl ListLocale {
     pub fn event_currency_code(&self) -> &str {
         self.get_locale(true).currency_code()
     }
+    
+    /// Format a date and return the internal format.
+    ///
+    /// # Arguments
+    ///
+    /// * `display_val` - The display value to parse.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_date_in(&self, display_val: &str) -> String {
+        let text: String;
+
+        match Regex::new(self.get_locale(true).format_in().date_regex()) {
+            Err(_e) => { return String::from(display_val); }
+            Ok(o) => { 
+                text = o.replace(display_val,
+                    self.get_locale(true).format_in().date_replace()).to_string();
+            }
+        }
+
+        let dd: Vec<_> = text.split('-').collect();
+        if dd.len() != 3 { 
+            let now = CoreUtility::date_now();
+            return format!("{}-{}-{}", now / 10000, now / 100 % 100, now % 100);
+        }
+
+        let mut year = String::from(dd[0]);
+        if year.len() < 3 {
+            let century = if CoreUtility::parse_integer(year.as_str()) < crate::SERIAL_BASE_CENTURY { "20" } else { "19" };
+            year = format!("{}{}", century, self.zerofill(year.as_str(), 2));
+        }
+
+        if year.len() != 4 { 
+            let now = CoreUtility::date_now();
+            return format!("{}-{}-{}", now / 10000, now / 100 % 100, now % 100);
+        }
+
+        format!("{}-{}-{}", year , self.zerofill(dd[1], 2), self.zerofill(dd[2], 2))
+    }
+
+    /// Format an integer and return the internal format.
+    ///
+    /// # Arguments
+    ///
+    /// * `display_val` - The display value to parse.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_integer_in(&self, display_val: &str) -> String {
+        match Regex::new(self.get_locale(true).format_in().integer_regex()) {
+            Err(_e) => String::from(display_val),
+            Ok(o) => o
+                .replace(display_val,
+                self.get_locale(true).format_in().integer_replace()).to_string()
+        }
+    }
+
+    /// Format a decimal and return the internal format.
+    ///
+    /// # Arguments
+    ///
+    /// * `display_val` - The display value to parse.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_decimal_in(&self, display_val: &str) -> String {
+        match Regex::new(self.get_locale(true).format_in().decimal_regex()) {
+            Err(_e) => String::from(display_val),
+            Ok(o) => o
+                .replace(display_val,
+                self.get_locale(true).format_in().decimal_replace()).to_string()
+        }
+    }
+
+    /// Format a currency and return the internal format.
+    ///
+    /// # Arguments
+    ///
+    /// * `display_val` - The display value to parse.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_currency_in(&self, display_val: &str) -> String {
+        match Regex::new(self.get_locale(true).format_in().currency_regex()) {
+            Err(_e) => String::from(display_val),
+            Ok(o) => o
+                .replace(display_val,
+                self.get_locale(true).format_in().currency_replace()).to_string()
+        }
+    }
 
     /// Format and return a date string.
     ///
@@ -334,7 +433,7 @@ impl ListLocale {
     ///
     /// * See description.
 
-    pub fn format_date(&self, val: usize) -> String {
+    pub fn format_date_out(&self, val: usize) -> String {
         let text = format!("{:04}-{:02}-{:02}", val / 10000, val / 100 % 100, val % 100);
 
         match Regex::new(self.get_locale(true).format_out().date_regex()) {
@@ -358,7 +457,7 @@ impl ListLocale {
     ///
     /// * See description.
 
-    pub fn format_integeri(&self, val: i32) -> String {
+    pub fn format_integeri_out(&self, val: i32) -> String {
         let text = val.to_string();
 
         match Regex::new(self.get_locale(true).format_out().integer_regex()) {
@@ -382,8 +481,8 @@ impl ListLocale {
     ///
     /// * See description.
 
-    pub fn format_integer(&self, val: usize) -> String {
-        self.format_integeri(val as i32)
+    pub fn format_integer_out(&self, val: usize) -> String {
+        self.format_integeri_out(val as i32)
     }
 
     /// Format and return a decimal string.
@@ -396,7 +495,7 @@ impl ListLocale {
     ///
     /// * See description.
 
-    pub fn format_decimal(&self, val: Decimal) -> String {
+    pub fn format_decimal_out(&self, val: Decimal) -> String {
         let text = CoreUtility::util_round(val, crate::MAXIMUM_DISPLAY_DECIMAL_DIGITS).to_string();
 
         match Regex::new(self.get_locale(true).format_out().decimal_regex()) {
@@ -421,14 +520,21 @@ impl ListLocale {
     ///
     /// * See description.
 
-    pub fn format_currency(&self, val: Decimal, decimal_digits: usize) -> String {
+    pub fn format_currency_out(&self, val: Decimal, decimal_digits: usize) -> String {
         let mut text = CoreUtility::util_round(val, decimal_digits).to_string();
 
         let tokens: Vec<_> = text.split('.').collect();
+        let mut fract = String::from("");
         if tokens.len() > 1 {
-            text = format!("{}.{:0<2}", tokens[0], tokens[1]);
-        } else {
-            text = format!("{}.00", text);
+            fract = String::from(tokens[1]);
+            fract.truncate(decimal_digits);
+            text = format!("{}.{}", tokens[0], fract);
+        }
+
+        let mut zeros = decimal_digits - fract.len(); 
+        while zeros > 0 {
+            text.push('0');
+            zeros -= 1;
         }
 
         match Regex::new(self.get_locale(true).format_out().currency_regex()) {
@@ -529,7 +635,7 @@ impl ListLocale {
     ///
     /// * `locale_str_param` - Locale string to select.
 
-    pub fn select_user_locale(&mut self, locale_str_param: &str) {
+    pub fn select_user_locale(&self, locale_str_param: &str) {
         for (index, loc) in self.list_locale.iter().enumerate() {
             if loc.locale_str() == locale_str_param {
                 self.list_index_user.set(index);
@@ -546,7 +652,7 @@ impl ListLocale {
     ///
     /// * `locale_str_param` - Locale string to select.
 
-    pub fn select_cashflow_locale(&mut self, locale_str_param: &str) {
+    pub fn select_cashflow_locale(&self, locale_str_param: &str) {
         for (index, loc) in self.list_locale.iter().enumerate() {
             if loc.locale_str() == locale_str_param {
                 self.list_index_cashflow.set(index);
@@ -563,7 +669,7 @@ impl ListLocale {
     ///
     /// * `locale_str_param` - Locale string to select.
 
-    pub fn select_event_locale(&mut self, locale_str_param: &str) {
+    pub fn select_event_locale(&self, locale_str_param: &str) {
         for (index, loc) in self.list_locale.iter().enumerate() {
             if loc.locale_str() == locale_str_param {
                 self.list_index_event.set(index);
@@ -572,5 +678,26 @@ impl ListLocale {
         }
 
         self.list_index_event.set(usize::MAX);
+    }
+
+    /// Fill leading zeros for a number.
+    ///
+    /// # Arguments
+    ///
+    /// * `val` - The number to zero fill.
+    /// * `size` - The number of digits.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn zerofill(&self, val: &str, size: usize) -> String {
+
+        let mut text = String::from("");
+        while val.len() < size {
+            text.push('0');
+        }
+
+        format!("{}{}", text, val)
     }
 }

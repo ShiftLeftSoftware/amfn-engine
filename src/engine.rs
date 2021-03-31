@@ -31,6 +31,10 @@ pub use calc_manager::CalcManager;
 pub mod calc_utility;
 pub use calc_utility::CalcUtility;
 
+pub mod elem_locale;
+pub use elem_locale::ElemLocale;
+pub use elem_locale::ElemLocaleFormat;
+
 pub mod elem_cashflow;
 pub use elem_cashflow::ElemCashflow;
 
@@ -48,6 +52,9 @@ pub use elem_template_event::ElemTemplateEvent;
 
 pub mod elem_template_group;
 pub use elem_template_group::ElemTemplateGroup;
+
+pub mod list_locale;
+pub use list_locale::ListLocale;
 
 pub mod list_cashflow;
 pub use list_cashflow::ListCashflow;

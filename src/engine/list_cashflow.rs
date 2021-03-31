@@ -7,7 +7,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::{Cell, Ref, RefCell};
+use std::cell::{Cell, Ref, RefMut, RefCell};
 use std::cmp::Ordering::Equal;
 use std::rc::Rc;
 
@@ -33,8 +33,7 @@ impl ListTrait for ListCashflow {
 
     fn clear(&mut self) {
         self.calc_mgr()
-            .mgr()
-            .list_locale_mut()
+            .list_locale()
             .select_cashflow_locale("");
 
         self.list_mut().clear();
@@ -156,6 +155,21 @@ impl ListCashflow {
                 panic!("Missing calc manager");
             }
             Some(o) => o.borrow(),
+        }
+    }
+
+    /// Returns the mutable calculation manager.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    fn calc_mgr_mut(&mut self) -> RefMut<CalcManager> {
+        match self.calc_manager.as_mut() {
+            None => {
+                panic!("Missing calc manager");
+            }
+            Some(o) => o.borrow_mut(),
         }
     }
 

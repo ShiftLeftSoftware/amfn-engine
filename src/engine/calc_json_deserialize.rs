@@ -15,12 +15,12 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use super::{
-    CalcManager, ElemPreferences, ListCashflow, ListExchangeRate, ListTemplateEvent,
-    ListTemplateGroup,
+    CalcManager, ElemLocaleFormat, ElemPreferences, ListLocale, ListCashflow, 
+    ListExchangeRate, ListTemplateEvent, ListTemplateGroup,
 };
 use crate::core::{
-    CoreUtility, ElemCurrentValue, ElemExtension, ElemInterestChange, ElemLocaleFormat,
-    ElemPrincipalChange, ElemStatisticValue, ListDescriptor, ListEvent, ListLocale, ListParameter,
+    CoreUtility, ElemCurrentValue, ElemExtension, ElemInterestChange,
+    ElemPrincipalChange, ElemStatisticValue, ListDescriptor, ListEvent, ListParameter,
 };
 use crate::ListTrait;
 
@@ -118,7 +118,6 @@ impl CalcJsonDeserialize {
                 Ok(o) => {
                     self.calc_manager
                         .borrow_mut()
-                        .mgr_mut()
                         .append_list_locale(o);
                 }
             }

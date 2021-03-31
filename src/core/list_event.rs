@@ -674,6 +674,21 @@ impl ListEvent {
         }
     }
 
+    /// Get the mutable extension.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn elem_extension_mut(&mut self) -> &mut ElemExtension {
+        match self.list_event.get_mut(self.list_index.get()) {
+            None => {
+                panic!("Event list index not set");
+            }
+            Some(o) => o.elem_extension_mut(),
+        }
+    }
+
     /// Get the event parameter list.
     ///
     /// # Return

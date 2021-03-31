@@ -7,9 +7,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::{Ref, RefCell, RefMut};
-
-use super::{ListKey, ListLocale};
+use super::{ListKey};
 
 pub struct CoreManager {
     /// Table of event type mappings.
@@ -34,9 +32,6 @@ pub struct CoreManager {
     map_error: ListKey,
     /// Table of column names.
     map_col_names: ListKey,
-
-    /// List of locales.
-    list_locale: RefCell<ListLocale>,
 }
 
 /// The core manager default implementation.
@@ -74,8 +69,7 @@ impl CoreManager {
             operators: ListKey::new(),
             functions: ListKey::new(),
             map_error: ListKey::new(),
-            map_col_names: ListKey::new(),
-            list_locale: RefCell::new(ListLocale::new()),
+            map_col_names: ListKey::new()
         };
         // Initialize engine lists
 
@@ -854,56 +848,5 @@ impl CoreManager {
 
     pub fn map_col_names(&self) -> &ListKey {
         &self.map_col_names
-    }
-
-    /// Get the locale list.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list_locale(&self) -> Ref<ListLocale> {
-        self.list_locale.borrow()
-    }
-
-    /// Get the locale list.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list_locale_mut(&self) -> RefMut<ListLocale> {
-        self.list_locale.borrow_mut()
-    }
-
-    /// Append to the list locale.
-    ///
-    /// # Arguments
-    ///
-    /// * `list_locale` - See description.
-
-    pub fn append_list_locale(&mut self, mut list_locale: ListLocale) {
-        let ll = list_locale.list_mut();
-
-        loop {
-            match ll.pop() {
-                None => {
-                    break;
-                }
-                Some(o) => {
-                    self.list_locale.borrow_mut().list_mut().push(o);
-                }
-            }
-        }
-    }
-
-    /// Set the list locale.
-    ///
-    /// # Arguments
-    ///
-    /// * `list_locale` - See description.
-
-    pub fn set_list_locale(&mut self, list_locale: ListLocale) {
-        self.list_locale = RefCell::new(list_locale);
     }
 }

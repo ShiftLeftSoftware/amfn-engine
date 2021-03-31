@@ -1898,27 +1898,24 @@ impl CalcExpression {
                             format!(
                                 "+{}",
                                 self.calc_mgr()
-                                    .mgr()
                                     .list_locale()
-                                    .format_currency(balance, self.decimal_digits)
+                                    .format_currency_out(balance, self.decimal_digits)
                             )
                             .as_str(),
                         );
                     } else {
                         elem_result_symbol.set_string(
                             self.calc_mgr()
-                                .mgr()
                                 .list_locale()
-                                .format_currency(balance.abs(), self.decimal_digits)
+                                .format_currency_out(balance.abs(), self.decimal_digits)
                                 .as_str(),
                         );
                     }
                 } else {
                     elem_result_symbol.set_string(
                         self.calc_mgr()
-                            .mgr()
                             .list_locale()
-                            .format_currency(balance, self.decimal_digits)
+                            .format_currency_out(balance, self.decimal_digits)
                             .as_str(),
                     );
                 }
@@ -2147,27 +2144,24 @@ impl CalcExpression {
                                 format!(
                                     "+{}",
                                     self.calc_mgr()
-                                        .mgr()
                                         .list_locale()
-                                        .format_currency(balance, self.decimal_digits)
+                                        .format_currency_out(balance, self.decimal_digits)
                                 )
                                 .as_str(),
                             );
                         } else {
                             elem_result_symbol.set_string(
                                 self.calc_mgr()
-                                    .mgr()
                                     .list_locale()
-                                    .format_currency(balance.abs(), self.decimal_digits)
+                                    .format_currency_out(balance.abs(), self.decimal_digits)
                                     .as_str(),
                             );
                         }
                     } else {
                         elem_result_symbol.set_string(
                             self.calc_mgr()
-                                .mgr()
                                 .list_locale()
-                                .format_currency(balance, self.decimal_digits)
+                                .format_currency_out(balance, self.decimal_digits)
                                 .as_str(),
                         );
                     }
@@ -2841,9 +2835,8 @@ impl CalcExpression {
             crate::TokenType::Integer => {
                 elem_result_symbol.set_string(
                     self.calc_mgr()
-                        .mgr()
                         .list_locale()
-                        .format_currency(
+                        .format_currency_out(
                             dec!(elem_result_symbol.sym_integer()),
                             self.decimal_digits,
                         )
@@ -2853,9 +2846,8 @@ impl CalcExpression {
             crate::TokenType::Decimal => {
                 elem_result_symbol.set_string(
                     self.calc_mgr()
-                        .mgr()
                         .list_locale()
-                        .format_currency(elem_result_symbol.sym_decimal(), self.decimal_digits)
+                        .format_currency_out(elem_result_symbol.sym_decimal(), self.decimal_digits)
                         .as_str(),
                 );
             }
@@ -2892,9 +2884,8 @@ impl CalcExpression {
         }
         elem_result_symbol.set_string(
             self.calc_mgr()
-                .mgr()
                 .list_locale()
-                .format_date(elem_result_symbol.sym_integer())
+                .format_date_out(elem_result_symbol.sym_integer())
                 .as_str(),
         );
         Ok(elem_result_symbol)
@@ -2930,18 +2921,16 @@ impl CalcExpression {
             crate::TokenType::Integer => {
                 elem_result_symbol.set_string(
                     self.calc_mgr()
-                        .mgr()
                         .list_locale()
-                        .format_integeri(elem_result_symbol.sym_integeri())
+                        .format_integeri_out(elem_result_symbol.sym_integeri())
                         .as_str(),
                 );
             }
             crate::TokenType::Decimal => {
                 elem_result_symbol.set_string(
                     self.calc_mgr()
-                        .mgr()
                         .list_locale()
-                        .format_decimal(elem_result_symbol.sym_decimal())
+                        .format_decimal_out(elem_result_symbol.sym_decimal())
                         .as_str(),
                 );
             }

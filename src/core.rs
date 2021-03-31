@@ -43,10 +43,6 @@ pub use elem_extension::{ElemExtension, ExtensionValue};
 pub mod elem_interest_change;
 pub use elem_interest_change::ElemInterestChange;
 
-pub mod elem_locale;
-pub use elem_locale::ElemLocale;
-pub use elem_locale::ElemLocaleFormat;
-
 pub mod elem_parameter;
 pub use elem_parameter::ElemParameter;
 
@@ -76,9 +72,6 @@ pub use list_descriptor::ListDescriptor;
 
 pub mod list_event;
 pub use list_event::ListEvent;
-
-pub mod list_locale;
-pub use list_locale::ListLocale;
 
 pub mod list_parameter;
 pub use list_parameter::ListParameter;

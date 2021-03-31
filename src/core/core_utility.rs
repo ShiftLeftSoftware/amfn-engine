@@ -1210,6 +1210,27 @@ impl CoreUtility {
         1
     }
 
+    /// Parse a string and return a date value.
+    ///
+    /// # Arguments
+    ///
+    /// * `text` - &str represention of the date value.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn parse_date(text: &str) -> usize {
+        let tokens: Vec<_> = text.split('-').collect();
+        if tokens.len() != 3 { return 0; }
+        
+        let yyyy = tokens[0].parse::<usize>().unwrap_or(2000);
+        let mm = tokens[1].parse::<usize>().unwrap_or(1);
+        let dd = tokens[2].parse::<usize>().unwrap_or(1);
+
+        yyyy * 10000 + mm * 100 + dd
+    }
+
     /// Parse a string and return a Decimal value.
     ///
     /// # Arguments

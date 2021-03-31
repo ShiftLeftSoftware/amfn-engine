@@ -7,8 +7,6 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-/// Serialization UID. 
-pub const SERIAL_UID: usize = 1; 
 /// The application name. 
 pub const APP_NAME: &str = "Amortization Functions (AmFn)";
 /// Version major string. 
@@ -38,7 +36,7 @@ pub const DEFAULT_FISCAL_YEAR_START: usize = 101; // MMDD
 /// Base year for date/serial conversions. 
 pub const SERIAL_BASE_YEAR: usize = 1900;
 /// Base year for current century validation. 
-pub const SERIAL_BASE_CENTURY: usize = 2000;
+pub const SERIAL_BASE_CENTURY: usize = 73;
 /// Default decimal digits. 
 pub const DEFAULT_DECIMAL_DIGITS: usize = 2;
 /// Default round balance. 
