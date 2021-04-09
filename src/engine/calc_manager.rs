@@ -1148,7 +1148,10 @@ impl CalcManager {
     ///
     /// # Arguments
     ///
-    /// * `elem_column` - Column element.
+    /// * `calc_manager` - Calculation manager.
+    /// * `col_name_index` - Column name index.
+    /// * `col_type` - Column type.
+    /// * `col_code` - Column code.
     /// * `index` - Event row index.
     /// * `value_param` - Value to set as a string.
     ///
@@ -1157,18 +1160,25 @@ impl CalcManager {
     /// * See description.
 
     pub fn util_set_event_value(
-        &self, 
-        elem_column: &ElemColumn,
+        calc_manager: &Rc<RefCell<CalcManager>>,
+        col_name_index: usize,
+        col_type: &str,
+        col_code: &str,
         index: usize,
         value_param: &str
     ) -> String {
-        CalcUtility::set_event_value(self.calc_manager(), elem_column, index, value_param)
+        CalcUtility::set_event_value(
+            calc_manager, 
+            col_name_index,
+            col_type,
+            col_code, index, value_param)
     }
 
     /// Set the appropriate event list extension values.
     ///
     /// # Arguments
     ///
+    /// * `calc_manager` - Calculation manager.
     /// * `index` - Event row index.
     /// * `ext_param` - Extension values to set.
     ///
@@ -1177,11 +1187,12 @@ impl CalcManager {
     /// * True if successful, otherwise false.
 
     pub fn util_set_extension_values(
-        &self,
+        calc_manager: &Rc<RefCell<CalcManager>>,
         index: usize,
         ext_param: &ElemExtension
     ) -> bool {
-        CalcUtility::set_extension_values(self.calc_manager(), index, ext_param)
+        CalcUtility::set_extension_values(
+            calc_manager, index, ext_param)
     }
 
     /// Calculates number of intervals between two dates.
@@ -1427,19 +1438,5 @@ impl CalcManager {
         days_in_year: usize,
     ) -> Decimal {
         CoreUtility::rate_pr_to_nar(pr / dec!(100.0), frequency, days_in_year) * dec!(100.0)
-    }
-
-    /// Round the value to the appropriate number of decimal digits.
-    ///
-    /// # Arguments
-    ///
-    /// * `value` - The value to round.
-    ///
-    /// # Return
-    ///
-    /// * The rounded value.
-
-    pub fn util_round(&self, value: Decimal) -> Decimal {
-        CoreUtility::util_round(value, self.decimal_digits(true))
     }
 }

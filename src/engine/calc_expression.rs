@@ -1891,7 +1891,7 @@ impl CalcExpression {
             }
             crate::ColumnType::StrBal => {
                 // StrBal
-                let balance = self.calc_mgr().util_round(list_am.balance());
+                let balance = CoreUtility::util_round(list_am.balance(), self.decimal_digits);
                 if elem_balance_result.polarity() < 0 {
                     if balance > dec!(0.0) {
                         elem_result_symbol.set_string(
@@ -2137,7 +2137,7 @@ impl CalcExpression {
                     elem_result_symbol.set_string("");
                 }
                 Some(o) => {
-                    let balance = self.calc_mgr().util_round(o.balance());
+                    let balance = CoreUtility::util_round(o.balance(), self.decimal_digits);
                     if o.polarity() < 0 {
                         if balance > dec!(0.0) {
                             elem_result_symbol.set_string(

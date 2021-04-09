@@ -454,7 +454,7 @@ impl CalcJsonDeserialize {
                 None => {
                     return Err(crate::ErrorType::Json);
                 }
-                Some(o) => match Decimal::from_str(o) {
+                Some(o) => match o.parse::<Decimal>() {
                     Err(_e) => {
                         return Err(crate::ErrorType::Json);
                     }
@@ -558,87 +558,14 @@ impl CalcJsonDeserialize {
                 return Err(crate::ErrorType::Json);
             }
 
-            let ext = &ev["extension"];
-            let event_type: crate::ExtensionType;
-            if !ext["current-value"].is_null() {
-                event_type = crate::ExtensionType::CurrentValue;
-            } else if !ext["interest-change"].is_null() {
-                event_type = crate::ExtensionType::InterestChange;
-            } else if !ext["statistic-value"].is_null() {
-                event_type = crate::ExtensionType::StatisticValue;
-            } else {
-                event_type = crate::ExtensionType::PrincipalChange;
-            }
-
             let extension: ElemExtension;
-            match event_type {
-                crate::ExtensionType::CurrentValue => {
-                    let mut cv = ElemCurrentValue::new(false, false, false);
-
-                    let result = self.deserialize_current_value(&ext["current-value"], &mut cv);
-                    match result {
-                        Err(e) => {
-                            return Err(e);
-                        }
-                        Ok(_o) => {}
-                    }
-
-                    extension = ElemExtension::new_current_value(cv);
+            let result = self.deserialize_extension(&ev["extension"]);
+            match result {
+                Err(e) => {
+                    return Err(e);
                 }
-                crate::ExtensionType::InterestChange => {
-                    let mut ic = ElemInterestChange::new(
-                        crate::MethodType::Actuarial,
-                        crate::DayCountType::Periodic,
-                        crate::DEFAULT_DAYS_IN_YEAR,
-                        crate::FrequencyType::None,
-                        crate::FrequencyType::None,
-                        crate::RoundType::None,
-                        dec!(0.0),
-                    );
-
-                    let result = self.deserialize_interest_change(&ext["interest-change"], &mut ic);
-                    match result {
-                        Err(e) => {
-                            return Err(e);
-                        }
-                        Ok(_o) => {}
-                    }
-
-                    extension = ElemExtension::new_interest_change(ic);
-                }
-                crate::ExtensionType::StatisticValue => {
-                    let mut sv = ElemStatisticValue::new("", false, false);
-
-                    let result = self.deserialize_statistic_value(&ext["statistic-value"], &mut sv);
-                    match result {
-                        Err(e) => {
-                            return Err(e);
-                        }
-                        Ok(_o) => {}
-                    }
-
-                    extension = ElemExtension::new_statistic_value(sv);
-                }
-                _ => {
-                    let mut pc = ElemPrincipalChange::new(
-                        crate::PrincipalType::Increase,
-                        false,
-                        false,
-                        false,
-                        false,
-                        false,
-                    );
-
-                    let result =
-                        self.deserialize_principal_change(&ext["principal-change"], &mut pc);
-                    match result {
-                        Err(e) => {
-                            return Err(e);
-                        }
-                        Ok(_o) => {}
-                    }
-
-                    extension = ElemExtension::new_principal_change(pc);
+                Ok(o) => { 
+                    extension = o; 
                 }
             }
 
@@ -762,7 +689,7 @@ impl CalcJsonDeserialize {
                 None => {
                     return Err(crate::ErrorType::Json);
                 }
-                Some(o) => match Decimal::from_str(o) {
+                Some(o) => match o.parse::<Decimal>() {
                     Err(_e) => {
                         return Err(crate::ErrorType::Json);
                     }
@@ -779,6 +706,138 @@ impl CalcJsonDeserialize {
         exchange_rates.set_sort_on_add(true); // Sorts list
 
         Ok(exchange_rates)
+    }
+
+    /// Deserialize and ingest Json extension.
+    ///
+    /// # Arguments
+    ///
+    /// * `ext` - Json value for extension.
+    ///
+    /// # Return
+    ///
+    /// * ERROR_NONE if successful, otherwise error code.
+
+    pub fn deserialize_extension(
+        &self,
+        ext: &JsonValue,
+    ) -> Result<ElemExtension, crate::ErrorType> {
+
+        let event_type: crate::ExtensionType;
+        if !ext["current-value"].is_null() {
+            event_type = crate::ExtensionType::CurrentValue;
+        } else if !ext["interest-change"].is_null() {
+            event_type = crate::ExtensionType::InterestChange;
+        } else if !ext["statistic-value"].is_null() {
+            event_type = crate::ExtensionType::StatisticValue;
+        } else {
+            event_type = crate::ExtensionType::PrincipalChange;
+        }
+
+        let extension: ElemExtension;
+        match event_type {
+            crate::ExtensionType::CurrentValue => {
+                let mut cv = ElemCurrentValue::new(false, false, false);
+
+                let result = self.deserialize_current_value(&ext["current-value"], &mut cv);
+                match result {
+                    Err(e) => {
+                        return Err(e);
+                    }
+                    Ok(_o) => {}
+                }
+
+                extension = ElemExtension::new_current_value(cv);
+            }
+            crate::ExtensionType::InterestChange => {
+                let mut ic = ElemInterestChange::new(
+                    crate::MethodType::Actuarial,
+                    crate::DayCountType::Periodic,
+                    crate::DEFAULT_DAYS_IN_YEAR,
+                    crate::FrequencyType::None,
+                    crate::FrequencyType::None,
+                    crate::RoundType::None,
+                    dec!(0.0),
+                );
+
+                let result = self.deserialize_interest_change(&ext["interest-change"], &mut ic);
+                match result {
+                    Err(e) => {
+                        return Err(e);
+                    }
+                    Ok(_o) => {}
+                }
+
+                extension = ElemExtension::new_interest_change(ic);
+            }
+            crate::ExtensionType::StatisticValue => {
+                let mut sv = ElemStatisticValue::new("", false, false);
+
+                let result = self.deserialize_statistic_value(&ext["statistic-value"], &mut sv);
+                match result {
+                    Err(e) => {
+                        return Err(e);
+                    }
+                    Ok(_o) => {}
+                }
+
+                extension = ElemExtension::new_statistic_value(sv);
+            }
+            _ => {
+                let mut pc = ElemPrincipalChange::new(
+                    crate::PrincipalType::Increase,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                );
+
+                let result =
+                    self.deserialize_principal_change(&ext["principal-change"], &mut pc);
+                match result {
+                    Err(e) => {
+                        return Err(e);
+                    }
+                    Ok(_o) => {}
+                }
+
+                extension = ElemExtension::new_principal_change(pc);
+            }
+        }
+
+        Ok(extension)
+    }
+
+    /// Deserialize from a string and ingest Json extension.
+    ///
+    /// # Arguments
+    ///
+    /// * `ext_param` - String value for extension.
+    ///
+    /// # Return
+    ///
+    /// * ERROR_NONE if successful, otherwise error code.
+
+    pub fn deserialize_extension_from_str(
+        &self,
+        ext_param: &str,
+    ) -> Result<ElemExtension, crate::ErrorType> {
+        let ext = if ext_param.starts_with('{') { 
+            String::from(ext_param) } else { format!("{{{}}}", ext_param) };
+
+        let data: JsonValue;
+        match json::parse(ext.as_str()) {
+            Err(e) => {
+                println!("Json error: {:?}", e);
+                return Err(crate::ErrorType::Json);
+            }
+            Ok(o) => {
+                data = o;
+            }
+        }
+
+        self.deserialize_extension(&data)
     }
 
     /// Deserialize and ingest Json interest change.

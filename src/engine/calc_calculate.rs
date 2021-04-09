@@ -968,6 +968,7 @@ impl CalcCalculate {
         }
 
         list_event.set_value(calc_interest);
+        
         let result_balance = self.balance_cashflow(
             list_am,
             list_statistic_helper,
@@ -985,6 +986,8 @@ impl CalcCalculate {
             }
         }
 
+        elem_balance_result.set_result_decimal(calc_interest);
+        
         Ok(elem_balance_result)
     }
 
@@ -1160,6 +1163,7 @@ impl CalcCalculate {
         }
 
         list_event.set_periods(periods);
+
         let result_balance = self.balance_cashflow(
             list_am,
             list_statistic_helper,
@@ -1176,6 +1180,8 @@ impl CalcCalculate {
                 elem_balance_result = o;
             }
         }
+
+        elem_balance_result.set_result_integer(periods as i32);
 
         Ok(elem_balance_result)
     }
@@ -1459,6 +1465,9 @@ impl CalcCalculate {
                 elem_balance_result = o;
             }
         }
+
+        elem_balance_result.set_result_decimal(principal);
+
         Ok(elem_balance_result)
     }
 
@@ -1693,7 +1702,7 @@ impl CalcCalculate {
             return Err(crate::ErrorType::CalcInterest);
         }
 
-        elem_balance_result.set_last_yield(calc_interest);
+        elem_balance_result.set_result_yield(calc_interest);
 
         Ok(elem_balance_result)
     }
@@ -1972,18 +1981,11 @@ impl CalcCalculate {
             am_index += 1;
 
             let new_type = list_am.elem_type();
-
             if omit_statistic_events && new_type == crate::ExtensionType::StatisticValue {
                 continue;
             }
 
             let new_event_type = list_am.event_type();
-            let new_type = list_am.elem_type();
-
-            if omit_statistic_events && new_type == crate::ExtensionType::StatisticValue {
-                continue;
-            }
-
             let mut new_date = list_am.event_date();
             let orig_date = new_date;
             let new_sort = list_am.sort_order();

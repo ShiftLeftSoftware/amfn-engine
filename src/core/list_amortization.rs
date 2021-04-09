@@ -778,6 +778,10 @@ impl ListAmortization {
     /// # Arguments
     ///
     /// * `value_param` - See description.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
 
     pub fn set_value(&mut self, value_param: Decimal) -> bool {
         match self.list_am.get_mut(self.list_index.get()) {
@@ -806,6 +810,10 @@ impl ListAmortization {
     /// # Arguments
     ///
     /// * `principal_decrease_param` - See description.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
 
     pub fn set_principal_decrease(&mut self, principal_decrease_param: Decimal) -> bool {
         match self.list_am.get_mut(self.list_index.get()) {
@@ -822,6 +830,10 @@ impl ListAmortization {
     /// # Arguments
     ///
     /// * `principal_increase_param` - See description.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
 
     pub fn set_principal_increase(&mut self, principal_increase_param: Decimal) -> bool {
         match self.list_am.get_mut(self.list_index.get()) {
@@ -838,6 +850,10 @@ impl ListAmortization {
     /// # Arguments
     ///
     /// * `interest_param` - See description.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
 
     pub fn set_interest(&mut self, interest_param: Decimal) -> bool {
         match self.list_am.get_mut(self.list_index.get()) {
@@ -854,6 +870,10 @@ impl ListAmortization {
     /// # Arguments
     ///
     /// * `sl_interest_param` - See description.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
 
     pub fn set_sl_interest(&mut self, sl_interest_param: Decimal) -> bool {
         match self.list_am.get_mut(self.list_index.get()) {
@@ -870,6 +890,10 @@ impl ListAmortization {
     /// # Arguments
     ///
     /// * `value_to_interest_param` - See description.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
 
     pub fn set_value_to_interest(&mut self, value_to_interest_param: Decimal) -> bool {
         match self.list_am.get_mut(self.list_index.get()) {
@@ -886,6 +910,10 @@ impl ListAmortization {
     /// # Arguments
     ///
     /// * `value_to_principal_param` - See description.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
 
     pub fn set_value_to_principal(&mut self, value_to_principal_param: Decimal) -> bool {
         match self.list_am.get_mut(self.list_index.get()) {
@@ -902,6 +930,10 @@ impl ListAmortization {
     /// # Arguments
     ///
     /// * `acc_balance_param` - See description.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
 
     pub fn set_acc_balance(&mut self, acc_balance_param: Decimal) -> bool {
         match self.list_am.get_mut(self.list_index.get()) {
@@ -918,6 +950,10 @@ impl ListAmortization {
     /// # Arguments
     ///
     /// * `balance_param` - See description.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
 
     pub fn set_balance(&mut self, balance_param: Decimal) -> bool {
         match self.list_am.get_mut(self.list_index.get()) {
@@ -934,6 +970,10 @@ impl ListAmortization {
     /// # Arguments
     ///
     /// * `stat_sequence_param` - See description.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
 
     pub fn set_stat_sequence(&mut self, stat_sequence_param: usize) -> bool {
         match self.list_am.get_mut(self.list_index.get()) {

@@ -19,7 +19,7 @@ pub struct ElemCashflow {
     list_event: ListEvent,
     /// If true the cashflow is valid, otherwise it must be re-balanced.
     cashflow_valid: bool,
-    /// Get the currently selected cashflow has been updated.
+    /// The currently selected cashflow has been updated.
     updated: bool,
 
     /// Cashflow calculation object.

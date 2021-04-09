@@ -238,10 +238,6 @@ pub const PARAM_DESCRIPTION: &str = "strDescription";
 
 /// Mapping for column names - editable. 
 pub const MAPCOLNAMES_EDITABLE: usize = 1;
-/// Mapping for column names - empty column. 
-pub const MAPCOLNAMES_EMPTY: usize = 2;
-/// Mapping for column names - exclude column. 
-pub const MAPCOLNAMES_EXCLUDE: usize = 4;
 
 /// Serialize user preferences.
 pub const JSON_SERIALIZE_PREFERENCES: usize = 1;

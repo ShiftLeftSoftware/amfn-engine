@@ -68,8 +68,12 @@ pub struct ElemBalanceResult {
     /// Last interest change.
     int_last_index: usize,
 
-    /// Last yield calculated.
-    last_yield: Cell<Decimal>,
+    /// Result yield.
+    result_yield: Cell<Decimal>,
+    /// Result decimal.
+    result_decimal: Cell<Decimal>,
+    /// Result integer.
+    result_integer: Cell<i32>
 }
 
 /// Balance result definition default implementation.
@@ -124,7 +128,9 @@ impl ElemBalanceResult {
             cur_first_pv_index: usize::MAX,
             int_first_index: usize::MAX,
             int_last_index: usize::MAX,
-            last_yield: Cell::new(dec!(-1.0)),
+            result_yield: Cell::new(dec!(0.0)),
+            result_decimal: Cell::new(dec!(0.0)),
+            result_integer: Cell::new(0),
         }
     }
 
@@ -163,7 +169,9 @@ impl ElemBalanceResult {
             cur_first_pv_index: self.cur_first_pv_index,
             int_first_index: self.int_first_index,
             int_last_index: self.int_last_index,
-            last_yield: Cell::new(self.last_yield.get()),
+            result_yield: Cell::new(self.result_yield()),
+            result_decimal: Cell::new(self.result_decimal()),
+            result_integer: Cell::new(self.result_integer())
         }
     }
 
@@ -470,14 +478,34 @@ impl ElemBalanceResult {
         self.int_last_index
     }
 
-    /// Get the last yield calculated.
+    /// Get the result yield.
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn last_yield(&self) -> Decimal {
-        self.last_yield.get()
+    pub fn result_yield(&self) -> Decimal {
+        self.result_yield.get()
+    }
+
+    /// Get the result decimal.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn result_decimal(&self) -> Decimal {
+        self.result_decimal.get()
+    }
+
+    /// Get the result integer.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn result_integer(&self) -> i32 {
+        self.result_integer.get()
     }
 
     /// Increment the total number of TYPE_PRINCIPAL_CHANGEs with statistics set.
@@ -761,13 +789,33 @@ impl ElemBalanceResult {
         self.int_last_index = param;
     }
 
-    /// Set the last yield calculated.
+    /// Set the result yield.
     ///
     /// # Arguments
     ///
     /// * `param` - See description.
 
-    pub fn set_last_yield(&self, param: Decimal) {
-        self.last_yield.set(param);
+    pub fn set_result_yield(&self, param: Decimal) {
+        self.result_yield.set(param);
+    }
+
+    /// Set the result decimal.
+    ///
+    /// # Arguments
+    ///
+    /// * `param` - See description.
+
+    pub fn set_result_decimal(&self, param: Decimal) {
+        self.result_decimal.set(param);
+    }
+
+    /// Set the result integer.
+    ///
+    /// # Arguments
+    ///
+    /// * `param` - See description.
+
+    pub fn set_result_integer(&self, param: i32) {
+        self.result_integer.set(param);
     }
 }

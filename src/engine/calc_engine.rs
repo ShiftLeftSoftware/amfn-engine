@@ -474,10 +474,9 @@ impl CalcEngine {
                 o.set_list_statistic_helper(statistic_helper);
                 o.set_elem_balance_result(elem_balance_result);
 
-                if !o
-                    .list_amortization()
+                if o.last_amortization_index() != usize::MAX && 
+                    !o.list_amortization()
                     .get_element(o.last_amortization_index())
-                    && o.last_amortization_index() != usize::MAX
                 {
                     o.list_amortization()
                         .get_element(o.list_amortization().count() - 1);
@@ -1993,6 +1992,78 @@ impl CalcEngine {
             expression_str,
             cashflow,
         )
+    }
+    
+    /// Format a date and return the internal format.
+    ///
+    /// # Arguments
+    ///
+    /// * `display_val` - The display value to parse.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_date_in(&self, display_val: &str) -> String {
+        let calc_mgr = self.calc_mgr();
+
+        let fs = calc_mgr.list_locale().format_date_in(display_val);
+
+        fs
+    }
+
+    /// Format an integer and return the internal format.
+    ///
+    /// # Arguments
+    ///
+    /// * `display_val` - The display value to parse.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_integer_in(&self, display_val: &str) -> String {
+        let calc_mgr = self.calc_mgr();
+
+        let fs = calc_mgr.list_locale().format_integer_in(display_val);
+
+        fs
+    }
+
+    /// Format a decimal and return the internal format.
+    ///
+    /// # Arguments
+    ///
+    /// * `display_val` - The display value to parse.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_decimal_in(&self, display_val: &str) -> String {
+        let calc_mgr = self.calc_mgr();
+
+        let fs = calc_mgr.list_locale().format_decimal_in(display_val);
+
+        fs
+    }
+
+    /// Format a currency and return the internal format.
+    ///
+    /// # Arguments
+    ///
+    /// * `display_val` - The display value to parse.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn format_currency_in(&self, display_val: &str) -> String {
+        let calc_mgr = self.calc_mgr();
+
+        let fs = calc_mgr.list_locale().format_currency_in(display_val);
+
+        fs
     }
 
     /// Format and return a date string.

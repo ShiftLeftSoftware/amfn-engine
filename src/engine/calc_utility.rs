@@ -441,14 +441,8 @@ impl CalcUtility {
             }
             crate::ColumnType::SkipPeriods => {
                 if list_event.skip_mask_len() > 0 {
-                    result = format!(
-                        "{}/{}",
-                        CoreUtility::skip_mask_true_bits(
-                            list_event.skip_mask_len(),
-                            list_event.skip_mask()
-                        ),
-                        list_event.skip_mask_len()
-                    );
+                    result = CoreUtility::skip_mask_to_string(
+                        list_event.skip_mask_len(), list_event.skip_mask());
                 }
             }
             crate::ColumnType::Intervals => {
@@ -963,11 +957,10 @@ impl CalcUtility {
             let mut name = String::from("");
             let mut elem_type = String::from("");
             let mut code = String::from("");
-            let mut col_empty_value: Decimal = dec!(-1.0);
             let mut format = crate::FormatType::String;
             let mut col_name_index: usize = 0;
             let mut decimal_digits = calc_manager.borrow().decimal_digits(cashflow);
-            let mut column_exclude: bool = false;
+            let mut column_editable: bool = false;
             let mut desc_text: String;
 
             if calc_manager
@@ -986,6 +979,7 @@ impl CalcUtility {
                     true,
                     false,
                 );
+
                 if col_header.is_empty() {
                     col_header = calc_manager.borrow().descriptor_value(
                         crate::GROUP_COLHEADER,
@@ -1004,17 +998,11 @@ impl CalcUtility {
                                 .as_str(),
                             ),
                         );
-                        if (calc_manager.borrow().mgr().map_col_names().value_ext()
-                            & crate::MAPCOLNAMES_EMPTY)
-                            != 0
-                        {
-                            col_empty_value = dec!(0.0);
-                        }
-                        column_exclude = (calc_manager.borrow().mgr().map_col_names().value_ext()
-                            & crate::MAPCOLNAMES_EXCLUDE)
-                            != 0;
                     }
                 }
+
+                column_editable = (calc_manager.borrow().mgr().map_col_names().value_ext()
+                    & crate::MAPCOLNAMES_EDITABLE) != 0;
             } else {
                 desc_text = calc_manager.borrow().descriptor_value(
                     crate::GROUP_COLVALUE,
@@ -1129,10 +1117,6 @@ impl CalcUtility {
             col_header = String::from(tokens[0].trim());
             if tokens.len() > 1 {
                 col_description = String::from(tokens[1].trim());
-                if tokens.len() > 3 {
-                    col_empty_value = CoreUtility::parse_decimal(tokens[2].trim());
-                    column_exclude = CoreUtility::parse_integer(tokens[3].trim()) != 0;
-                }
             }
             if col_header.is_empty() {
                 col_header = String::from(col_name);
@@ -1173,11 +1157,10 @@ impl CalcUtility {
                 name.as_str(),
                 elem_type.as_str(),
                 code.as_str(),
-                col_empty_value,
                 format,
                 decimal_digits,
                 width,
-                column_exclude,
+                column_editable
             );
         }
         list_column
@@ -1227,11 +1210,11 @@ impl CalcUtility {
                 last_yield = dec!(0.0);
             }
             Some(o) => {
-                last_yield = o.last_yield();
+                last_yield = o.result_yield();
             }
         }
 
-        if last_yield < dec!(0.0) {
+        if last_yield == dec!(0.0) {
             let list_event: &ListEvent;
             match list_cashflow.list_event() {
                 None => {
@@ -1272,7 +1255,7 @@ impl CalcUtility {
                     last_yield = dec!(0.0);
                 }
                 Ok(o) => {
-                    last_yield = o.last_yield();
+                    last_yield = o.result_yield();
                 }
             }
 
@@ -1280,7 +1263,7 @@ impl CalcUtility {
                 match list_cashflow.elem_balance_result() {
                     None => {}
                     Some(o) => {
-                        o.set_last_yield(last_yield);
+                        o.set_result_yield(last_yield);
                     }
                 }
             }
@@ -1443,7 +1426,9 @@ impl CalcUtility {
     /// # Arguments
     ///
     /// * `calc_manager_param` - Calculation manager.
-    /// * `elem_column` - Column element.
+    /// * `col_name_index` - Column name index.
+    /// * `col_type` - Column type.
+    /// * `col_code` - Column code.
     /// * `index` - Event row index.
     /// * `value_param` - Value to set as a string.
     ///
@@ -1453,7 +1438,9 @@ impl CalcUtility {
 
     pub fn set_event_value(
         calc_manager_param: &Rc<RefCell<CalcManager>>,
-        elem_column: &ElemColumn,
+        col_name_index: usize,
+        col_type: &str,
+        col_code: &str,
         index: usize,
         value_param: &str
     ) -> String {
@@ -1481,11 +1468,11 @@ impl CalcUtility {
             if !list_event.get_element(index) { return result; }
 
             list_locale.select_event_locale("");
-            if elem_column.col_type() == crate::TYPE_LOCALE && !elem_column.code().is_empty() {
-                list_locale.select_event_locale(elem_column.code());
+            if col_type == crate::TYPE_LOCALE && !col_code.is_empty() {
+                list_locale.select_event_locale(col_code);
             }
         
-            match CoreUtility::get_col_name(elem_column.col_name_index()) {
+            match CoreUtility::get_col_name(col_name_index) {
                 crate::ColumnType::Date => {
                     result = list_locale.format_date_in(value_param);
                 }
@@ -1541,7 +1528,7 @@ impl CalcUtility {
                 }
             }
         
-            match CoreUtility::get_col_name(elem_column.col_name_index()) {
+            match CoreUtility::get_col_name(col_name_index) {
                 crate::ColumnType::Date => {
                     list_event.set_event_date(CoreUtility::parse_date(result.as_str()));
                 }
@@ -1581,14 +1568,27 @@ impl CalcUtility {
                 }
                 _ => {}
             }
-
-            list_event.get_element(orig_list_index);          
         }
+
+        let column = ElemColumn::new("", col_name_index, 
+            "", "", "", "", "", "", crate::FormatType::String, 0, 0, false);
+        result = CalcUtility::get_event_value(calc_manager_param, &column);
 
         {
             let calc_mgr = calc_manager.borrow();
             let list_locale = calc_mgr.list_locale();
-
+            let list_cashflow = calc_mgr.list_cashflow();
+            let list_event_opt = list_cashflow.list_event();
+        
+            match list_event_opt.as_ref() {
+                None => {
+                    return result;
+                }
+                Some(o) => {
+                    o.get_element(orig_list_index);          
+                }
+            }
+    
             list_locale.select_event_locale("");
         }
 

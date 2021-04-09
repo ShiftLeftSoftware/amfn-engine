@@ -17,7 +17,8 @@ use super::{
 };
 use crate::core::{
     CoreUtility, ElemBalanceResult, ElemCurrentValue, ElemInterestChange, ElemPrincipalChange,
-    ElemStatisticValue, ExtensionValue, ListAmortization, ListDescriptor, ListEvent, ListParameter,
+    ElemStatisticValue, ElemExtension, ExtensionValue, ListAmortization, ListDescriptor, 
+    ListEvent, ListParameter,
 };
 use crate::ListTrait;
 
@@ -305,35 +306,7 @@ impl CalcJsonSerialize {
                 buf.push(',');
                 buf.push_str(crate::LINE_ENDING);
 
-                buf.push_str(self.indent().as_str());
-                buf.push_str("\"extension\": {");
-                buf.push_str(crate::LINE_ENDING);
-                self.increment_depth();
-
-                match ext {
-                    ExtensionValue::CurrentValue(o) => {
-                        self.serialize_current_value(o, buf);
-                    }
-                    ExtensionValue::InterestChange(o) => {
-                        self.serialize_interest_change(
-                            o,
-                            buf,
-                            list_am.value(),
-                            list_am.frequency(),
-                        );
-                    }
-                    ExtensionValue::PrincipalChange(o) => {
-                        self.serialize_principal_change(o, buf);
-                    }
-                    ExtensionValue::StatisticValue(o) => {
-                        self.serialize_statistic_value(o, buf);
-                    }
-                }
-
-                self.decrement_depth();
-                buf.push_str(self.indent().as_str());
-                buf.push_str("},");
-                buf.push_str(crate::LINE_ENDING);
+                buf.push_str(self.serialize_extension(list_am.elem_extension(), true, false).as_str());
 
                 match list_am.list_descriptor() {
                     None => {}
@@ -960,36 +933,7 @@ impl CalcJsonSerialize {
                 buf.push(',');
                 buf.push_str(crate::LINE_ENDING);
 
-                buf.push_str(self.indent().as_str());
-                buf.push_str("\"extension\": {");
-                buf.push_str(crate::LINE_ENDING);
-                self.increment_depth();
-                let ext = list_event.elem_extension().extension_value();
-
-                match ext {
-                    ExtensionValue::CurrentValue(o) => {
-                        self.serialize_current_value(o, buf);
-                    }
-                    ExtensionValue::InterestChange(o) => {
-                        self.serialize_interest_change(
-                            o,
-                            buf,
-                            dec!(0.0),
-                            crate::FrequencyType::OneMonth,
-                        );
-                    }
-                    ExtensionValue::PrincipalChange(o) => {
-                        self.serialize_principal_change(o, buf);
-                    }
-                    ExtensionValue::StatisticValue(o) => {
-                        self.serialize_statistic_value(o, buf);
-                    }
-                }
-
-                self.decrement_depth();
-                buf.push_str(self.indent().as_str());
-                buf.push_str("},");
-                buf.push_str(crate::LINE_ENDING);
+                buf.push_str(self.serialize_extension(list_event.elem_extension(), true, false).as_str());
 
                 match list_event.list_parameter() {
                     None => {}
@@ -1098,6 +1042,60 @@ impl CalcJsonSerialize {
         buf.push_str(crate::LINE_ENDING);
     }
 
+    /// Serialize extension.
+    ///
+    /// # Arguments
+    ///
+    /// * `ext` - Extension to serialize.
+    /// * `buf` - Buffer to append serialization.
+    /// * `add_comma` - Append comma on last line of output.
+    /// * `all_data` - Serialize all data properties.
+
+    pub fn serialize_extension(
+        &self,
+        ext: &ElemExtension,
+        add_comma: bool,
+        all_data: bool
+    ) -> String {
+
+        let mut buf = String::from("");
+        buf.push_str(self.indent().as_str());
+        buf.push_str("\"extension\": {");
+        buf.push_str(crate::LINE_ENDING);
+        self.increment_depth();
+
+        match ext.extension_value() {
+            ExtensionValue::CurrentValue(o) => {
+                self.serialize_current_value(o, &mut buf);
+            }
+            ExtensionValue::InterestChange(o) => {
+                self.serialize_interest_change(
+                    o,
+                    &mut buf,
+                    dec!(0.0),
+                    crate::FrequencyType::OneMonth,
+                    all_data
+                );
+            }
+            ExtensionValue::PrincipalChange(o) => {
+                self.serialize_principal_change(o, &mut buf);
+            }
+            ExtensionValue::StatisticValue(o) => {
+                self.serialize_statistic_value(o, &mut buf);
+            }
+        }
+
+        self.decrement_depth();
+        buf.push_str(self.indent().as_str());
+        buf.push('}');
+        if add_comma {
+            buf.push(',');
+        }
+        buf.push_str(crate::LINE_ENDING);
+
+        buf
+    }
+
     /// Serialize interest change element.
     ///
     /// # Arguments
@@ -1106,6 +1104,7 @@ impl CalcJsonSerialize {
     /// * `buf` - Buffer to append serialization.
     /// * `nar` - Nominal annual rate.
     /// * `frequency` - Frequency value.
+    /// * `all_data` - Serialize all data properties.
 
     fn serialize_interest_change(
         &self,
@@ -1113,6 +1112,7 @@ impl CalcJsonSerialize {
         buf: &mut String,
         nar: Decimal,
         frequency: crate::FrequencyType,
+        all_data: bool
     ) {
         let calc_mgr = self.calc_mgr();
         let decimal_digits = calc_mgr.decimal_digits(false);
@@ -1137,7 +1137,7 @@ impl CalcJsonSerialize {
         buf.push_str("\",");
         buf.push_str(crate::LINE_ENDING);
 
-        if interest_change.effective_frequency() != crate::FrequencyType::None {
+        if all_data || interest_change.effective_frequency() != crate::FrequencyType::None {
             buf.push_str(self.indent().as_str());
             buf.push_str("\"effective-frequency\": \"");
             buf.push_str(
@@ -1147,7 +1147,7 @@ impl CalcJsonSerialize {
             buf.push_str(crate::LINE_ENDING);
         }
 
-        if interest_change.interest_frequency() != crate::FrequencyType::None {
+        if all_data || interest_change.interest_frequency() != crate::FrequencyType::None {
             buf.push_str(self.indent().as_str());
             buf.push_str("\"interest-frequency\": \"");
             buf.push_str(
@@ -1217,7 +1217,7 @@ impl CalcJsonSerialize {
             buf.push_str(crate::LINE_ENDING);
         }
 
-        if interest_change.round_balance() != crate::RoundType::None {
+        if all_data || interest_change.round_balance() != crate::RoundType::None {
             buf.push_str(self.indent().as_str());
             buf.push_str("\"round-balance\": \"");
             buf.push_str(CoreUtility::get_round_balance(interest_change.round_balance()).as_str());
@@ -1235,7 +1235,7 @@ impl CalcJsonSerialize {
             }
         }
 
-        if dd != decimal_digits {
+        if all_data || dd != decimal_digits {
             buf.push_str(self.indent().as_str());
             buf.push_str("\"round-decimal-digits\": \"");
             buf.push_str(interest_change.round_decimal_digits().to_string().as_str());

@@ -7,8 +7,6 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use rust_decimal::prelude::*;
-
 pub struct ElemColumn {
     /// Name of the column.
     col_name: String,
@@ -26,8 +24,6 @@ pub struct ElemColumn {
     col_type: String,
     /// Code of the descriptor.
     code: String,
-    /// Column empty value (Enabled when >= 0).
-    column_empty_value: Decimal,
     /// Format of the column.
     format: crate::FormatType,
     /// Number of significant decimal digits.
@@ -35,9 +31,7 @@ pub struct ElemColumn {
     /// Width of column.
     column_width: usize,
     /// Column exclude.
-    column_exclude: bool,
-    /// Column empty.
-    column_empty: bool,
+    column_editable: bool
 }
 
 /// The column element implementation.
@@ -55,12 +49,10 @@ impl ElemColumn {
     /// * `name_param` - Name parameter.
     /// * `col_type_param` - Column type.
     /// * `code_param` - Code parameter.
-    /// * `column_empty_value_param` - Column empty value.
     /// * `format_param` - Column format.
     /// * `decimal_digits_param` - Decimal digits.
     /// * `column_width_param` - Column width.
-    /// * `column_exclude_param` - Column exclude.
-    /// * `column_empty_param` - Column empty.
+    /// * `column_editable` - Column editable.
     ///
     /// # Return
     ///
@@ -76,12 +68,10 @@ impl ElemColumn {
         name_param: &str,
         col_type_param: &str,
         code_param: &str,
-        column_empty_value_param: Decimal,
         format_param: crate::FormatType,
         decimal_digits_param: usize,
         column_width_param: usize,
-        column_exclude_param: bool,
-        column_empty_param: bool,
+        column_editable_param: bool
     ) -> ElemColumn {
         ElemColumn {
             col_name: String::from(col_name_param),
@@ -92,12 +82,10 @@ impl ElemColumn {
             name: String::from(name_param),
             col_type: String::from(col_type_param),
             code: String::from(code_param),
-            column_empty_value: column_empty_value_param,
             format: format_param,
             decimal_digits: decimal_digits_param,
             column_width: column_width_param,
-            column_exclude: column_exclude_param,
-            column_empty: column_empty_param,
+            column_editable: column_editable_param
         }
     }
 
@@ -181,16 +169,6 @@ impl ElemColumn {
         self.code.as_str()
     }
 
-    /// Get the column empty value.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn column_empty_value(&self) -> Decimal {
-        self.column_empty_value
-    }
-
     /// Get the column format.
     ///
     /// # Return
@@ -221,24 +199,14 @@ impl ElemColumn {
         self.column_width
     }
 
-    /// Get the column exclude.
+    /// Get the column editable.
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn column_exclude(&self) -> bool {
-        self.column_exclude
-    }
-
-    /// Get the column empty.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn column_empty(&self) -> bool {
-        self.column_empty
+    pub fn column_editable(&self) -> bool {
+        self.column_editable
     }
 
     /// Set the column name.
@@ -321,16 +289,6 @@ impl ElemColumn {
         self.code = String::from(code_param);
     }
 
-    /// Set the empty value.
-    ///
-    /// # Arguments
-    ///
-    /// * `empty_value_param` - See description.
-
-    pub fn set_empty_value(&mut self, empty_value_param: Decimal) {
-        self.column_empty_value = empty_value_param;
-    }
-
     /// Set the column format.
     ///
     /// # Arguments
@@ -361,23 +319,13 @@ impl ElemColumn {
         self.column_width = width_param;
     }
 
-    /// Set the column exclude.
+    /// Set the column editable.
     ///
     /// # Arguments
     ///
-    /// * `exclude_param` - See description.
+    /// * `editable_param` - See description.
 
-    pub fn set_column_exclude(&mut self, exclude_param: bool) {
-        self.column_exclude = exclude_param;
-    }
-
-    /// Set the column empty.
-    ///
-    /// # Arguments
-    ///
-    /// * `column_empty_param` - See description.
-
-    pub fn set_column_empty(&mut self, column_empty_param: bool) {
-        self.column_empty = column_empty_param;
+    pub fn set_column_editable(&mut self, editable_param: bool) {
+        self.column_editable = editable_param;
     }
 }

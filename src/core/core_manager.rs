@@ -606,7 +606,7 @@ impl CoreManager {
         mgr.map_col_names.add_key(
             "Type",
             crate::ColumnType::EventType as usize,
-            crate::MAPCOLNAMES_EDITABLE,
+            0,
         );
 
         mgr.map_col_names.add_key(
@@ -618,13 +618,13 @@ impl CoreManager {
         mgr.map_col_names.add_key(
             "Date-expr",
             crate::ColumnType::DateExpr as usize,
-            crate::MAPCOLNAMES_EDITABLE | crate::MAPCOLNAMES_EXCLUDE,
+            crate::MAPCOLNAMES_EDITABLE,
         );
 
         mgr.map_col_names.add_key(
             "Sort",
             crate::ColumnType::Sort as usize,
-            crate::MAPCOLNAMES_EDITABLE | crate::MAPCOLNAMES_EXCLUDE,
+            crate::MAPCOLNAMES_EDITABLE,
         );
 
         mgr.map_col_names.add_key(
@@ -636,9 +636,8 @@ impl CoreManager {
         mgr.map_col_names.add_key(
             "Value-expr",
             crate::ColumnType::ValueExpr as usize,
-            crate::MAPCOLNAMES_EDITABLE | crate::MAPCOLNAMES_EXCLUDE,
+            crate::MAPCOLNAMES_EDITABLE,
         );
-
         mgr.map_col_names
             .add_key("Decrease", crate::ColumnType::Decrease as usize, 0);
 
@@ -654,13 +653,13 @@ impl CoreManager {
         mgr.map_col_names.add_key(
             "Periods-expr",
             crate::ColumnType::PeriodsExpr as usize,
-            crate::MAPCOLNAMES_EDITABLE | crate::MAPCOLNAMES_EXCLUDE,
+            crate::MAPCOLNAMES_EDITABLE,
         );
 
         mgr.map_col_names.add_key(
             "Skip-periods",
             crate::ColumnType::SkipPeriods as usize,
-            crate::MAPCOLNAMES_EDITABLE,
+            0,
         );
 
         mgr.map_col_names.add_key(
@@ -678,19 +677,19 @@ impl CoreManager {
         mgr.map_col_names.add_key(
             "End-date",
             crate::ColumnType::EndDate as usize,
-            crate::MAPCOLNAMES_EDITABLE,
+            0
         );
 
         mgr.map_col_names.add_key(
             "Descriptor-list",
             crate::ColumnType::DescriptorList as usize,
-            crate::MAPCOLNAMES_EDITABLE | crate::MAPCOLNAMES_EXCLUDE,
+            0,
         );
 
         mgr.map_col_names.add_key(
             "Parameter-list",
             crate::ColumnType::ParameterList as usize,
-            crate::MAPCOLNAMES_EDITABLE | crate::MAPCOLNAMES_EXCLUDE,
+            0,
         );
 
         mgr.map_col_names
@@ -720,7 +719,7 @@ impl CoreManager {
         mgr.map_col_names.add_key(
             "Accrued-balance",
             crate::ColumnType::AccruedBalance as usize,
-            crate::MAPCOLNAMES_EMPTY,
+            0,
         );
 
         mgr.map_col_names
@@ -728,14 +727,12 @@ impl CoreManager {
 
         mgr.map_col_names.add_key(
             "Event-name",
-            crate::ColumnType::EventName as usize,
-            crate::MAPCOLNAMES_EDITABLE | crate::MAPCOLNAMES_EXCLUDE,
-        );
+            crate::ColumnType::EventName as usize, 
+            crate::MAPCOLNAMES_EDITABLE);
         mgr.map_col_names.add_key(
             "Next-name",
-            crate::ColumnType::NextName as usize,
-            crate::MAPCOLNAMES_EDITABLE | crate::MAPCOLNAMES_EXCLUDE,
-        );
+            crate::ColumnType::NextName as usize, 
+            crate::MAPCOLNAMES_EDITABLE);
 
         mgr
     }

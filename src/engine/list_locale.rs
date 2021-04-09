@@ -349,7 +349,7 @@ impl ListLocale {
         let dd: Vec<_> = text.split('-').collect();
         if dd.len() != 3 { 
             let now = CoreUtility::date_now();
-            return format!("{}-{}-{}", now / 10000, now / 100 % 100, now % 100);
+            return format!("{:04}-{:02}-{:02}", now / 10000, now / 100 % 100, now % 100);
         }
 
         let mut year = String::from(dd[0]);
@@ -360,10 +360,10 @@ impl ListLocale {
 
         if year.len() != 4 { 
             let now = CoreUtility::date_now();
-            return format!("{}-{}-{}", now / 10000, now / 100 % 100, now % 100);
+            return format!("{:04}-{:02}-{:02}", now / 10000, now / 100 % 100, now % 100);
         }
 
-        format!("{}-{}-{}", year , self.zerofill(dd[1], 2), self.zerofill(dd[2], 2))
+        format!("{:04}-{:02}-{:02}", year , self.zerofill(dd[1], 2), self.zerofill(dd[2], 2))
     }
 
     /// Format an integer and return the internal format.
@@ -529,6 +529,8 @@ impl ListLocale {
             fract = String::from(tokens[1]);
             fract.truncate(decimal_digits);
             text = format!("{}.{}", tokens[0], fract);
+        } else {
+            text.push('.');
         }
 
         let mut zeros = decimal_digits - fract.len(); 

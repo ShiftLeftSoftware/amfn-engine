@@ -1679,31 +1679,6 @@ impl CoreUtility {
         (year * 10000) + (month * 100) + day
     }
 
-    /// Return the number of 'true' bits in the skip mask.
-    ///
-    /// # Arguments
-    ///
-    /// * `skip_mask_len` - The length of the skip mask boolean array.
-    /// * `skip_mask` - The skip mask boolean array.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn skip_mask_true_bits(skip_mask_len: usize, skip_mask: u128) -> i32 {
-        if skip_mask_len == usize::MAX {
-            return 0;
-        }
-
-        let mut count: i32 = 0;
-        for index in 0..skip_mask_len {
-            if (skip_mask & (1 << index)) != 0 {
-                count += 1;
-            }
-        }
-        count
-    }
-
     /// Return a string representing the skip mask boolean array.
     /// A value of '0' indicates that the period is not skipped
     /// whereas a value of '1' indicates that the period is
@@ -1719,7 +1694,7 @@ impl CoreUtility {
     /// * See description.
 
     pub fn skip_mask_to_string(skip_mask_len: usize, skip_mask: u128) -> String {
-        if skip_mask_len == usize::MAX {
+        if skip_mask_len == 0 {
             return String::from("");
         }
         let mut skip_mask_str = String::from("");
@@ -1749,7 +1724,7 @@ impl CoreUtility {
     pub fn string_to_skip_mask(skip_mask_str: &str) -> (usize, u128) {
         let skip_mask_str_len = skip_mask_str.len();
         let mut skip_mask: u128 = 0;
-        if skip_mask_str_len == usize::MAX {
+        if skip_mask_str_len == 0 {
             return (0, skip_mask);
         }
 

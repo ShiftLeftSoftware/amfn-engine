@@ -7,7 +7,6 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use rust_decimal::prelude::*;
 use std::cell::Cell;
 
 use super::ElemColumn;
@@ -155,11 +154,10 @@ impl ListColumn {
         name_param: &str,
         col_type_param: &str,
         code_param: &str,
-        column_empty_value_param: Decimal,
         format_param: crate::FormatType,
         decimal_digits_param: usize,
         column_width_param: usize,
-        column_exclude_param: bool,
+        column_editable_param: bool,
     ) -> bool {
         let new_elem_column: ElemColumn = ElemColumn::new(
             col_name_param,
@@ -170,12 +168,10 @@ impl ListColumn {
             name_param,
             col_type_param,
             code_param,
-            column_empty_value_param,
             format_param,
             decimal_digits_param,
             column_width_param,
-            column_exclude_param,
-            false,
+            column_editable_param
         );
 
         let new_index: usize = self.list_column.len();
@@ -314,21 +310,6 @@ impl ListColumn {
         }
     }
 
-    /// Get the column empty value (Enabled when >= 0).
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn column_empty_value(&self) -> Decimal {
-        match self.list_column.get(self.list_index.get()) {
-            None => {
-                panic!("Column list index not set");
-            }
-            Some(o) => o.column_empty_value(),
-        }
-    }
-
     /// Get the format of the column.
     ///
     /// # Return
@@ -374,33 +355,18 @@ impl ListColumn {
         }
     }
 
-    /// Get the column exclude.
+    /// Get the column editable.
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn column_exclude(&self) -> bool {
+    pub fn column_editable(&self) -> bool {
         match self.list_column.get(self.list_index.get()) {
             None => {
                 panic!("Column list index not set");
             }
-            Some(o) => o.column_exclude(),
-        }
-    }
-
-    /// Get the column empty flag.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn column_empty(&self) -> bool {
-        match self.list_column.get(self.list_index.get()) {
-            None => {
-                panic!("Column list index not set");
-            }
-            Some(o) => o.column_empty(),
+            Some(o) => o.column_editable(),
         }
     }
 
@@ -441,21 +407,5 @@ impl ListColumn {
             self.list_index.set(self.list_index.get() - 1);
         }
         true
-    }
-
-    /// Set the column empty flag.
-    ///
-    /// # Arguments
-    ///
-    /// * `column_empty_param` - See description.
-
-    pub fn set_column_empty(&mut self, column_empty_param: bool) -> bool {
-        match self.list_column.get_mut(self.list_index.get()) {
-            None => false,
-            Some(o) => {
-                o.set_column_empty(column_empty_param);
-                true
-            }
-        }
     }
 }
