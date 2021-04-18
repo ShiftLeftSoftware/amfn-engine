@@ -334,7 +334,7 @@ impl ListDescriptor {
                 None => {
                     return false;
                 }
-                Some(o) => match list_descriptor.list().get(index) {
+                Some(o) => match list_descriptor.list_descriptor.get(index) {
                     None => {
                         return false;
                     }
@@ -350,16 +350,6 @@ impl ListDescriptor {
         }
 
         true
-    }
-
-    /// Get the vector of descriptors.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list(&self) -> &Vec<ElemDescriptor> {
-        &self.list_descriptor
     }
 
     /// Get the group name of the descriptor.

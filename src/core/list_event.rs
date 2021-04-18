@@ -170,8 +170,6 @@ impl ListEvent {
         event_name_param: &str,
         next_name_param: &str,
     ) -> bool {
-        let elem_extension = &elem_extension_param;
-        let extension_type = elem_extension.extension_type();
         if list_parameter_param.is_none() {
             list_parameter_param = Option::from(ListParameter::new());
         }
@@ -202,25 +200,18 @@ impl ListEvent {
         );
 
         self.list_event.push(new_elem_event);
+        
         if self.sort_on_add.get() {
             self.sort();
         }
 
-        match self
-            .list_event
-            .iter()
-            .position(|e| e.elem_type() == extension_type && e.event_date() == event_date_param)
-        {
-            None => false,
-            Some(o) => {
-                self.list_index.set(o);
-                if !self.sort_on_add.get() {
-                    self.sort_updated.set(true);
-                }
+        let result = self.get_element_by_date(event_date_param, sort_order_param);
 
-                true
-            }
+        if !self.sort_on_add.get() {
+            self.sort_updated.set(true);
         }
+
+        result
     }
 
     /// Performs a deep copy of this event list and return a new event list.
@@ -412,26 +403,6 @@ impl ListEvent {
 
     pub fn cashflow(&self) -> bool {
         self.cashflow
-    }
-
-    /// Get the vector of events.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list(&self) -> &Vec<ElemEvent> {
-        &self.list_event
-    }
-
-    /// Get the mutable vector of events.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list_mut(&mut self) -> &mut Vec<ElemEvent> {
-        &mut self.list_event
     }
 
     /// Get the eom of the event.
@@ -704,6 +675,21 @@ impl ListEvent {
         }
     }
 
+    /// Get the mutable event parameter list.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn list_parameter_mut(&mut self) -> Option<&mut ListParameter> {
+        match self.list_event.get_mut(self.list_index.get()) {
+            None => {
+                panic!("Event list index not set");
+            }
+            Some(o) => o.list_parameter_mut(),
+        }
+    }
+
     /// Get the event descriptor list.
     ///
     /// # Return
@@ -747,6 +733,32 @@ impl ListEvent {
             }
             Some(o) => o.next_name(),
         }
+    }
+
+    /// Select an event based upon the date and sort order.
+    ///
+    /// # Arguments
+    ///
+    /// * `date_param` - The date to select.
+    /// * `sort_param` - The sort order to select.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
+
+    pub fn get_element_by_date(
+        &self,
+        date_param: usize,
+        sort_param: usize,
+    ) -> bool {
+        for (index, elem) in self.list_event.iter().enumerate() {
+            if elem.event_date() == date_param && elem.sort_order() == sort_param {
+                self.set_index(index);
+                return true;
+            }
+        }
+
+        false
     }
 
     /// Select an event based upon an event name.

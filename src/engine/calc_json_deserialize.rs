@@ -22,7 +22,6 @@ use crate::core::{
     CoreUtility, ElemCurrentValue, ElemExtension, ElemInterestChange,
     ElemPrincipalChange, ElemStatisticValue, ListDescriptor, ListEvent, ListParameter,
 };
-use crate::ListTrait;
 
 pub struct CalcJsonDeserialize {
     /// Calculator manager element.
@@ -90,7 +89,7 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager.borrow_mut().append_cashflows(o);
+                    self.calc_manager.borrow_mut().list_cashflow_mut().append_cashflows(o);
                 }
             }
         }
@@ -116,9 +115,7 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager
-                        .borrow_mut()
-                        .append_list_locale(o);
+                    self.calc_manager.borrow_mut().list_locale_mut().append_locales(o);
                 }
             }
         }
@@ -144,7 +141,7 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager.borrow_mut().append_list_template_group(o);
+                    self.calc_manager.borrow_mut().list_template_group_mut().append_template_groups(o);
                 }
             }
         }
@@ -166,8 +163,9 @@ impl CalcJsonDeserialize {
     /// * ERROR_NONE if successful, otherwise error code.
 
     fn deserialize_cashflows(&self, cfs: &JsonValue) -> Result<ListCashflow, crate::ErrorType> {
-        let mut index: usize = 0;
         let mut cashflows = ListCashflow::new();
+        let mut index: usize = 0;
+
         cashflows.set_calc_mgr(&self.calc_manager);
 
         loop {
@@ -187,20 +185,12 @@ impl CalcJsonDeserialize {
             }
 
             let preferences = self.calc_mgr().preferences().copy(true);
-            let result = cashflows.add_cashflow(name, None, Option::from(preferences), "");
-            match result {
+            match cashflows.add_cashflow_prep(name, None, Option::from(preferences), "") {
                 Err(_e) => {
                     panic!("Add cashflow failed");
                 }
-                Ok(o) => {
-                    cashflows.list_mut().push(o);
-                    cashflows.sort();
-                    match cashflows.list().iter().position(|e| e.name() == name) {
-                        None => {}
-                        Some(o) => {
-                            cashflows.set_index(o);
-                        }
-                    }
+                Ok(o) => { 
+                    cashflows.add_cashflow(name, o);
                 }
             }
 
@@ -209,7 +199,7 @@ impl CalcJsonDeserialize {
                     None => {}
                     Some(o) => {
                         let result =
-                            self.deserialize_preferences_with_prefs(&cf["preferences"], o, true);
+                            self.deserialize_preferences_with_prefs(&cf["preferences"], o);
                         match result {
                             Err(e) => {
                                 return Err(e);
@@ -218,6 +208,8 @@ impl CalcJsonDeserialize {
                         }
                     }
                 }
+
+                cashflows.update_preferences();
             }
 
             if !cf["event-list"].is_null() {
@@ -1315,7 +1307,7 @@ impl CalcJsonDeserialize {
             true,
         );
 
-        match self.deserialize_preferences_with_prefs(prefs, &mut preferences, false) {
+        match self.deserialize_preferences_with_prefs(prefs, &mut preferences) {
             Err(e) => Err(e),
             Ok(_o) => Ok(preferences),
         }
@@ -1327,7 +1319,6 @@ impl CalcJsonDeserialize {
     ///
     /// * `prefs` - Json value for preferences value.
     /// * `preferences` - Element preferences value.
-    /// * `cashflow_level` - Cashflow level
     ///
     /// # Return
     ///
@@ -1336,8 +1327,7 @@ impl CalcJsonDeserialize {
     fn deserialize_preferences_with_prefs(
         &self,
         prefs: &JsonValue,
-        preferences: &mut ElemPreferences,
-        cashflow_level: bool,
+        preferences: &mut ElemPreferences
     ) -> Result<(), crate::ErrorType> {
         match prefs["combine-principal"].as_i32() {
             None => {}
@@ -1356,7 +1346,7 @@ impl CalcJsonDeserialize {
         match prefs["decimal-digits"].as_usize() {
             None => {}
             Some(o) => {
-                preferences.set_decimal_digits(o, cashflow_level);
+                preferences.set_decimal_digits(o);
             }
         }
 
@@ -1383,7 +1373,7 @@ impl CalcJsonDeserialize {
         match prefs["fiscal-year-start"].as_usize() {
             None => {}
             Some(o) => {
-                preferences.set_fiscal_year_start(o, cashflow_level);
+                preferences.set_fiscal_year_start(o);
             }
         }
 
@@ -1630,38 +1620,15 @@ impl CalcJsonDeserialize {
                 }
             }
 
-            let result = template_groups.add_template_group(group);
-            match result {
-                Err(_e) => {
-                    panic!("Add template group failed");
-                }
-                Ok(o) => {
-                    template_groups.list_mut().push(o);
-
-                    if template_groups.sort_on_add() {
-                        template_groups.sort();
-                    }
-
-                    match template_groups
-                        .list()
-                        .iter()
-                        .position(|e| e.group() == group)
-                    {
-                        None => {}
-                        Some(o) => {
-                            template_groups.set_index(o);
-                            if !template_groups.sort_on_add() {
-                                template_groups.set_sort_updated(true);
-                            }
-                        }
-                    }
-                }
+            match template_groups.add_template_group(group) {
+                Err(_e) => { panic!("Add template group failed"); }
+                Ok(_o) => { }
             }
+
             if !templ_group["preferences"].is_null() {
                 let result = self.deserialize_preferences_with_prefs(
                     &templ_group["preferences"],
-                    template_groups.preferences_mut(),
-                    false,
+                    template_groups.preferences_mut()
                 );
                 match result {
                     Err(_e) => {

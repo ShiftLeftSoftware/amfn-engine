@@ -309,6 +309,16 @@ impl ElemEvent {
         self.list_parameter.as_ref()
     }
 
+    /// Get the mutable list parameter.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn list_parameter_mut(&mut self) -> Option<&mut ListParameter> {
+        self.list_parameter.as_mut()
+    }
+
     /// Get the list descriptor.
     ///
     /// # Return

@@ -189,14 +189,48 @@ impl ListTemplateGroup {
     /// * ERROR_NONE if successful, otherwise error code.
 
     pub fn add_template_group(
-        &self,
-        group_param: &str,
-    ) -> Result<ElemTemplateGroup, crate::ErrorType> {
+        &mut self,
+        group_param: &str
+    ) -> Result<(), crate::ErrorType> {
+
         let prefs = self
             .calc_mgr()
             .preferences()
             .copy(self.calc_mgr().updating_json());
-        self.create_template_group(group_param, Option::from(prefs), true)
+
+        match self.create_template_group(group_param, Option::from(prefs), true) {
+            Err(e) => { return Err(e); }
+            Ok(o) => {
+                self.list_template_group.push(o);
+        
+                if self.sort_on_add() {
+                    self.sort();
+                }
+        
+                self.get_element_by_group(group_param, true);
+            
+                if !self.sort_on_add() {
+                    self.sort_updated.set(true);
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Append to the template group list.
+    ///
+    /// # Arguments
+    ///
+    /// * `list_template_group` - See description.
+
+    pub fn append_template_groups(&mut self, mut list_template_group: ListTemplateGroup) {
+        loop {
+            match list_template_group.list_template_group.pop() {
+                None => { break; }
+                Some(o) => { self.list_template_group.push(o); }
+            }            
+        }
     }
 
     /// Add a new template group into the template group list.
@@ -334,7 +368,7 @@ impl ListTemplateGroup {
 
             let template_group = self.copy_selected();
 
-            list_template_group.list_mut().push(template_group);
+            list_template_group.list_template_group.push(template_group);
 
             index += 1;
         }
@@ -387,26 +421,6 @@ impl ListTemplateGroup {
                 );
             }
         }
-    }
-
-    /// Get the list of cashflows.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list(&self) -> &Vec<ElemTemplateGroup> {
-        &self.list_template_group
-    }
-
-    /// Get the mut list of cashflows.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list_mut(&mut self) -> &mut Vec<ElemTemplateGroup> {
-        &mut self.list_template_group
     }
 
     /// Get the group name of the template group.

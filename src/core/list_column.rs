@@ -180,14 +180,19 @@ impl ListColumn {
         true
     }
 
-    /// Get the vector of columns.
+    /// Get the selected column.
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn list(&self) -> &Vec<ElemColumn> {
-        &self.list_column
+    pub fn column(&self) -> &ElemColumn {
+        match self.list_column.get(self.list_index.get()) {
+            None => {
+                panic!("Column list index not set");
+            }
+            Some(o) => o
+        }
     }
 
     /// Get the name of the column.

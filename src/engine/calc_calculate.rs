@@ -23,9 +23,9 @@ pub struct CalcCalculate {
     calc_manager: Rc<RefCell<CalcManager>>,
 
     /// Start of fiscal year in MMDD format.
-    fiscal_year_start: usize,
+    fiscal_year_start: Cell<usize>,
     /// Number of significant decimal digits.
-    decimal_digits: usize,
+    decimal_digits: Cell<usize>,
     /// Cashflow descriptor list.
     list_descriptor_cashflow: Option<ListDescriptor>,
 
@@ -73,8 +73,8 @@ impl CalcCalculate {
 
         return CalcCalculate {
             calc_manager: Rc::clone(calc_manager_param),
-            fiscal_year_start: fys,
-            decimal_digits: dd,
+            fiscal_year_start: Cell::new(fys),
+            decimal_digits: Cell::new(dd),
             list_descriptor_cashflow: list_descriptor,
             calc_expression: RefCell::new(CalcExpression::new(&calc_manager_param, fys, dd)),
             interest: Cell::new(dec!(0.0)),
@@ -179,10 +179,7 @@ impl CalcCalculate {
         }
         self.expr_mut().clear();
         list_statistic_helper.clear();
-
-        if list_am.count() == 0 {
-            return Err(crate::ErrorType::Index);
-        }
+        
         let mut elem_balance_result = ElemBalanceResult::new();
         self.last_interest_date.set(0);
 
@@ -278,12 +275,12 @@ impl CalcCalculate {
                 if round_decimal_digits < dec!(0.0) {
                     self.interest.set(CoreUtility::round(
                         self.interest.get(),
-                        self.decimal_digits,
+                        self.decimal_digits.get(),
                         int_round_balance,
                     ));
                     self.sl_interest.set(CoreUtility::round(
                         self.sl_interest.get(),
-                        self.decimal_digits,
+                        self.decimal_digits.get(),
                         int_round_balance,
                     ));
                 } else if round_decimal_digits > dec!(0.0) && round_decimal_digits < dec!(1.0) {
@@ -817,7 +814,7 @@ impl CalcCalculate {
                     } else {
                         elem_balance_result.acc_balance()
                     },
-                self.decimal_digits,
+                self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
             if balance.abs() >= max_calc_principal {
@@ -940,7 +937,7 @@ impl CalcCalculate {
                     } else {
                         elem_balance_result.acc_balance()
                     }),
-                self.decimal_digits,
+                self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
 
@@ -1079,7 +1076,7 @@ impl CalcCalculate {
                     } else {
                         elem_balance_result.acc_balance()
                     }),
-                self.decimal_digits,
+                    self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
             let mut adjust_down;
@@ -1236,7 +1233,7 @@ impl CalcCalculate {
         let max_calc_principal = dec!(crate::MAX_CALC_PRINCIPAL);
 
         let decrement_fraction =
-            dec!(1.0) / CoreUtility::decimal_pow(dec_ten, self.decimal_digits + 1);
+            dec!(1.0) / CoreUtility::decimal_pow(dec_ten, self.decimal_digits.get() + 1);
         let mut last_principal = dec!(-1.0);
         let mut principal = dec!(20000.0); // Starting principal
         let mut orig_principal: Decimal;
@@ -1292,7 +1289,7 @@ impl CalcCalculate {
                     } else {
                         elem_balance_result.acc_balance()
                     }),
-                self.decimal_digits,
+                self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
             if simple_calc {
@@ -1309,10 +1306,10 @@ impl CalcCalculate {
 
             if balance == new_value
                 || principal > max_calc_principal
-                || (CoreUtility::round(principal, self.decimal_digits, crate::RoundType::Bankers)
+                || (CoreUtility::round(principal, self.decimal_digits.get(), crate::RoundType::Bankers)
                     == CoreUtility::round(
                         last_principal,
-                        self.decimal_digits,
+                        self.decimal_digits.get(),
                         crate::RoundType::Bankers,
                     )
                     && (if elem_balance_result.polarity() > 0 {
@@ -1382,7 +1379,7 @@ impl CalcCalculate {
         if principal > dec_zero {
             // Make sure that rounding does not affect the result in the wrong direction
             principal =
-                CoreUtility::round(principal, self.decimal_digits, crate::RoundType::Bankers);
+                CoreUtility::round(principal, self.decimal_digits.get(), crate::RoundType::Bankers);
             if value_expr_am {
                 list_event.set_value_result(principal);
                 let result = self.expand_with_list(list_event, list_am, true);
@@ -1419,7 +1416,7 @@ impl CalcCalculate {
                     } else {
                         elem_balance_result.acc_balance()
                     }),
-                self.decimal_digits,
+                    self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
 
@@ -1561,7 +1558,7 @@ impl CalcCalculate {
                     } else {
                         elem_balance_result.acc_balance()
                     }),
-                self.decimal_digits,
+                    self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
             if balance.abs() >= max_calc_principal {
@@ -1674,7 +1671,7 @@ impl CalcCalculate {
                     } else {
                         elem_balance_result.acc_balance()
                     }),
-                self.decimal_digits,
+                    self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
 
@@ -2952,7 +2949,7 @@ impl CalcCalculate {
     ) -> Result<ListAmortization, crate::ErrorType> {
         let mut new_list_am = ListAmortization::new();
         let orig_list_index = list_am.index();
-        let new_date = list_am.event_date();
+        let mut new_date: usize = 0;
         let updating_json = self.calc_mgr().updating_json();
         let mut am_index: usize = 0;
         while am_index < list_am.count() {
@@ -2961,9 +2958,9 @@ impl CalcCalculate {
             }
             am_index += 1;
 
+            new_date = list_am.event_date();
             let new_event_type = list_am.event_type();
             let new_type = list_am.elem_type();
-            let new_date = list_am.event_date();
             let new_orig_date = list_am.orig_date();
             let new_sort = list_am.sort_order();
             let mut new_value = list_am.value();
@@ -3259,8 +3256,8 @@ impl CalcCalculate {
     /// # Arguments
     ///
     /// * `fiscal_year_start_param` - Start of fiscal year in MMDD format.
-    pub fn set_fiscal_year_start(&mut self, fiscal_year_start_param: usize) {
-        self.fiscal_year_start = fiscal_year_start_param;
+    pub fn set_fiscal_year_start(&self, fiscal_year_start_param: usize) {
+        self.fiscal_year_start.set(fiscal_year_start_param);
     }
 
     /// Set the number of significant decimal digits.
@@ -3268,8 +3265,8 @@ impl CalcCalculate {
     /// # Arguments
     ///
     /// * `decimal_digits_param` - Number of significant decimal digits.
-    pub fn set_decimal_digits(&mut self, decimal_digits_param: usize) {
-        self.decimal_digits = decimal_digits_param;
+    pub fn set_decimal_digits(&self, decimal_digits_param: usize) {
+        self.decimal_digits.set(decimal_digits_param);
     }
 
     /// Splits the currently selected principal change event into

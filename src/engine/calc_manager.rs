@@ -617,6 +617,16 @@ impl CalcManager {
         &self.list_locale
     }
 
+    /// Get the mutable locale list.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn list_locale_mut(&mut self) -> &mut ListLocale {
+        &mut self.list_locale
+    }
+
     /// Get the user preferences element.
     ///
     /// # Return
@@ -845,69 +855,6 @@ impl CalcManager {
         self.updating_json.get()
     }
 
-    /// Append to the list cashflow.
-    ///
-    /// # Arguments
-    ///
-    /// * `list_cashflow` - See description.
-
-    pub fn append_cashflows(&mut self, mut list_cashflow: ListCashflow) {
-        let cfl = list_cashflow.list_mut();
-
-        loop {
-            match cfl.pop() {
-                None => {
-                    break;
-                }
-                Some(o) => {
-                    self.list_cashflow.list_mut().push(o);
-                }
-            }
-        }
-    }
-
-    /// Append to the list locale.
-    ///
-    /// # Arguments
-    ///
-    /// * `list_locale` - See description.
-
-    pub fn append_list_locale(&mut self, mut list_locale: ListLocale) {
-        let ll = list_locale.list_mut();
-
-        loop {
-            match ll.pop() {
-                None => {
-                    break;
-                }
-                Some(o) => {
-                    self.list_locale.list_mut().push(o);
-                }
-            }
-        }
-    }
-
-    /// Append to the list template group.
-    ///
-    /// # Arguments
-    ///
-    /// * `list_template_group` - See description.
-
-    pub fn append_list_template_group(&mut self, mut list_template_group: ListTemplateGroup) {
-        let tl = list_template_group.list_mut();
-
-        loop {
-            match tl.pop() {
-                None => {
-                    break;
-                }
-                Some(o) => {
-                    self.list_template_group.list_mut().push(o);
-                }
-            }
-        }
-    }
-
     /// Set the list locale.
     ///
     /// # Arguments
@@ -978,8 +925,8 @@ impl CalcManager {
     pub fn pb_copy(&self, count: i32) -> Result<(), crate::ErrorType> {
         let updating_json = self.updating_json.get();
 
-        let mgr = self.calc_mgr();
-        let list_event_opt = mgr.list_cashflow().list_event();
+        let calc_mgr = self.calc_mgr();
+        let list_event_opt = calc_mgr.list_cashflow().list_event();
         let list_event: &ListEvent;
         match list_event_opt.as_ref() {
             None => {
@@ -1007,9 +954,9 @@ impl CalcManager {
     pub fn pb_paste(&self) -> Result<(), crate::ErrorType> {
         let updating_json = self.updating_json.get();
 
-        let mut mgr = self.calc_mgr_mut();
+        let mut calc_mgr = self.calc_mgr_mut();
 
-        match mgr.list_cashflow_mut().list_event_mut() {
+        match calc_mgr.list_cashflow_mut().list_event_mut() {
             None => {
                 panic!("Missing list event");
             }
@@ -1193,6 +1140,27 @@ impl CalcManager {
     ) -> bool {
         CalcUtility::set_extension_values(
             calc_manager, index, ext_param)
+    }
+
+    /// Set the appropriate event list parameter values.
+    ///
+    /// # Arguments
+    ///
+    /// * `cf_index` - The cashflow index.
+    /// * `index_param` - Event row index.
+    /// * `parameters` - Parameters to set.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
+
+    pub fn util_set_parameter_values(
+        calc_manager: &Rc<RefCell<CalcManager>>,
+        index: usize,
+        parameters: Vec<String>
+    ) -> bool {
+        CalcUtility::set_parameter_values(
+            calc_manager, index, parameters)
     }
 
     /// Calculates number of intervals between two dates.

@@ -259,7 +259,7 @@ impl ListParameter {
                 None => {
                     return false;
                 }
-                Some(o) => match list_parameter.list().get(index) {
+                Some(o) => match list_parameter.list_parameter.get(index) {
                     None => {
                         return false;
                     }
@@ -275,16 +275,6 @@ impl ListParameter {
         }
 
         true
-    }
-
-    /// Get the vector of parameters.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list(&self) -> &Vec<ElemParameter> {
-        &self.list_parameter
     }
 
     /// Get the name of the parameter.

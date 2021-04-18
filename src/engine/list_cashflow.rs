@@ -13,7 +13,7 @@ use std::rc::Rc;
 
 use super::{CalcCalculate, CalcManager, ElemCashflow, ElemCashflowStats, ElemPreferences};
 use crate::core::{ElemBalanceResult, ListAmortization, ListEvent, ListStatisticHelper};
-use crate::{ExtensionTrait, ListTrait};
+use crate::{ListTrait};
 
 pub struct ListCashflow {
     /// Calculator manager element.
@@ -36,7 +36,7 @@ impl ListTrait for ListCashflow {
             .list_locale()
             .select_cashflow_locale("");
 
-        self.list_mut().clear();
+        self.list_cashflow.clear();
         self.list_index.set(usize::MAX);
     }
 
@@ -183,7 +183,7 @@ impl ListCashflow {
         self.calc_manager = Option::from(Rc::clone(calc_manager_param));
     }
 
-    /// Add a new cashflow into the cashflow list.
+    /// Prepare to add a new cashflow into the cashflow list.
     /// If the name results in a duplicate entry, an
     /// incrementing number starting from 2 is appended to the
     /// name until a non-duplicate entry is found.
@@ -195,13 +195,12 @@ impl ListCashflow {
     /// * `elem_preferences_param` - Original existing preferences
     ///     element (or None to initialize all preferences).
     /// * `group_param` - Optional template group name.
-    /// * `updating_json` - Updating from Json.
     ///
     /// # Return
     ///
-    /// * ERROR_NONE if successful, otherwise error code.
+    /// * ElemCashflow if successful, otherwise error code.
 
-    pub fn add_cashflow(
+    pub fn add_cashflow_prep(
         &self,
         name_param: &str,
         list_event_param: Option<ListEvent>,
@@ -293,6 +292,48 @@ impl ListCashflow {
         Ok(elem_cashflow)
     }
 
+    /// Add a new cashflow into the cashflow list.
+    /// If the name results in a duplicate entry, an
+    /// incrementing number starting from 2 is appended to the
+    /// name until a non-duplicate entry is found.
+    ///
+    /// # Arguments
+    ///
+    /// * `name_param` - The name of the cashflow.
+    /// * `list_event_param` - A newly created event list.
+    /// * `elem_preferences_param` - Original existing preferences
+    ///     element (or None to initialize all preferences).
+    /// * `group_param` - Optional template group name.
+    /// * `updating_json` - Updating from Json.
+
+    pub fn add_cashflow(
+        &mut self,
+        name_param: &str,
+        elem_cashflow: ElemCashflow
+    ) {
+
+        self.list_cashflow.push(elem_cashflow);
+
+        self.sort();
+
+        self.get_element_by_name(name_param, true);
+    }
+
+    /// Append to the list cashflow.
+    ///
+    /// # Arguments
+    ///
+    /// * `list_cashflow` - See description.
+
+    pub fn append_cashflows(&mut self, mut list_cashflow: ListCashflow) {
+        loop {
+            match list_cashflow.list_cashflow.pop() {
+                None => { break; }
+                Some(o) => { self.list_cashflow.push(o); }
+            }            
+        }
+    }
+
     /// Copy the list cashflow and return a new list cashflow.
     ///
     /// # Arguments
@@ -307,6 +348,7 @@ impl ListCashflow {
         &self,
         calc_manager_param: &Rc<RefCell<CalcManager>>,
     ) -> ListCashflow {
+
         let mut list_cashflow = ListCashflow::new();
         list_cashflow.set_calc_mgr(calc_manager_param);
 
@@ -336,31 +378,17 @@ impl ListCashflow {
                 Some(o) => {
                     let new_list_event = o.copy(true);
 
-                    let result = list_cashflow.add_cashflow(
+                    match list_cashflow.add_cashflow_prep(
                         self.name(),
                         Option::from(new_list_event),
                         Option::from(preferences),
-                        group.as_str(),
-                    );
-
-                    match result {
+                        group.as_str()
+                    ) {
                         Err(_e) => {
-                            panic!("Cannot create cashflow");
+                            panic!("Cannot create cashflow")
                         }
                         Ok(o) => {
-                            list_cashflow.list_mut().push(o);
-                            list_cashflow.sort();
-
-                            match list_cashflow
-                                .list()
-                                .iter()
-                                .position(|e| e.name() == self.name())
-                            {
-                                None => {}
-                                Some(o) => {
-                                    list_cashflow.set_index(o);
-                                }
-                            }
+                            list_cashflow.add_cashflow(self.name(), o);
                         }
                     }
                 }
@@ -378,23 +406,24 @@ impl ListCashflow {
     /// * See description.
 
     pub fn create_cashflow_stats(&self) -> ElemCashflowStats {
-        let elem_cashflow: &ElemCashflow;
-        match self.list_cashflow.get(self.list_index.get()) {
-            None => {
-                panic!("Cashflow list index not set");
-            }
-            Some(o) => {
-                elem_cashflow = o;
-            }
-        }
-
         let mut current_values: usize = 0;
         let mut interest_changes: usize = 0;
         let mut principal_changes: usize = 0;
         let mut statistic_values: usize = 0;
 
-        for elem_event in elem_cashflow.list_event().list() {
-            match elem_event.elem_type() {
+        let list_event: &ListEvent;
+        match self.list_event() {
+            None => { panic!("Event list index not set"); }
+            Some(o) => { list_event = o; }
+        }
+
+        let orig_index = list_event.index();
+        let mut index: usize = 0;
+
+        loop {
+            if !list_event.get_element(index) { break; }
+
+            match list_event.elem_type() {
                 crate::ExtensionType::CurrentValue => {
                     current_values += 1;
                 }
@@ -408,7 +437,11 @@ impl ListCashflow {
                     principal_changes += 1;
                 }
             }
+
+            index += 1;
         }
+
+        list_event.get_element(orig_index);
 
         ElemCashflowStats::new(
             current_values,
@@ -447,13 +480,12 @@ impl ListCashflow {
         omit_statistic_events: bool,
         updating_json: bool,
     ) -> Result<ListAmortization, crate::ErrorType> {
-        let cf_index = self.calc_mgr().list_cashflow().index();
 
-        match self.calc_mgr().list_cashflow().list().get(cf_index) {
+        match self.calc_mgr().list_cashflow().list_amortization() {
             None => Err(crate::ErrorType::Cashflow),
             Some(o) => {
-                let result = o.calculate().create_cashflow_output(
-                    o.list_amortization(),
+                let result = self.calc_mgr().list_cashflow().calculate().create_cashflow_output(
+                    o,
                     include_rollups,
                     include_details,
                     compress_descriptor,
@@ -467,26 +499,6 @@ impl ListCashflow {
                 }
             }
         }
-    }
-
-    /// Get the list of cashflows.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list(&self) -> &Vec<ElemCashflow> {
-        &self.list_cashflow
-    }
-
-    /// Get the mut list of cashflows.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list_mut(&mut self) -> &mut Vec<ElemCashflow> {
-        &mut self.list_cashflow
     }
 
     /// Get the name of the selected cashflow.
@@ -624,6 +636,21 @@ impl ListCashflow {
         }
     }
 
+    /// Get the last amortization index.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn last_amortization_index(&self) -> usize {
+        match self.list_cashflow.get(self.list_index.get()) {
+            None => {
+                panic!("Cashflow list index not set");
+            }
+            Some(o) => o.last_amortization_index(),
+        }
+    }
+
     /// Get the cashflow is valid, otherwise it must be re-balanced.
     ///
     /// # Return
@@ -728,6 +755,22 @@ impl ListCashflow {
         }
     }
 
+    /// Set the cashflow valid.
+    ///
+    /// # Arguments
+    ///
+    /// * `valid_param` - See description.
+
+    pub fn set_cashflow_valid(&mut self, valid_param: bool) -> bool {
+        match self.list_cashflow.get_mut(self.list_index.get()) {
+            None => false,
+            Some(o) => {
+                o.set_cashflow_valid(valid_param);
+                true
+            }
+        }
+    }
+
     /// Set the name of the selected cashflow.
     /// Duplicate names are not allowed.
     ///
@@ -772,6 +815,38 @@ impl ListCashflow {
 
         true
     }
+    
+    /// Set the list event.
+    ///
+    /// # Arguments
+    ///
+    /// * `list_event_param` - See description.
+
+    pub fn set_list_event(&mut self, list_event_param: ListEvent) -> bool {
+        match self.list_cashflow.get_mut(self.list_index.get()) {
+            None => false,
+            Some(o) => {
+                o.set_list_event(list_event_param);
+                true
+            }
+        }
+    }
+
+    /// Set the list amortization.
+    ///
+    /// # Arguments
+    ///
+    /// * `list_am_param` - See description.
+
+    pub fn set_list_amortization(&mut self, list_am_param: ListAmortization) -> bool {
+        match self.list_cashflow.get_mut(self.list_index.get()) {
+            None => false,
+            Some(o) => {
+                o.set_list_amortization(list_am_param);
+                true
+            }
+        }
+    }
 
     /// Set the statistic helper.
     ///
@@ -808,6 +883,22 @@ impl ListCashflow {
         }
     }
 
+    /// Set the last amortization index.
+    ///
+    /// # Arguments
+    ///
+    /// * `last_am_index_param` - See description.
+
+    pub fn set_last_amortization_index(&mut self, last_am_index_param: usize) -> bool {
+        match self.list_cashflow.get_mut(self.list_index.get()) {
+            None => false,
+            Some(o) => {
+                o.set_last_amortization_index(last_am_index_param);
+                true
+            }
+        }
+    }
+
     /// Set the updated value.
     ///
     /// # Arguments
@@ -829,12 +920,12 @@ impl ListCashflow {
     /// flow preferences are updated.
 
     pub fn update_preferences(&self) -> bool {
-        match self.list().get(self.list_index.get()) {
+
+        match self.preferences() {
             None => false,
             Some(o) => {
-                let prefs = o.preferences();
-                prefs.set_fiscal_year_start(self.calc_mgr().fiscal_year_start(true), true);
-                prefs.set_decimal_digits(self.calc_mgr().decimal_digits(true), true);
+                self.calculate().set_fiscal_year_start(o.fiscal_year_start());
+                self.calculate().set_decimal_digits(o.decimal_digits());
                 true
             }
         }
@@ -843,7 +934,7 @@ impl ListCashflow {
     /// Sort the event list.
 
     pub fn sort(&mut self) {
-        self.list_mut().sort_by(|a, b| ListCashflow::cmp(a, b));
+        self.list_cashflow.sort_by(|a, b| ListCashflow::cmp(a, b));
     }
 
     /// Sort compare function.

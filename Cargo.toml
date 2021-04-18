@@ -17,7 +17,6 @@ libmath = "~0.2"
 compare = "~0.1"
 rust_decimal = "~1.10"
 chrono = "~0.4"
-chrono_locale = "~0.1"
 json = "~0.12"
 regex = "~1.4"
 

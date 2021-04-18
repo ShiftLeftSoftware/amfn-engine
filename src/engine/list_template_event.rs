@@ -190,22 +190,13 @@ impl ListTemplateEvent {
         if self.sort_on_add {
             self.sort();
         }
+        
+        self.get_element_by_name(name.as_str(), true);
 
-        match self
-            .list_template_event
-            .iter()
-            .position(|e| e.name() == name)
-        {
-            None => {
-                return false;
-            }
-            Some(o) => {
-                self.list_index.set(o);
-            }
-        }
         if !self.sort_on_add {
             self.sort_updated = true;
         }
+
         true
     }
 

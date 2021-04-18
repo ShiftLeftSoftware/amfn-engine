@@ -287,26 +287,6 @@ impl ListExchangeRate {
         }
     }
 
-    /// Get the list of exchange rates.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list(&self) -> &Vec<ElemExchangeRate> {
-        &self.list_exchange_rate
-    }
-
-    /// Get the mut list of exchange rates.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list_mut(&mut self) -> &mut Vec<ElemExchangeRate> {
-        &mut self.list_exchange_rate
-    }
-
     /// Get the international currency code "from".
     ///
     /// # Return

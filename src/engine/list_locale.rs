@@ -14,9 +14,13 @@ use std::collections::HashMap;
 
 use crate::core::CoreUtility; 
 use super::{ElemLocale, ElemLocaleFormat};
+use crate::{ListTrait};
 
 pub struct ListLocale {
     list_locale: Vec<ElemLocale>,
+
+    /// Currently selected locale element.
+    list_index: Cell<usize>,
 
     /// Currently selected user locale element.
     list_index_user: Cell<usize>,
@@ -26,6 +30,77 @@ pub struct ListLocale {
 
     /// Currently selected event locale element.
     list_index_event: Cell<usize>,
+}
+
+/// List of currently active cashflows list implementation.
+
+impl ListTrait for ListLocale {
+
+    /// Clear all locales selects.
+
+    fn clear(&mut self) {
+        self.list_index_user.set(usize::MAX);
+        self.list_index_cashflow.set(usize::MAX);
+        self.list_index_event.set(usize::MAX);
+
+        self.list_locale.clear();
+    }
+
+    /// Get the count of the locales list.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    fn count(&self) -> usize {
+        self.list_locale.len()
+    }
+
+    /// Get the index of the selected user locale (starting from 0).
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    fn index(&self) -> usize {
+        self.list_index.get()
+    }
+
+    /// Select a locale based upon an index value.
+    ///
+    /// # Arguments
+    ///
+    /// * `index_param` - The index value of the locale to select (starting from 0).
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
+
+    fn get_element(&self, index_param: usize) -> bool {
+        if index_param >= self.list_locale.len() {
+            return false;
+        }
+
+        self.set_index(index_param);
+
+        true
+    }
+
+    /// Set the list index.
+    ///
+    /// # Arguments
+    ///
+    /// * `index_param` - See description.
+
+    fn set_index(&self, index_param: usize) -> bool {
+        if index_param >= self.list_locale.len() {
+            return false;
+        }
+
+        self.list_index.set(index_param);
+
+        true
+    }
 }
 
 /// List of locales default implementation.
@@ -53,6 +128,7 @@ impl ListLocale {
     pub fn new() -> ListLocale {
         ListLocale {
             list_locale: Vec::new(),
+            list_index: Cell::new(usize::MAX),
             list_index_user: Cell::new(usize::MAX),
             list_index_cashflow: Cell::new(usize::MAX),
             list_index_event: Cell::new(usize::MAX),
@@ -91,6 +167,21 @@ impl ListLocale {
         ));
     }
 
+    /// Append to the list locale.
+    ///
+    /// # Arguments
+    ///
+    /// * `list_locale` - See description.
+
+    pub fn append_locales(&mut self, mut list_locale: ListLocale) {
+        loop {
+            match list_locale.list_locale.pop() {
+                None => { break; }
+                Some(o) => { self.list_locale.push(o); }
+            }            
+        }
+    }
+
     /// Copy the locale list and return a new locale list.
     ///
     /// # Arguments
@@ -116,34 +207,6 @@ impl ListLocale {
         }
 
         locales
-    }
-
-    /// Get the list of locales.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list(&self) -> &Vec<ElemLocale> {
-        &self.list_locale
-    }
-
-    /// Get the mutable list of locales.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list_mut(&mut self) -> &mut Vec<ElemLocale> {
-        &mut self.list_locale
-    }
-
-    /// Clear all locales selects.
-
-    pub fn clear(&self) {
-        self.list_index_user.set(usize::MAX);
-        self.list_index_cashflow.set(usize::MAX);
-        self.list_index_event.set(usize::MAX);
     }
 
     /// Get the locale string.

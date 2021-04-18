@@ -390,14 +390,9 @@ impl ElemPreferences {
     /// # Arguments
     ///
     /// * `fiscal_year_start_param` - See description.
-    /// * `cashflow_level` - Cashflow level.
 
-    pub fn set_fiscal_year_start(&self, fiscal_year_start_param: usize, cashflow_level: bool) {
+    pub fn set_fiscal_year_start(&self, fiscal_year_start_param: usize) {
         self.fiscal_year_start.set(fiscal_year_start_param);
-
-        if cashflow_level {
-            self.calc_mgr().list_cashflow().update_preferences();
-        }
     }
 
     /// Set the number of significant decimal digits.
@@ -405,14 +400,9 @@ impl ElemPreferences {
     /// # Arguments
     ///
     /// * `decimal_digits_param` - See description.
-    /// * `cashflow_level` - Cashflow level.
 
-    pub fn set_decimal_digits(&self, decimal_digits_param: usize, cashflow_level: bool) {
+    pub fn set_decimal_digits(&self, decimal_digits_param: usize) {
         self.decimal_digits.set(decimal_digits_param);
-
-        if cashflow_level {
-            self.calc_mgr().list_cashflow().update_preferences();
-        }
     }
 
     /// Set the combine principal change events that are identical except

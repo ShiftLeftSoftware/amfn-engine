@@ -166,16 +166,6 @@ impl ListSummary {
         }
     }
 
-    /// Get the vector of summary events.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list(&self) -> &Vec<ElemSummary> {
-        &self.list_summary
-    }
-
     /// Get the name of the summary item.
     ///
     /// # Return

@@ -1446,7 +1446,6 @@ impl CalcUtility {
     ) -> String {
         let calc_manager = Rc::clone(calc_manager_param);  
         let mut result = String::from("");
-        let orig_list_index: usize;
         
         {
             let calc_mgr = calc_manager.borrow();
@@ -1464,7 +1463,6 @@ impl CalcUtility {
                 }
             }
 
-            orig_list_index = list_event.index();
             if !list_event.get_element(index) { return result; }
 
             list_locale.select_event_locale("");
@@ -1576,19 +1574,7 @@ impl CalcUtility {
 
         {
             let calc_mgr = calc_manager.borrow();
-            let list_locale = calc_mgr.list_locale();
-            let list_cashflow = calc_mgr.list_cashflow();
-            let list_event_opt = list_cashflow.list_event();
-        
-            match list_event_opt.as_ref() {
-                None => {
-                    return result;
-                }
-                Some(o) => {
-                    o.get_element(orig_list_index);          
-                }
-            }
-    
+            let list_locale = calc_mgr.list_locale();    
             list_locale.select_event_locale("");
         }
 
@@ -1667,6 +1653,67 @@ impl CalcUtility {
 
         list_event.get_element(orig_list_index);          
  
+        true
+    }
+    
+    /// Set the appropriate event list parameter values.
+    ///
+    /// # Arguments
+    ///
+    /// * `cf_index` - The cashflow index.
+    /// * `index_param` - Event row index.
+    /// * `parameters` - Parameters to set.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
+
+    pub fn set_parameter_values(
+        calc_manager: &Rc<RefCell<CalcManager>>,
+        index_param: usize,
+        parameters: Vec<String>
+    ) -> bool {
+
+        let mut calc_mgr = calc_manager.borrow_mut();
+        let list_cashflow = calc_mgr.list_cashflow_mut();
+
+        let list_event: &mut ListEvent;
+        match list_cashflow.list_event_mut() {
+            None => { return false; }
+            Some(o) => { list_event = o; }
+        }
+
+        let orig_index = list_event.index();
+        if !list_event.get_element(index_param) { return false; }
+
+        let list_parameter: &mut ListParameter;
+        match list_event.list_parameter_mut() {
+            None => { return false; }
+            Some(o) => { list_parameter = o; }
+        }
+
+        let orig_param_index = list_parameter.index();
+        let mut index: usize = 0;
+        loop {
+            if !list_parameter.get_element(index) { break; }
+
+            match list_parameter.param_type() {
+                crate::TokenType::Integer => {
+                    list_parameter.set_integeri(CoreUtility::parse_integeri(parameters[index].as_str()));
+                }
+                crate::TokenType::Decimal => {
+                    list_parameter.set_decimal(CoreUtility::parse_decimal(parameters[index].as_str()));                    
+                }
+                _ => {
+                    list_parameter.set_string(parameters[index].as_str());
+                }
+            }
+            index += 1;
+        }
+
+        list_parameter.get_element(orig_param_index);
+        list_event.get_element(orig_index);
+
         true
     }
 

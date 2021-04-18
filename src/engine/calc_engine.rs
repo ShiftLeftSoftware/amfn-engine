@@ -13,12 +13,12 @@ use std::cell::{Ref, RefMut};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use super::{CalcExpression, CalcManager, CalcUtility, ElemCashflowStats, ElemPreferences};
+use super::{CalcExpression, CalcManager, CalcUtility, ElemCashflow, ElemCashflowStats, ElemPreferences};
 use crate::core::{
     CoreManager, CoreUtility, ElemBalanceResult, ElemSymbol, ListAmortization, ListDescriptor,
     ListEvent, ListParameter, ListStatisticHelper,
 };
-use crate::{ExtensionTrait, ListTrait};
+use crate::{ListTrait};
 
 pub struct CalcEngine {
     /// Calculator manager element.
@@ -115,7 +115,7 @@ impl CalcEngine {
             let decimal_digits = self.calc_mgr().list_locale().decimal_digits(false);
             self.calc_mgr()
                 .preferences()
-                .set_decimal_digits(decimal_digits, false);
+                .set_decimal_digits(decimal_digits);
         }
 
         let orig_index = self.calc_mgr().list_cashflow().index();
@@ -275,20 +275,18 @@ impl CalcEngine {
     /// * `new_date_param` - Next date for the new event(s) (i.e.,
     ///     normally end_date_param plus one period).
     /// * `frequency_param` - Next frequency for the new event(s).
-    /// * `is_sort_on_add` - If true sets sort on add.
     ///
     /// # Return
     ///
-    /// * ERROR_NONE if successful, otherwise an error code.
+    /// * Copy of list of events if successful, otherwise an error code.
 
     fn copy_template_events(
         &self,
         date_param: usize,
         end_date_param: usize,
         new_date_param: usize,
-        frequency_param: crate::FrequencyType,
-        is_set_sort_on_add: bool,
-    ) -> Result<(), crate::ErrorType> {
+        frequency_param: crate::FrequencyType
+    ) -> Result<ListEvent, crate::ErrorType> {
         let new_list_event: ListEvent;
         match self.calc_mgr().copy_template_events(
             date_param,
@@ -304,9 +302,9 @@ impl CalcEngine {
             }
         }
 
-        let mut mgr = self.calc_mgr_mut();
+        let mut calc_mgr = self.calc_mgr_mut();
         let list_event: &mut ListEvent;
-        match mgr.list_cashflow_mut().list_event_mut() {
+        match calc_mgr.list_cashflow_mut().list_event_mut() {
             None => {
                 return Err(crate::ErrorType::Index);
             }
@@ -317,11 +315,14 @@ impl CalcEngine {
 
         list_event.set_sort_on_add(false);
 
-        for event in new_list_event.list() {
-            let new_extension = event.elem_extension().copy();
+        let mut index: usize = 0;
+        loop {
+            if !new_list_event.get_element(index) { break; }
+
+            let new_extension = new_list_event.elem_extension().copy();
 
             let mut list_parameter_opt: Option<ListParameter> = None;
-            match event.list_parameter().as_ref() {
+            match new_list_event.list_parameter().as_ref() {
                 None => {}
                 Some(o2) => {
                     list_parameter_opt = Option::from(o2.copy(true));
@@ -329,38 +330,38 @@ impl CalcEngine {
             }
 
             let mut list_descriptor_opt: Option<ListDescriptor> = None;
-            match event.list_descriptor().as_ref() {
+            match new_list_event.list_descriptor().as_ref() {
                 None => {}
                 Some(o2) => {
                     list_descriptor_opt = Option::from(o2.copy(false, true));
                 }
             }
             list_event.add_event(
-                event.event_date(),
-                event.date_expr(),
-                event.sort_order(),
-                event.value(),
-                event.value_expr(),
-                event.value_expr_balance(),
-                event.periods(),
-                event.periods_expr(),
-                event.skip_mask_len(),
-                event.skip_mask(),
-                event.intervals(),
-                event.frequency(),
+                new_list_event.event_date(),
+                new_list_event.date_expr(),
+                new_list_event.sort_order(),
+                new_list_event.value(),
+                new_list_event.value_expr(),
+                new_list_event.value_expr_balance(),
+                new_list_event.periods(),
+                new_list_event.periods_expr(),
+                new_list_event.skip_mask_len(),
+                new_list_event.skip_mask(),
+                new_list_event.intervals(),
+                new_list_event.frequency(),
                 new_extension,
                 list_parameter_opt,
                 list_descriptor_opt,
-                event.event_name(),
-                event.next_name(),
+                new_list_event.event_name(),
+                new_list_event.next_name(),
             );
+
+            index += 1;
         }
 
-        if is_set_sort_on_add {
-            list_event.set_sort_on_add(true); // Sorts list
-        }
+        list_event.set_sort_on_add(true); // Sorts list
 
-        Ok(())
+        Ok(new_list_event)
     }
 
     /// Performs primary calculations on a cashflow.
@@ -380,51 +381,75 @@ impl CalcEngine {
         let mut statistic_helper: ListStatisticHelper;
         let mut elem_balance_result = ElemBalanceResult::new();
 
-        let cf_index = self.calc_mgr().list_cashflow().index();
-
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
             .list_locale()
             .select_cashflow_locale(locale.as_str());
 
-        match self.calc_mgr().list_cashflow().list().get(cf_index) {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
+        {
+            let calc_mgr = self.calc_mgr();
+            let list_cashflow = calc_mgr.list_cashflow();
+
+            let list_event: &ListEvent;
+            match list_cashflow.list_event() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => { list_event = o; }
             }
-            Some(o) => {
-                let list_event = o.list_event();
-                statistic_helper = o.list_statistic_helper().copy();
 
-                let result = o.calculate().expand_cashflow(list_event, false);
-                match result {
-                    Err(e) => {
-                        return Err(e);
-                    }
-                    Ok(o) => {
-                        list_am = o;
-                    }
+            match list_cashflow.list_statistic_helper() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => { statistic_helper = o.copy(); }
+            }
+
+            let result = list_cashflow.calculate().expand_cashflow(list_event, false);
+            match result {
+                Err(e) => {
+                    return Err(e);
                 }
-
-                let result = o.calculate().normalize_cashflow(
-                    &list_am,
-                    &mut statistic_helper,
-                    combine_principal,
-                );
-
-                match result {
-                    Err(e) => {
-                        return Err(e);
-                    }
-                    Ok(o) => {
-                        list_am = o;
-                    }
+                Ok(o) => {
+                    list_am = o;
                 }
-                let mut result = o.calculate().balance_cashflow(
+            }
+
+            let result = list_cashflow.calculate().normalize_cashflow(
+                &list_am,
+                &mut statistic_helper,
+                combine_principal,
+            );
+
+            match result {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    list_am = o;
+                }
+            }
+            let mut result = list_cashflow.calculate().balance_cashflow(
+                &mut list_am,
+                &mut statistic_helper,
+                &elem_balance_result,
+                false,
+                false,
+                false,
+            );
+            match result {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    elem_balance_result = o;
+                }
+            }
+
+            if elem_balance_result.rule_of_78_seen() {
+                // Perform rule of 78 interest allocation
+                result = list_cashflow.calculate().balance_cashflow(
                     &mut list_am,
                     &mut statistic_helper,
                     &elem_balance_result,
                     false,
-                    false,
+                    true,
                     false,
                 );
                 match result {
@@ -435,55 +460,34 @@ impl CalcEngine {
                         elem_balance_result = o;
                     }
                 }
-
-                if elem_balance_result.rule_of_78_seen() {
-                    // Perform rule of 78 interest allocation
-                    result = o.calculate().balance_cashflow(
-                        &mut list_am,
-                        &mut statistic_helper,
-                        &elem_balance_result,
-                        false,
-                        true,
-                        false,
-                    );
-                    match result {
-                        Err(e) => {
-                            return Err(e);
-                        }
-                        Ok(o) => {
-                            elem_balance_result = o;
-                        }
-                    }
-                }
             }
         }
 
         let balance_result = elem_balance_result.copy();
 
-        match self
-            .calc_mgr_mut()
-            .list_cashflow_mut()
-            .list_mut()
-            .get_mut(cf_index)
         {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                o.set_list_amortization(list_am);
-                o.set_list_statistic_helper(statistic_helper);
-                o.set_elem_balance_result(elem_balance_result);
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
+            
+            list_cashflow.set_list_amortization(list_am);
+            list_cashflow.set_statistic_helper(statistic_helper);
+            list_cashflow.set_elem_balance_result(elem_balance_result);
 
-                if o.last_amortization_index() != usize::MAX && 
-                    !o.list_amortization()
-                    .get_element(o.last_amortization_index())
-                {
-                    o.list_amortization()
-                        .get_element(o.list_amortization().count() - 1);
+            let index: usize;
+            match list_cashflow.list_amortization() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => {
+                    if list_cashflow.last_amortization_index() != usize::MAX && 
+                        !o.get_element(list_cashflow.last_amortization_index())
+                    {
+                        o.get_element(o.count() - 1);
+                    }
+                    index = o.index();
                 }
-                o.set_last_amortization_index(o.list_amortization().index());
-                o.set_cashflow_valid(true);
             }
+
+            list_cashflow.set_last_amortization_index(index);
+            list_cashflow.set_cashflow_valid(true);
         }
 
         Ok(balance_result)
@@ -509,55 +513,65 @@ impl CalcEngine {
         let mut list_am: ListAmortization;
         let mut list_statistic_helper: ListStatisticHelper;
 
-        let cf_index = self.calc_mgr().list_cashflow().index();
-
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
             .list_locale()
             .select_cashflow_locale(locale.as_str());
 
         let elem_balance_result: ElemBalanceResult;
-        match self.calc_mgr().list_cashflow().list().get(cf_index) {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
+        
+        {
+            let calc_mgr = self.calc_mgr();
+            let list_cashflow = calc_mgr.list_cashflow();
+
+            match list_cashflow.list_amortization() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => { 
+                    list_am = o.copy(updating_json);
+                }
             }
-            Some(o) => {
-                list_am = o.list_amortization().copy(updating_json);
-                list_statistic_helper = o.list_statistic_helper().copy();
-                let result = o.calculate().calculate_yield(
-                    o.list_event(),
-                    &mut list_am,
-                    &mut list_statistic_helper,
-                    balance,
-                );
-                match result {
-                    Err(e) => {
-                        return Err(e);
-                    }
-                    Ok(o) => {
-                        elem_balance_result = o;
-                    }
+
+            match list_cashflow.list_statistic_helper() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => {
+                    list_statistic_helper = o.copy();
+                }
+            }
+
+            let result;
+            match list_cashflow.list_event() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => {
+                    result = list_cashflow.calculate().calculate_yield(
+                        o,
+                        &mut list_am,
+                        &mut list_statistic_helper,
+                        balance,
+                    );
+                }
+            }
+
+            match result {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    elem_balance_result = o;
                 }
             }
         }
 
         let balance_result = elem_balance_result.copy();
 
-        match self
-            .calc_mgr_mut()
-            .list_cashflow_mut()
-            .list_mut()
-            .get_mut(cf_index)
         {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                o.set_list_amortization(list_am);
-                o.set_list_statistic_helper(list_statistic_helper);
-                o.set_elem_balance_result(elem_balance_result);
-            }
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
+
+            list_cashflow.set_list_amortization(list_am);
+            list_cashflow.set_statistic_helper(list_statistic_helper);
+            list_cashflow.set_elem_balance_result(elem_balance_result);
         }
+
         Ok(balance_result)
     }
 
@@ -586,81 +600,79 @@ impl CalcEngine {
         let mut list_statistic_helper: ListStatisticHelper;
         let elem_balance_result: ElemBalanceResult;
 
-        let cf_index = self.calc_mgr().list_cashflow().index();
-
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
             .list_locale()
             .select_cashflow_locale(locale.as_str());
 
-        match self.calc_mgr().list_cashflow().list().get(cf_index) {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
+        {
+            let calc_mgr = self.calc_mgr();
+            let list_cashflow = calc_mgr.list_cashflow();
+
+            match list_cashflow.list_amortization() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => { 
+                    list_am = o.copy(updating_json);
+                }
             }
-            Some(o) => {
-                list_am = o.list_amortization().copy(updating_json);
-                list_statistic_helper = o.list_statistic_helper().copy();
 
-                match o.list_event().elem_type() {
-                    crate::ExtensionType::PrincipalChange => {
-                        let result = o.calculate().calculate_principal(
-                            o.list_event(),
-                            &mut list_am,
-                            &mut list_statistic_helper,
-                            target_value,
-                        );
+            match list_cashflow.list_statistic_helper() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => {
+                    list_statistic_helper = o.copy();
+                }
+            }
 
-                        match result {
-                            Err(e) => {
-                                return Err(e);
-                            }
-                            Ok(o) => {
-                                elem_balance_result = o;
-                            }
+            let result;
+            match list_cashflow.list_event() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => {
+                    match o.elem_type() {
+                        crate::ExtensionType::PrincipalChange => {
+                            result = list_cashflow.calculate().calculate_principal(
+                                o,
+                                &mut list_am,
+                                &mut list_statistic_helper,
+                                target_value,
+                            );
+                        }
+                        crate::ExtensionType::InterestChange => {
+                            result = list_cashflow.calculate().calculate_interest(
+                                o,
+                                &mut list_am,
+                                &mut list_statistic_helper,
+                                target_value,
+                            );
+                        }
+                        _ => {
+                            result = Ok(ElemBalanceResult::new());
                         }
                     }
-                    crate::ExtensionType::InterestChange => {
-                        let result = o.calculate().calculate_interest(
-                            o.list_event(),
-                            &mut list_am,
-                            &mut list_statistic_helper,
-                            target_value,
-                        );
+                }
+            }            
 
-                        match result {
-                            Err(e) => {
-                                return Err(e);
-                            }
-                            Ok(o) => {
-                                elem_balance_result = o;
-                            }
-                        }
-                    }
-                    _ => {
-                        elem_balance_result = ElemBalanceResult::new();
-                    }
+            match result {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    elem_balance_result = o;
                 }
             }
         }
 
         let balance_result = elem_balance_result.copy();
 
-        match self
-            .calc_mgr_mut()
-            .list_cashflow_mut()
-            .list_mut()
-            .get_mut(cf_index)
         {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                o.set_cashflow_valid(false);
-                o.set_list_amortization(list_am);
-                o.set_list_statistic_helper(list_statistic_helper);
-                o.set_elem_balance_result(elem_balance_result);
-            }
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
+
+            list_cashflow.set_cashflow_valid(false);
+            list_cashflow.set_list_amortization(list_am);
+            list_cashflow.set_statistic_helper(list_statistic_helper);
+            list_cashflow.set_elem_balance_result(elem_balance_result);
         }
+
         Ok(balance_result)
     }
 
@@ -688,55 +700,62 @@ impl CalcEngine {
         let mut list_statistic_helper: ListStatisticHelper;
         let elem_balance_result: ElemBalanceResult;
 
-        let cf_index = self.calc_mgr().list_cashflow().index();
-
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
             .list_locale()
             .select_cashflow_locale(locale.as_str());
 
-        match self.calc_mgr().list_cashflow().list().get(cf_index) {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                list_am = o.list_amortization().copy(updating_json);
-                list_statistic_helper = o.list_statistic_helper().copy();
-                let result = o.calculate().calculate_periods(
-                    o.list_event(),
-                    &mut list_am,
-                    &mut list_statistic_helper,
-                    target_value,
-                );
+        {
+            let calc_mgr = self.calc_mgr();
+            let list_cashflow = calc_mgr.list_cashflow();
 
-                match result {
-                    Err(e) => {
-                        return Err(e);
-                    }
-                    Ok(o) => {
-                        elem_balance_result = o;
-                    }
+            match list_cashflow.list_amortization() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => { 
+                    list_am = o.copy(updating_json);
+                }
+            }
+
+            match list_cashflow.list_statistic_helper() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => {
+                    list_statistic_helper = o.copy();
+                }
+            }
+
+            let result;
+            match list_cashflow.list_event() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => {
+                    result = list_cashflow.calculate().calculate_periods(
+                        o,
+                        &mut list_am,
+                        &mut list_statistic_helper,
+                        target_value,
+                    );
+                }
+            }
+
+            match result {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    elem_balance_result = o;
                 }
             }
         }
 
         let balance_result = elem_balance_result.copy();
 
-        match self
-            .calc_mgr_mut()
-            .list_cashflow_mut()
-            .list_mut()
-            .get_mut(cf_index)
         {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                o.set_cashflow_valid(false);
-                o.set_list_amortization(list_am);
-                o.set_list_statistic_helper(list_statistic_helper);
-                o.set_elem_balance_result(elem_balance_result);
-            }
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
+
+            list_cashflow.set_cashflow_valid(false);
+            list_cashflow.set_list_amortization(list_am);
+            list_cashflow.set_statistic_helper(list_statistic_helper);
+            list_cashflow.set_elem_balance_result(elem_balance_result);
         }
 
         Ok(balance_result)
@@ -763,19 +782,7 @@ impl CalcEngine {
         new_name_param: &str,
         new_group_param: &str,
     ) -> Result<ElemBalanceResult, crate::ErrorType> {
-        let mut cf_index = self.calc_mgr().list_cashflow().index();
 
-        if !self
-            .calc_mgr()
-            .list_cashflow()
-            .get_element_by_name(name2_param, true)
-        {
-            return Err(crate::ErrorType::CfName);
-        }
-
-        let cf_index2 = self.calc_mgr().list_cashflow().index();
-
-        self.calc_mgr().list_cashflow().get_element(cf_index);
         let mut new_name = String::from(new_name_param);
         if new_name.is_empty() {
             new_name = String::from(
@@ -810,117 +817,127 @@ impl CalcEngine {
             );
         }
 
-        match self.calc_mgr().list_cashflow().list().get(cf_index) {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
+        let elem_cashflow: ElemCashflow;
+
+        {
+            let calc_mgr = self.calc_mgr();
+            let list_cashflow = calc_mgr.list_cashflow();
+
+            let orig_index = list_cashflow.index();
+            
+            let list_am: &ListAmortization;
+            match list_cashflow.list_amortization() {
+                None => { panic!("Cannot load the primary cashflow"); }
+                Some(o) => { list_am = o; }
             }
-            Some(o) => {
-                let new_list_am: ListAmortization;
-                match self.calc_mgr().list_cashflow().list().get(cf_index2) {
-                    None => {
-                        return Err(crate::ErrorType::Cashflow);
-                    }
-                    Some(o2) => {
-                        let result = o
-                            .calculate()
-                            .combine_cashflow(o.list_amortization(), o2.list_amortization());
-                        match result {
-                            Err(e) => {
-                                return Err(e);
-                            }
-                            Ok(o) => {
-                                new_list_am = o;
-                            }
-                        }
-                    }
-                }
 
-                let new_list_am_output: ListAmortization;
-                let result = o.calculate().create_cashflow_output(
-                    &new_list_am,
-                    true,
-                    false,
-                    true,
-                    true,
-                    true,
-                );
-                match result {
-                    Err(e) => {
-                        return Err(e);
-                    }
-                    Ok(o) => {
-                        new_list_am_output = o;
-                    }
-                }
+            if !list_cashflow.get_element_by_name(name2_param, true) {
+                return Err(crate::ErrorType::CfName);
+            }
 
-                let result =
-                    o.calculate()
-                        .transform_cashflow(&new_list_am_output, false, false, true, true);
-                match result {
-                    Err(e) => {
-                        return Err(e);
-                    }
-                    Ok(o) => {
-                        new_list_event = o;
-                    }
-                }
-                if new_group.is_empty() && !o.preferences().group().is_empty() {
-                    new_group = String::from(o.preferences().group());
-                }
+            let list_am2: &ListAmortization;
+            match list_cashflow.list_amortization() {
+                None => { panic!("Cannot load the secondary cashflow"); }
+                Some(o) => { list_am2 = o; }
+            }
 
-                match elem_preferences_opt.as_mut() {
-                    None => {}
-                    Some(o2) => {
-                        let list_parameter = o.preferences().list_parameter();
-                        if list_parameter.get_element_by_name(crate::PARAM_DESCRIPTION, true) {
-                            if !o2
-                                .list_parameter()
-                                .get_element_by_name(crate::PARAM_DESCRIPTION, true)
-                            {
+            list_cashflow.get_element(orig_index);
+
+            let result = list_cashflow.calculate().combine_cashflow(list_am, list_am2);
+
+            let new_list_am: ListAmortization;
+            match result {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    new_list_am = o;
+                }
+            }
+
+            let result = list_cashflow.calculate().create_cashflow_output(
+                &new_list_am,
+                true,
+                false,
+                true,
+                true,
+                true,
+            );
+
+            let new_list_am_output: ListAmortization;
+            match result {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    new_list_am_output = o;
+                }
+            }
+
+            let result = list_cashflow.calculate()
+                .transform_cashflow(&new_list_am_output, false, false, true, true);
+
+            match result {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    new_list_event = o;
+                }
+            }
+
+            match list_cashflow.preferences() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => {
+                    if new_group.is_empty() && !o.group().is_empty() {
+                        new_group = String::from(o.group());
+                    }
+        
+                    match elem_preferences_opt.as_mut() {
+                        None => {}
+                        Some(o2) => {
+                            let list_parameter = o.list_parameter();
+                            if list_parameter.get_element_by_name(crate::PARAM_DESCRIPTION, true) {
+                                if !o2
+                                    .list_parameter()
+                                    .get_element_by_name(crate::PARAM_DESCRIPTION, true)
+                                {
+                                    o2.list_parameter_mut()
+                                        .add_parameter(crate::PARAM_DESCRIPTION, false);
+                                }
                                 o2.list_parameter_mut()
-                                    .add_parameter(crate::PARAM_DESCRIPTION, false);
+                                    .set_string(list_parameter.param_string());
                             }
-                            o2.list_parameter_mut()
-                                .set_string(list_parameter.param_string());
                         }
                     }
-                }
-                if elem_preferences_opt.is_none() {
-                    elem_preferences_opt = Option::from(o.preferences().copy(true));
-                }
-            }
-        }
-
-        let result = self.calc_mgr().list_cashflow().add_cashflow(
-            new_name.as_str(),
-            Option::from(new_list_event),
-            elem_preferences_opt,
-            new_group.as_str(),
-        );
-        match result {
-            Err(_e) => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Ok(o) => {
-                let mut mgr = self.calc_mgr_mut();
-                mgr.list_cashflow_mut().list_mut().push(o);
-                mgr.list_cashflow_mut().sort();
-
-                match mgr
-                    .list_cashflow()
-                    .list()
-                    .iter()
-                    .position(|e| e.name() == new_name)
-                {
-                    None => {}
-                    Some(o) => {
-                        mgr.list_cashflow().set_index(o);
+        
+                    if elem_preferences_opt.is_none() {
+                        elem_preferences_opt = Option::from(o.copy(true));
                     }
                 }
             }
+
+            match list_cashflow.add_cashflow_prep(
+                new_name.as_str(),
+                Option::from(new_list_event),
+                elem_preferences_opt,
+                new_group.as_str()
+            ) {
+                Err(_e) => {
+                    return Err(crate::ErrorType::Cashflow);
+                }
+                Ok(o) => {
+                    elem_cashflow = o;
+                }
+            }
         }
 
-        cf_index = self.calc_mgr().list_cashflow().index();
+        {
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
+
+            list_cashflow.add_cashflow(new_name.as_str(), elem_cashflow);
+        }
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
@@ -940,21 +957,24 @@ impl CalcEngine {
             }
         }
 
-        match self
-            .calc_mgr_mut()
-            .list_cashflow_mut()
-            .list_mut()
-            .get_mut(cf_index)
         {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                if !new_group.is_empty() {
-                    o.preferences_mut().set_group_result(new_group.as_str());
-                }
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
 
-                o.list_event().set_index(0);
+            match list_cashflow.preferences_mut() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => { 
+                    if !new_group.is_empty() {
+                        o.set_group_result(new_group.as_str());
+                    }        
+                }
+            }
+
+            match list_cashflow.list_event() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => { 
+                    o.set_index(0);
+                }
             }
         }
 
@@ -986,19 +1006,6 @@ impl CalcEngine {
         new_group_param: &str,
         interest_event_action: crate::MergeType,
     ) -> Result<ElemBalanceResult, crate::ErrorType> {
-        let mut cf_index = self.calc_mgr().list_cashflow().index();
-
-        if !self
-            .calc_mgr()
-            .list_cashflow()
-            .get_element_by_name(name2_param, true)
-        {
-            return Err(crate::ErrorType::CfName);
-        }
-
-        let cf_index2 = self.calc_mgr().list_cashflow().index();
-
-        self.calc_mgr().list_cashflow().get_element(cf_index);
 
         let mut new_name: String = String::from(new_name_param);
         if new_name.is_empty() {
@@ -1034,92 +1041,110 @@ impl CalcEngine {
             );
         }
 
-        match self.calc_mgr().list_cashflow().list().get(cf_index) {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                match self.calc_mgr().list_cashflow().list().get(cf_index2) {
-                    None => {
-                        return Err(crate::ErrorType::Cashflow);
-                    }
-                    Some(o2) => {
-                        let result = o.calculate().merge_cashflow(
-                            o.list_event(),
-                            o2.list_event(),
-                            interest_event_action,
-                        );
-                        match result {
-                            Err(e) => {
-                                return Err(e);
-                            }
-                            Ok(o) => {
-                                new_list_event = o;
-                            }
-                        }
-                    }
-                }
-                if new_group.is_empty() && !o.preferences().group().is_empty() {
-                    new_group = String::from(o.preferences().group());
-                }
+        let elem_cashflow: ElemCashflow;
 
-                match elem_preferences_opt.as_mut() {
-                    None => {}
-                    Some(o2) => {
-                        let list_parameter = o.preferences().list_parameter();
-                        if list_parameter.get_element_by_name(crate::PARAM_DESCRIPTION, true) {
-                            if !o2
-                                .list_parameter()
-                                .get_element_by_name(crate::PARAM_DESCRIPTION, true)
+        {
+            let calc_mgr = self.calc_mgr();
+            let list_cashflow = calc_mgr.list_cashflow();
+
+            let orig_index = list_cashflow.index();
+            
+            let list_event: &ListEvent;
+            match list_cashflow.list_event() {
+                None => { panic!("Cannot load the primary cashflow"); }
+                Some(o) => { list_event = o; }
+            }
+
+            if !list_cashflow.get_element_by_name(name2_param, true) {
+                return Err(crate::ErrorType::CfName);
+            }
+
+            let list_event2: &ListEvent;
+            match list_cashflow.list_event() {
+                None => { panic!("Cannot load the secondary cashflow"); }
+                Some(o) => { list_event2 = o; }
+            }
+
+            list_cashflow.get_element(orig_index);
+
+            let result = list_cashflow.calculate().merge_cashflow(
+                list_event,
+                list_event2,
+                interest_event_action,
+            );
+            match result {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    new_list_event = o;
+                }
+            }
+
+            match list_cashflow.preferences() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => {
+                    if new_group.is_empty() && !o.group().is_empty() {
+                        new_group = String::from(o.group());
+                    }
+
+                    match elem_preferences_opt.as_mut() {
+                        None => { }
+                        Some(o2) => {
+                            let mut param_string = String::from("");
+                            let mut param_present = false;
+
                             {
-                                o2.list_parameter_mut()
-                                    .add_parameter(crate::PARAM_DESCRIPTION, false);
+                                let list_parameter = o2.list_parameter();
+                                if list_parameter.get_element_by_name(crate::PARAM_DESCRIPTION, true) {
+                                    param_string = String::from(list_parameter.param_string());
+                                    param_present = o2.list_parameter()
+                                        .get_element_by_name(crate::PARAM_DESCRIPTION, true);
+                                }
                             }
-                            o2.list_parameter_mut()
-                                .set_string(list_parameter.param_string());
+
+                            if !param_string.is_empty() {
+                                if !param_present {
+                                    o2.list_parameter_mut()
+                                        .add_parameter(crate::PARAM_DESCRIPTION, false);
+                                }
+                                
+                                o2.list_parameter_mut()
+                                    .set_string(param_string.as_str());
+                            }
                         }
                     }
-                }
-                if elem_preferences_opt.is_none() {
-                    elem_preferences_opt = Option::from(o.preferences().copy(true));
-                }
-            }
-        }
 
-        let result = self.calc_mgr().list_cashflow().add_cashflow(
-            new_name.as_str(),
-            Option::from(new_list_event),
-            elem_preferences_opt,
-            new_group.as_str(),
-        );
-        match result {
-            Err(_e) => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Ok(o) => {
-                let mut mgr = self.calc_mgr_mut();
-                mgr.list_cashflow_mut().list_mut().push(o);
-                mgr.list_cashflow_mut().sort();
-
-                match mgr
-                    .list_cashflow()
-                    .list()
-                    .iter()
-                    .position(|e| e.name() == new_name)
-                {
-                    None => {}
-                    Some(o) => {
-                        mgr.list_cashflow().set_index(o);
+                    if elem_preferences_opt.is_none() {
+                        elem_preferences_opt = Option::from(o.copy(true));
                     }
                 }
             }
+
+            match list_cashflow.add_cashflow_prep(
+                new_name.as_str(),
+                Option::from(new_list_event),
+                elem_preferences_opt,
+                new_group.as_str()
+            ) {
+                Err(_e) => {
+                    return Err(crate::ErrorType::Cashflow);
+                }
+                Ok(o) => {
+                    elem_cashflow = o;
+                }
+            }
         }
 
-        cf_index = self.calc_mgr().list_cashflow().index();
+        {
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
+
+            list_cashflow.add_cashflow(new_name.as_str(), elem_cashflow);
+        }
 
         let locale = self.calc_mgr().locale(true);
-        self.calc_mgr()
-            .list_locale()
+        self.calc_mgr().list_locale()
             .select_cashflow_locale(locale.as_str());
 
         self.evaluate_cashflow_descriptors();
@@ -1135,21 +1160,24 @@ impl CalcEngine {
             }
         }
 
-        match self
-            .calc_mgr_mut()
-            .list_cashflow_mut()
-            .list_mut()
-            .get_mut(cf_index)
         {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                if !new_group.is_empty() {
-                    o.preferences_mut().set_group_result(new_group.as_str());
-                }
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
 
-                o.list_event().set_index(0);
+            match list_cashflow.preferences_mut() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => { 
+                    if !new_group.is_empty() {
+                        o.set_group_result(new_group.as_str());
+                    }        
+                }
+            }
+
+            match list_cashflow.list_event() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => { 
+                    o.set_index(0);
+                }
             }
         }
 
@@ -1176,8 +1204,6 @@ impl CalcEngine {
     pub fn split_cashflow(&self, all_events: bool) -> Result<ElemBalanceResult, crate::ErrorType> {
         let mut list_event: ListEvent;
 
-        let cf_index = self.calc_mgr().list_cashflow().index();
-
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
             .list_locale()
@@ -1185,20 +1211,24 @@ impl CalcEngine {
 
         self.calc_mgr().set_updating_json(true);
 
-        match self.calc_mgr().list_cashflow().list().get(cf_index) {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                list_event = o.list_event().copy(true);
-                let result = o.calculate().split_cashflow(&mut list_event, all_events);
+        {
+            let calc_mgr = self.calc_mgr();
+            let list_cashflow = calc_mgr.list_cashflow();
 
-                match result {
-                    Err(e) => {
-                        return Err(e);
-                    }
-                    Ok(_o) => {}
+            match list_cashflow.list_event() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => {
+                    list_event = o.copy(true);
                 }
+            }
+
+            let result = list_cashflow.calculate().split_cashflow(&mut list_event, all_events);
+
+            match result {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(_o) => {}
             }
         }
 
@@ -1212,21 +1242,15 @@ impl CalcEngine {
             }
         }
 
-        match self
-            .calc_mgr_mut()
-            .list_cashflow_mut()
-            .list_mut()
-            .get_mut(cf_index)
         {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                o.set_list_event(list_event);
-            }
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
+
+            list_cashflow.set_list_event(list_event);
         }
 
         self.calc_mgr().set_updating_json(false);
+
         Ok(elem_balance_result)
     }
 
@@ -1258,6 +1282,7 @@ impl CalcEngine {
         after_pv: bool,
         omit_interest_events: bool,
     ) -> Result<ElemBalanceResult, crate::ErrorType> {
+
         let mut new_name: String = String::from(new_name_param);
         if new_name.is_empty() {
             new_name = String::from(
@@ -1269,8 +1294,6 @@ impl CalcEngine {
 
         let mut new_group: String = String::from(new_group_param);
         let new_list_event: ListEvent;
-
-        let mut cf_index = self.calc_mgr().list_cashflow().index();
 
         let locale = self.calc_mgr().locale(true);
         self.calc_mgr()
@@ -1294,132 +1317,137 @@ impl CalcEngine {
             );
         }
 
-        match self.calc_mgr().list_cashflow().list().get(cf_index) {
-            None => {
+        let elem_cashflow: ElemCashflow;
+
+        {
+            let calc_mgr = self.calc_mgr();
+            let list_cashflow = calc_mgr.list_cashflow();
+
+            if !list_cashflow.cashflow_valid() {
                 return Err(crate::ErrorType::Cashflow);
             }
-            Some(o) => {
-                if !o.cashflow_valid() {
-                    return Err(crate::ErrorType::Cashflow);
-                }
 
-                let new_list_am_output: ListAmortization;
-                let result = o.calculate().create_cashflow_output(
-                    o.list_amortization(),
-                    true,
-                    false,
-                    true,
-                    true,
-                    true,
-                );
-                match result {
-                    Err(e) => {
-                        return Err(e);
-                    }
-                    Ok(o) => {
-                        new_list_am_output = o;
-                    }
+            let list_am: &ListAmortization;
+            match list_cashflow.list_amortization() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => {
+                    list_am = o;
                 }
+            }
 
-                let result = o.calculate().transform_cashflow(
-                    &new_list_am_output,
-                    after_pv,
-                    omit_interest_events,
-                    false,
-                    true,
-                );
-                match result {
-                    Err(e) => {
-                        return Err(e);
-                    }
-                    Ok(o) => {
-                        new_list_event = o;
-                    }
-                }
-                if new_group.is_empty() && !o.preferences().group().is_empty() {
-                    new_group = String::from(o.preferences().group());
-                }
+            let new_list_am_output: ListAmortization;
+            let result = list_cashflow.calculate().create_cashflow_output(
+                list_am,
+                true,
+                false,
+                true,
+                true,
+                true,
+            );
 
-                if !new_group.is_empty() {
-                    let calc_mgr = self.calc_mgr();
-                    let list_template_group = calc_mgr.list_template_group();
-                    if list_template_group.get_element_by_group(new_group.as_str(), true) {
-                        let list_parameter = o.preferences().list_parameter();
-                        let mut elem_preferences = list_template_group.preferences().copy(true);
-                        if list_parameter.get_element_by_name(crate::PARAM_DESCRIPTION, true) {
-                            if !elem_preferences
-                                .list_parameter()
-                                .get_element_by_name(crate::PARAM_DESCRIPTION, true)
-                            {
-                                elem_preferences
-                                    .list_parameter_mut()
-                                    .add_parameter(crate::PARAM_DESCRIPTION, false);
-                            }
+            match result {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    new_list_am_output = o;
+                }
+            }
+
+            let result = list_cashflow.calculate().transform_cashflow(
+                &new_list_am_output,
+                after_pv,
+                omit_interest_events,
+                false,
+                true,
+            );
+            match result {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(o) => {
+                    new_list_event = o;
+                }
+            }
+
+            let preferences: &ElemPreferences;
+            match list_cashflow.preferences() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => { preferences = o; }
+            }
+
+            if new_group.is_empty() && !preferences.group().is_empty() {
+                new_group = String::from(preferences.group());
+            }
+
+            if !new_group.is_empty() {
+                let list_template_group = calc_mgr.list_template_group();
+                if list_template_group.get_element_by_group(new_group.as_str(), true) {
+                    let list_parameter = preferences.list_parameter();
+                    let mut elem_preferences = list_template_group.preferences().copy(true);
+                    if list_parameter.get_element_by_name(crate::PARAM_DESCRIPTION, true) {
+                        if !elem_preferences
+                            .list_parameter()
+                            .get_element_by_name(crate::PARAM_DESCRIPTION, true)
+                        {
                             elem_preferences
                                 .list_parameter_mut()
-                                .set_string(list_parameter.param_string());
+                                .add_parameter(crate::PARAM_DESCRIPTION, false);
                         }
-                        elem_preferences_opt = Option::from(elem_preferences);
+                        elem_preferences
+                            .list_parameter_mut()
+                            .set_string(list_parameter.param_string());
                     }
+                    elem_preferences_opt = Option::from(elem_preferences);
                 }
+            }
 
-                match elem_preferences_opt.as_mut() {
-                    None => {}
-                    Some(o2) => {
-                        let list_parameter = o.preferences().list_parameter();
-                        if list_parameter.get_element_by_name(crate::PARAM_DESCRIPTION, true) {
-                            if !o2
-                                .list_parameter()
-                                .get_element_by_name(crate::PARAM_DESCRIPTION, true)
-                            {
-                                o2.list_parameter_mut()
-                                    .add_parameter(crate::PARAM_DESCRIPTION, false);
-                            }
+            match elem_preferences_opt.as_mut() {
+                None => {}
+                Some(o2) => {
+                    let list_parameter = preferences.list_parameter();
+                    if list_parameter.get_element_by_name(crate::PARAM_DESCRIPTION, true) {
+                        if !o2
+                            .list_parameter()
+                            .get_element_by_name(crate::PARAM_DESCRIPTION, true)
+                        {
                             o2.list_parameter_mut()
-                                .set_string(list_parameter.param_string());
+                                .add_parameter(crate::PARAM_DESCRIPTION, false);
                         }
+                        o2.list_parameter_mut()
+                            .set_string(list_parameter.param_string());
                     }
                 }
-                if elem_preferences_opt.is_none() {
-                    elem_preferences_opt = Option::from(o.preferences().copy(true));
+            }
+
+            if elem_preferences_opt.is_none() {
+                elem_preferences_opt = Option::from(preferences.copy(true));
+            }
+
+            match list_cashflow.add_cashflow_prep(
+                new_name.as_str(),
+                Option::from(new_list_event),
+                elem_preferences_opt,
+                new_group.as_str()
+            ) {
+                Err(_e) => {
+                    return Err(crate::ErrorType::Cashflow);
+                }
+                Ok(o) => {
+                    elem_cashflow = o;
                 }
             }
         }
 
-        let result = self.calc_mgr().list_cashflow().add_cashflow(
-            new_name.as_str(),
-            Option::from(new_list_event),
-            elem_preferences_opt,
-            new_group.as_str(),
-        );
-        match result {
-            Err(_e) => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Ok(o) => {
-                let mut mgr = self.calc_mgr_mut();
-                mgr.list_cashflow_mut().list_mut().push(o);
-                mgr.list_cashflow_mut().sort();
+        {
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
 
-                match mgr
-                    .list_cashflow()
-                    .list()
-                    .iter()
-                    .position(|e| e.name() == new_name)
-                {
-                    None => {}
-                    Some(o) => {
-                        mgr.list_cashflow().set_index(o);
-                    }
-                }
-            }
+            list_cashflow.add_cashflow(new_name.as_str(), elem_cashflow);
         }
-
-        cf_index = self.calc_mgr().list_cashflow().index();
 
         let locale = self.calc_mgr().locale(true);
-        self.calc_mgr()
-            .list_locale()
+        self.calc_mgr().list_locale()
             .select_cashflow_locale(locale.as_str());
 
         self.evaluate_cashflow_descriptors();
@@ -1435,25 +1463,29 @@ impl CalcEngine {
             }
         }
 
-        match self
-            .calc_mgr_mut()
-            .list_cashflow_mut()
-            .list_mut()
-            .get_mut(cf_index)
         {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                if !new_group.is_empty() {
-                    o.preferences_mut().set_group_result(new_group.as_str());
-                }
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
 
-                o.list_event().set_index(0);
+            match list_cashflow.preferences_mut() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => { 
+                    if !new_group.is_empty() {
+                        o.set_group_result(new_group.as_str());
+                    }        
+                }
+            }
+
+            match list_cashflow.list_event() {
+                None => { return Err(crate::ErrorType::Index); }
+                Some(o) => { 
+                    o.set_index(0);
+                }
             }
         }
 
         self.calc_mgr().set_updating_json(false);
+
         Ok(elem_balance_result)
     }
 
@@ -1493,122 +1525,61 @@ impl CalcEngine {
         )
     }
 
-    /// Creates the events from currently selected template event list into
+    /// Creates the events from the indicated template event list into
     /// the currently selected cashflow event list.
     ///
     /// # Arguments
     ///
-    /// * `date_param` - Base starting date for the new event(s).
-    /// * `end_date_param` - Base ending date for the new event(s).
-    /// * `new_date_param` - Next date for the new event(s) (i.e.,
-    ///     normally end_date_param plus one period).
-    /// * `frequency_param` - Next frequency for the new event(s).
+    /// * `group_param` - The name of the template group.
+    /// * `event_param` - The name of the template event.
+    /// * `cf_index` - Cashflow index.
     ///
     /// # Return
     ///
-    /// * ERROR_NONE if successful, otherwise an error code.
+    /// * List of new events added to the cashflow's event list.
 
     pub fn create_template_events(
         &self,
-        date_param: usize,
-        end_date_param: usize,
-        new_date_param: usize,
-        frequency_param: crate::FrequencyType,
-    ) -> Result<(), crate::ErrorType> {
-        self.copy_template_events(
-            date_param,
-            end_date_param,
-            new_date_param,
-            frequency_param,
-            true,
-        )
-    }
-
-    /// Creates a new cashflow and copies events from all template event lists
-    /// under a named template group.
-    ///
-    /// # Arguments
-    ///
-    /// * `group_param` - The name of the template group.
-    /// * `new_name_param` - The name of the new cashflow.
-    ///
-    /// # Return
-    ///
-    /// * A balance result if successful, otherwise an error code.
-
-    pub fn create_cashflow_from_template_group(
-        &self,
         group_param: &str,
-        new_name_param: &str,
-        new_group_param: &str,
-    ) -> Result<ElemBalanceResult, crate::ErrorType> {
-        let group = String::from(self.calc_mgr().list_template_group().group());
+        event_param: &str,
+        cf_index: usize
+    ) -> Result<ListEvent, crate::ErrorType> {
 
-        if !self
-            .calc_mgr()
-            .list_template_group()
-            .get_element_by_group(group_param, true)
+        let mut event_date: usize = CoreUtility::date_now();
+        let mut end_date: usize = event_date;
+        let mut new_date: usize = event_date;
+        let mut frequency = crate::FrequencyType::OneMonth;
+
         {
-            return Err(crate::ErrorType::Index);
-        }
-        let elem_preferences_opt = Option::from(
-            self.calc_mgr()
-                .list_template_group()
-                .preferences()
-                .copy(true),
-        );
+            let calc_mgr = self.calc_mgr();
+            let list_template_group = calc_mgr.list_template_group();
+            let list_cashflow = calc_mgr.list_cashflow();
 
-        let result = self.calc_mgr().list_cashflow().add_cashflow(
-            new_name_param,
-            None,
-            elem_preferences_opt,
-            group.as_str(),
-        );
-        match result {
-            Err(_e) => {
-                return Err(crate::ErrorType::Cashflow);
+            if !list_template_group
+                .get_element_by_group(group_param, true) {
+                return Err(crate::ErrorType::Index);
             }
-            Ok(o) => {
-                let mut mgr = self.calc_mgr_mut();
-                mgr.list_cashflow_mut().list_mut().push(o);
-                mgr.list_cashflow_mut().sort();
+            
+            let list_template_event = list_template_group.list_template_event();
 
-                match mgr
-                    .list_cashflow()
-                    .list()
-                    .iter()
-                    .position(|e| e.name() == new_name_param)
-                {
-                    None => {}
-                    Some(o) => {
-                        mgr.list_cashflow().set_index(o);
-                    }
-                }
-            }
-        }
-
-        let mut index = 0;
-        loop {
-            if !self
-                .calc_mgr()
-                .list_template_group()
-                .list_template_event()
-                .get_element(index)
-            {
-                break;
+            if !list_template_event
+                .get_element_by_name(event_param, true) {
+                return Err(crate::ErrorType::Index);
             }
 
-            let mut event_date: usize = CoreUtility::date_now();
-            let mut end_date: usize = event_date;
-            let mut new_date: usize = event_date;
-            let mut frequency = crate::FrequencyType::OneMonth;
+            if !list_cashflow
+                .get_element(cf_index) {
+                return Err(crate::ErrorType::Index);
+            }
 
-            match self.calc_mgr().list_cashflow().list_event() {
+            match list_cashflow.list_event() {
                 None => {}
                 Some(o) => {
                     if o.count() > 0 {
+                        o.get_element(o.count() - 1);                        
                         event_date = o.event_date();
                         end_date = event_date;
+
                         if o.periods() > 1 {
                             end_date = CalcManager::util_date_new(
                                 end_date,
@@ -1626,45 +1597,114 @@ impl CalcEngine {
                             o.intervals(),
                             o.eom(),
                         );
+
                         frequency = o.frequency();
                     }
                 }
             }
-
-            let last_template_event = index
-                >= self
-                    .calc_mgr()
-                    .list_template_group()
-                    .list_template_event()
-                    .count();
-
-            match self.copy_template_events(
-                event_date,
-                end_date,
-                new_date,
-                frequency,
-                last_template_event,
-            ) {
-                Err(e) => {
-                    return Err(e);
-                }
-                Ok(_o) => {}
-            }
-
-            index += 1;
         }
 
-        let cf_index = self.calc_mgr().list_cashflow().index();
+        let list_event: ListEvent;
+        match self.copy_template_events(
+            event_date,
+            end_date,
+            new_date,
+            frequency
+        ) {
+            Err(e) => { return Err(e) }
+            Ok(o) => { list_event = o; }
+        }
 
-        let locale = self.calc_mgr().locale(true);
-        self.calc_mgr()
-            .list_locale()
-            .select_cashflow_locale(locale.as_str());
-
-        self.evaluate_cashflow_descriptors();
         self.evaluate_cashflow_event_type_all();
 
+        match self.balance_cashflow() {
+            Err(e) => {
+                return Err(e);
+            }
+            Ok(_o) => { }
+        }
+
+        Ok(list_event)
+    }
+
+    /// Creates a new cashflow from a named template group.
+    ///
+    /// # Arguments
+    ///
+    /// * `group_param` - The name of the template group.
+    /// * `new_name_param` - The name of the new cashflow.
+    /// * `new_group_param` - The name of the new cashflow group.
+    ///
+    /// # Return
+    ///
+    /// * A balance result if successful, otherwise an error code.
+
+    pub fn create_cashflow_from_template_group(
+        &self,
+        group_param: &str,
+        new_name_param: &str,
+        new_group_param: &str,
+    ) -> Result<ElemBalanceResult, crate::ErrorType> {
+
         let elem_balance_result: ElemBalanceResult;
+        let elem_preferences_opt: Option<ElemPreferences>;
+        let group: String;
+
+        let elem_cashflow: ElemCashflow;
+
+        {
+            let calc_mgr = self.calc_mgr();
+            let list_cashflow = calc_mgr.list_cashflow();
+
+            if !self
+                .calc_mgr()
+                .list_template_group()
+                .get_element_by_group(group_param, true) {
+                return Err(crate::ErrorType::Index);
+            }
+            
+            group = String::from(calc_mgr.list_template_group().group());
+
+            elem_preferences_opt = Option::from(
+                calc_mgr
+                    .list_template_group()
+                    .preferences()
+                    .copy(true),
+            );
+
+            match list_cashflow.add_cashflow_prep(
+                new_name_param,
+                None,
+                elem_preferences_opt,
+                group.as_str()
+            ) {
+                Err(_e) => {
+                    return Err(crate::ErrorType::Cashflow);
+                }
+                Ok(o) => {
+                    elem_cashflow = o;
+                }
+            }
+        }
+
+        {
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
+
+            list_cashflow.add_cashflow(new_name_param, elem_cashflow);
+        }
+
+        {
+            let calc_mgr = self.calc_mgr();
+            let locale = calc_mgr.locale(true);
+
+            calc_mgr
+                .list_locale()
+                .select_cashflow_locale(locale.as_str());
+        }
+
+        self.evaluate_cashflow_descriptors();
+
         match self.balance_cashflow() {
             Err(e) => {
                 return Err(e);
@@ -1674,21 +1714,24 @@ impl CalcEngine {
             }
         }
 
-        match self
-            .calc_mgr_mut()
-            .list_cashflow_mut()
-            .list_mut()
-            .get_mut(cf_index)
         {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                if !new_group_param.is_empty() {
-                    o.preferences_mut().set_group_result(new_group_param);
-                }
+            let mut calc_mgr = self.calc_mgr_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
 
-                o.list_event().set_index(0);
+            if !new_group_param.is_empty() {
+                match list_cashflow.preferences_mut() {
+                    None => { }
+                    Some(o) => { 
+                        o.set_group_result(new_group_param);
+                    }
+                }
+            }
+
+            match list_cashflow.list_event() {
+                None => { }
+                Some(o) => {
+                    o.set_index(0);
+                }
             }
         }
 
@@ -1745,13 +1788,12 @@ impl CalcEngine {
         );
 
         let preferences: &ElemPreferences;
-        let index = calc_mgr.list_cashflow().index();
-        match calc_mgr.list_cashflow().list().get(index) {
+        match calc_mgr.list_cashflow().preferences() {
             None => {
                 panic!("Cashflow list index not set");
             }
             Some(o) => {
-                preferences = o.preferences();
+                preferences = o;
             }
         }
 
@@ -1770,22 +1812,24 @@ impl CalcEngine {
     pub fn evaluate_cashflow_event_type_all(&self) {
         let mut list_result_symbol: Vec<Result<ElemSymbol, crate::ErrorType>> = Vec::new();
         let list_event: &ListEvent;
-        let cfindex = self.calc_mgr().list_cashflow().index();
 
         {
             let calc_mgr = self.calc_mgr();
-            match calc_mgr.list_cashflow().list().get(cfindex) {
+            match calc_mgr.list_cashflow().list_event() {
                 None => {
                     panic!("Cashflow list index not set");
                 }
                 Some(o) => {
-                    list_event = o.list_event();
+                    list_event = o;
                 }
             }
 
-            for elem in list_event.list().iter() {
+            let mut index: usize = 0;
+            loop {
+                if !list_event.get_element(index) { break; }
+
                 let group: String;
-                match elem.elem_type() {
+                match list_event.elem_type() {
                     crate::ExtensionType::CurrentValue => {
                         group = String::from(crate::GROUP_CURRENT_VALUE);
                     }
@@ -1827,7 +1871,7 @@ impl CalcEngine {
                         true,
                     );
                     if event_type_expr.is_empty() {
-                        match elem.elem_type() {
+                        match list_event.elem_type() {
                             crate::ExtensionType::CurrentValue => {
                                 event_type_expr = String::from(
                                     self.calc_mgr()
@@ -1870,8 +1914,8 @@ impl CalcEngine {
 
                 let list_parameter = CalcUtility::create_event_type_list_parameter(
                     self.calc_manager(),
-                    elem.elem_type(),
-                    elem.elem_extension(),
+                    list_event.elem_type(),
+                    list_event.elem_extension(),
                 );
                 match preferences_cashflow.as_ref() {
                     None => {
@@ -1890,21 +1934,24 @@ impl CalcEngine {
                 let result = core_expression.evaluate(None, None);
 
                 list_result_symbol.push(result);
+
+                index += 1;
             }
         }
 
         let mut errs: HashMap<usize, crate::ErrorType> = HashMap::new();
 
         {
-            let mut mgr = self.calc_mgr_mut();
-            match mgr.list_cashflow_mut().list_mut().get_mut(cfindex) {
+            let mut calc_mgr = self.calc_mgr_mut();
+            match calc_mgr.list_cashflow_mut().list_event_mut() {
                 None => {
                     panic!("Cashflow list index not set");
                 }
                 Some(o) => {
-                    let list_event = o.list_event_mut();
-
-                    for (index, elem) in list_event.list_mut().iter_mut().enumerate() {
+                    let list_event = o;
+                    let mut index: usize = 0;
+                    loop {
+                        if !list_event.get_element(index) { break; }
                         let elem_result_symbol = list_result_symbol.get(index);
                         match elem_result_symbol {
                             None => {}
@@ -1914,22 +1961,23 @@ impl CalcEngine {
                                 }
                                 Ok(o2) => match o2.sym_type() {
                                     crate::TokenType::Integer => {
-                                        elem.set_event_type(
+                                        list_event.set_event_type(
                                             format!("{}", o2.sym_integer()).as_str(),
                                         );
                                     }
                                     crate::TokenType::Decimal => {
-                                        elem.set_event_type(
+                                        list_event.set_event_type(
                                             format!("{}", o2.sym_decimal()).as_str(),
                                         );
                                     }
                                     crate::TokenType::String => {
-                                        elem.set_event_type(o2.sym_string());
+                                        list_event.set_event_type(o2.sym_string());
                                     }
                                     _ => {}
                                 },
                             },
                         }
+                        index += 1;
                     }
                 }
             }
@@ -1943,23 +1991,25 @@ impl CalcEngine {
         }
 
         {
-            let mut mgr = self.calc_mgr_mut();
-            match mgr.list_cashflow_mut().list_mut().get_mut(cfindex) {
+            let mut calc_mgr = self.calc_mgr_mut();
+            match calc_mgr.list_cashflow_mut().list_event_mut() {
                 None => {
                     panic!("Cashflow list index not set");
                 }
                 Some(o) => {
-                    let list_event = o.list_event_mut();
-
-                    for (index, elem) in list_event.list_mut().iter_mut().enumerate() {
+                    let list_event = o;
+                    let mut index: usize = 0;
+                    loop {
+                        if !list_event.get_element(index) { break; }
                         match errors.get(&index) {
                             None => {}
                             Some(o) => {
-                                elem.set_event_type(
+                                list_event.set_event_type(
                                     format!("{}{}", crate::ERROR_PREFIX, o).as_str(),
                                 );
                             }
                         }
+                        index += 1;
                     }
                 }
             }
@@ -2153,7 +2203,7 @@ impl CalcEngine {
             .format_currency_out(val, decimal_digits);
 
         fs
-    }
+    }    
 
     /// Return a rounded decimal.
     ///
