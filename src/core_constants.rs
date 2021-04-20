@@ -18,12 +18,6 @@ pub const ID_VERSION: &str = "Version: 1.0";
 /// Copyright message. 
 pub const ID_COPYRIGHT: &str = 
     "Copyright \u{00a9} 2021 ShiftLeft Software.\nAll rights reserved.";
-/// Empty text. 
-pub const EMPTY_TEXT: &str = "<<>>";
-/// Null text. 
-pub const NULL_TEXT: &str = "<>";
-/// Empty field display. 
-pub const EMPTY_DISPLAY: &str = "";
 /// Error prefix. 
 pub const ERROR_PREFIX: &str = ">> ";
 
@@ -47,8 +41,6 @@ pub const DEFAULT_COMBINE_PRINCIPAL: bool = true;
 pub const DEFAULT_COMPRESS_DESCRIPTOR: bool = false;
 /// Default omit statistic events. 
 pub const DEFAULT_OMIT_STATISTIC_EVENTS: bool = true;
-/// Calculate the overall APR for a cashflow during balancing. 
-pub const DEFAULT_CALCULATE_BALANCE: bool = false;
 /// Default - Template - Column order. 
 pub const DEFAULT_TEMPLATE_COLUMNS: &str = 
     "Type~65|Date~50|Date-expr~30|Sort~30|Value~70|Value-expr~30|Periods~50|Periods-expr~30|Frequency~60|Intervals~50|End-date~50|Skip-periods~50|Parameter-list~40|Descriptor-list~40|Event-name~60|Next-name~60";
@@ -154,8 +146,6 @@ pub const COL_LABEL_DR: usize = 1003;
 
 /// Group - General. 
 pub const GROUP_GENERAL: &str = "General";
-/// Group - Font. 
-pub const GROUP_FONT: &str = "Font";
 /// Group - Column header. 
 pub const GROUP_COLHEADER: &str = "ColHeader";
 /// Group - Column value. 
@@ -176,42 +166,15 @@ pub const GROUP_CURRENT_VALUE: &str = "CurValue";
 pub const GROUP_STATISTIC_VALUE: &str = "StatValue";
 /// Group - Interest change. 
 pub const GROUP_INTEREST_CHANGE: &str = "IntChange";
-/// Group - Color. 
-pub const GROUP_COLOR: &str = "Color";
-/// Name - Font - Primary. 
-pub const NAME_FONT_PRIMARY: &str = "Primary";
-/// Name - Font - Alternate 2. 
-pub const NAME_FONT_ALTERNATE2: &str = "Alternate2";
-/// Name - Font - Alternate 3. 
-pub const NAME_FONT_ALTERNATE3: &str = "Alternate3";
-/// Name - Font - Caption. 
-pub const NAME_FONT_CAPTION: &str = "Caption";
-/// Name - Font - Statistics. 
-pub const NAME_FONT_STATISTICS: &str = "Statistics";
-/// Name - Font - Summary. 
-pub const NAME_FONT_SUMMARY: &str = "Summary";
+
 /// Name - Column order. 
 pub const NAME_COLUMNS: &str = "Columns";
-/// Name - Grid. 
-pub const NAME_GRID: &str = "Grid";
 /// Name - Event type. 
 pub const NAME_EVENT_TYPE: &str = "EventType";
 /// Name - Status. 
 pub const NAME_STATUS: &str = "Status";
 /// Name - Summary. 
 pub const NAME_SUMMARY: &str = "Summary";
-/// Name - Sequence. 
-pub const NAME_SEQUENCE: &str = "Sequence";
-/// Name - Margin. 
-pub const NAME_MARGIN: &str = "Margin";
-/// Name - Header - First. 
-pub const NAME_HEADER_FIRST: &str = "HeaderFirst";
-/// Name - Header - Next. 
-pub const NAME_HEADER_NEXT: &str = "HeaderNext";
-/// Name - Footer - First. 
-pub const NAME_FOOTER_FIRST: &str = "FooterFirst";
-/// Name - Footer - Next. 
-pub const NAME_FOOTER_NEXT: &str = "FooterNext";
 
 /// Type - Locale. 
 pub const TYPE_LOCALE: &str = "locale";
@@ -228,8 +191,6 @@ pub const USER_EVENT_TYPE_PRINCIPAL_CHANGE: &str = "User_Event_Type_Principal_Ch
 pub const USER_EVENT_TYPE_STATISTIC_VALUE: &str = "User_Event_Type_Statistic_Value";
 /// Resource - New name. 
 pub const USER_NEW: &str = "User_New";
-/// Resource - Stat name. 
-pub const USER_STAT: &str = "User_Stat";
 /// Resource - User status (default). 
 pub const USER_STATUS: &str = "User_Status";
 

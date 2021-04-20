@@ -131,10 +131,7 @@ impl CalcEngine {
             }
 
             if !self.calc_mgr().list_cashflow().cashflow_valid() {
-                let locale = self.calc_mgr().locale(true);
-                self.calc_mgr()
-                    .list_locale()
-                    .select_cashflow_locale(locale.as_str());
+                
                 self.evaluate_cashflow_descriptors();
                 self.evaluate_cashflow_event_type_all();
 
@@ -166,10 +163,6 @@ impl CalcEngine {
         }
 
         if !self.calc_mgr().list_cashflow().cashflow_valid() {
-            let locale = self.calc_mgr().locale(true);
-            self.calc_mgr()
-                .list_locale()
-                .select_cashflow_locale(locale.as_str());
             self.evaluate_cashflow_descriptors();
             self.evaluate_cashflow_event_type_all();
 
@@ -244,11 +237,6 @@ impl CalcEngine {
                 }
 
                 if !self.calc_mgr().list_cashflow().cashflow_valid() {
-                    let locale = self.calc_mgr().locale(true);
-                    calc_engine
-                        .calc_mgr()
-                        .list_locale()
-                        .select_cashflow_locale(locale.as_str());
                     self.evaluate_cashflow_descriptors();
                     self.evaluate_cashflow_event_type_all();
 
@@ -381,11 +369,6 @@ impl CalcEngine {
         let mut statistic_helper: ListStatisticHelper;
         let mut elem_balance_result = ElemBalanceResult::new();
 
-        let locale = self.calc_mgr().locale(true);
-        self.calc_mgr()
-            .list_locale()
-            .select_cashflow_locale(locale.as_str());
-
         {
             let calc_mgr = self.calc_mgr();
             let list_cashflow = calc_mgr.list_cashflow();
@@ -513,11 +496,6 @@ impl CalcEngine {
         let mut list_am: ListAmortization;
         let mut list_statistic_helper: ListStatisticHelper;
 
-        let locale = self.calc_mgr().locale(true);
-        self.calc_mgr()
-            .list_locale()
-            .select_cashflow_locale(locale.as_str());
-
         let elem_balance_result: ElemBalanceResult;
         
         {
@@ -599,11 +577,6 @@ impl CalcEngine {
         let mut list_am: ListAmortization;
         let mut list_statistic_helper: ListStatisticHelper;
         let elem_balance_result: ElemBalanceResult;
-
-        let locale = self.calc_mgr().locale(true);
-        self.calc_mgr()
-            .list_locale()
-            .select_cashflow_locale(locale.as_str());
 
         {
             let calc_mgr = self.calc_mgr();
@@ -700,11 +673,6 @@ impl CalcEngine {
         let mut list_statistic_helper: ListStatisticHelper;
         let elem_balance_result: ElemBalanceResult;
 
-        let locale = self.calc_mgr().locale(true);
-        self.calc_mgr()
-            .list_locale()
-            .select_cashflow_locale(locale.as_str());
-
         {
             let calc_mgr = self.calc_mgr();
             let list_cashflow = calc_mgr.list_cashflow();
@@ -794,11 +762,6 @@ impl CalcEngine {
 
         let mut new_group = String::from(new_group_param);
         let new_list_event: ListEvent;
-
-        let locale = self.calc_mgr().locale(true);
-        self.calc_mgr()
-            .list_locale()
-            .select_cashflow_locale(locale.as_str());
 
         self.calc_mgr().set_updating_json(false);
 
@@ -936,13 +899,15 @@ impl CalcEngine {
             let mut calc_mgr = self.calc_mgr_mut();
             let list_cashflow = calc_mgr.list_cashflow_mut();
 
-            list_cashflow.add_cashflow(new_name.as_str(), elem_cashflow);
+            list_cashflow.add_cashflow(elem_cashflow);
         }
 
-        let locale = self.calc_mgr().locale(true);
-        self.calc_mgr()
-            .list_locale()
-            .select_cashflow_locale(locale.as_str());
+        {
+            let calc_mgr = self.calc_mgr();
+            let list_cashflow = calc_mgr.list_cashflow();
+
+            list_cashflow.get_element_by_name(new_name.as_str(), true);
+        }
 
         self.evaluate_cashflow_descriptors();
         self.evaluate_cashflow_event_type_all();
@@ -1018,11 +983,6 @@ impl CalcEngine {
 
         let mut new_group = String::from(new_group_param);
         let new_list_event: ListEvent;
-
-        let locale = self.calc_mgr().locale(true);
-        self.calc_mgr()
-            .list_locale()
-            .select_cashflow_locale(locale.as_str());
 
         self.calc_mgr().set_updating_json(true);
 
@@ -1140,12 +1100,15 @@ impl CalcEngine {
             let mut calc_mgr = self.calc_mgr_mut();
             let list_cashflow = calc_mgr.list_cashflow_mut();
 
-            list_cashflow.add_cashflow(new_name.as_str(), elem_cashflow);
+            list_cashflow.add_cashflow(elem_cashflow);
         }
 
-        let locale = self.calc_mgr().locale(true);
-        self.calc_mgr().list_locale()
-            .select_cashflow_locale(locale.as_str());
+        {
+            let calc_mgr = self.calc_mgr();
+            let list_cashflow = calc_mgr.list_cashflow();
+
+            list_cashflow.get_element_by_name(new_name.as_str(), true);
+        }
 
         self.evaluate_cashflow_descriptors();
         self.evaluate_cashflow_event_type_all();
@@ -1203,11 +1166,6 @@ impl CalcEngine {
 
     pub fn split_cashflow(&self, all_events: bool) -> Result<ElemBalanceResult, crate::ErrorType> {
         let mut list_event: ListEvent;
-
-        let locale = self.calc_mgr().locale(true);
-        self.calc_mgr()
-            .list_locale()
-            .select_cashflow_locale(locale.as_str());
 
         self.calc_mgr().set_updating_json(true);
 
@@ -1294,11 +1252,6 @@ impl CalcEngine {
 
         let mut new_group: String = String::from(new_group_param);
         let new_list_event: ListEvent;
-
-        let locale = self.calc_mgr().locale(true);
-        self.calc_mgr()
-            .list_locale()
-            .select_cashflow_locale(locale.as_str());
 
         self.calc_mgr().set_updating_json(true);
 
@@ -1443,12 +1396,15 @@ impl CalcEngine {
             let mut calc_mgr = self.calc_mgr_mut();
             let list_cashflow = calc_mgr.list_cashflow_mut();
 
-            list_cashflow.add_cashflow(new_name.as_str(), elem_cashflow);
+            list_cashflow.add_cashflow(elem_cashflow);
         }
 
-        let locale = self.calc_mgr().locale(true);
-        self.calc_mgr().list_locale()
-            .select_cashflow_locale(locale.as_str());
+        {
+            let calc_mgr = self.calc_mgr();
+            let list_cashflow = calc_mgr.list_cashflow();
+
+            list_cashflow.get_element_by_name(new_name.as_str(), true);
+        }
 
         self.evaluate_cashflow_descriptors();
         self.evaluate_cashflow_event_type_all();
@@ -1691,16 +1647,14 @@ impl CalcEngine {
             let mut calc_mgr = self.calc_mgr_mut();
             let list_cashflow = calc_mgr.list_cashflow_mut();
 
-            list_cashflow.add_cashflow(new_name_param, elem_cashflow);
+            list_cashflow.add_cashflow(elem_cashflow);
         }
 
         {
             let calc_mgr = self.calc_mgr();
-            let locale = calc_mgr.locale(true);
+            let list_cashflow = calc_mgr.list_cashflow();
 
-            calc_mgr
-                .list_locale()
-                .select_cashflow_locale(locale.as_str());
+            list_cashflow.get_element_by_name(new_name_param, true);
         }
 
         self.evaluate_cashflow_descriptors();

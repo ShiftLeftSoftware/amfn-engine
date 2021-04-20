@@ -42,7 +42,7 @@ pub struct ElemBalanceResult {
     aux_passive_decrease: Decimal,
     /// Value of passive TYPE_PRINCIPAL_CHANGE increases with auxiliary set.
     aux_passive_increase: Decimal,
-    /// -1 = Negitive cashflow, 1 = Positive cashflow.
+    /// -1 = Negative cashflow, 1 = Positive cashflow.
     polarity: i32,
     /// Accrued interest balance seen.
     acc_balance_seen: bool,
@@ -362,7 +362,7 @@ impl ElemBalanceResult {
     ///
     /// # Return
     ///
-    /// * -1=Negitive cashflow, 1=Positive cashflow.
+    /// * -1=Negative cashflow, 1=Positive cashflow.
 
     pub fn polarity(&self) -> i32 {
         self.polarity

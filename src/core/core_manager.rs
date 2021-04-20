@@ -116,7 +116,7 @@ impl CoreManager {
         );
 
         mgr.map_principal_type.add_key(
-            "Principal_Type_Negitive",
+            "Principal_Type_Negative",
             crate::PrincipalType::Negative as usize,
             0,
         );

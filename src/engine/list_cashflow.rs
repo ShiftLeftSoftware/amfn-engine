@@ -93,6 +93,12 @@ impl ListTrait for ListCashflow {
 
         self.list_index.set(index_param);
 
+        if self.calc_mgr().list_cashflow().index() >= // From deserialize
+            self.calc_mgr().list_cashflow().count() { return true; }
+
+        self.calc_mgr().list_locale().select_cashflow_locale(
+            self.calc_mgr().locale(true).as_str());
+
         true
     }
 }
@@ -293,30 +299,16 @@ impl ListCashflow {
     }
 
     /// Add a new cashflow into the cashflow list.
-    /// If the name results in a duplicate entry, an
-    /// incrementing number starting from 2 is appended to the
-    /// name until a non-duplicate entry is found.
     ///
     /// # Arguments
     ///
-    /// * `name_param` - The name of the cashflow.
-    /// * `list_event_param` - A newly created event list.
-    /// * `elem_preferences_param` - Original existing preferences
-    ///     element (or None to initialize all preferences).
-    /// * `group_param` - Optional template group name.
-    /// * `updating_json` - Updating from Json.
+    /// * `elem_cashflow` - Cashflow element to add.
 
-    pub fn add_cashflow(
-        &mut self,
-        name_param: &str,
+    pub fn add_cashflow(&mut self,
         elem_cashflow: ElemCashflow
     ) {
-
         self.list_cashflow.push(elem_cashflow);
-
         self.sort();
-
-        self.get_element_by_name(name_param, true);
     }
 
     /// Append to the list cashflow.
@@ -388,7 +380,8 @@ impl ListCashflow {
                             panic!("Cannot create cashflow")
                         }
                         Ok(o) => {
-                            list_cashflow.add_cashflow(self.name(), o);
+                            list_cashflow.add_cashflow(o);       
+                            list_cashflow.get_element_by_name(self.name(), true);
                         }
                     }
                 }

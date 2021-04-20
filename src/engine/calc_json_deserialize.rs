@@ -81,28 +81,15 @@ impl CalcJsonDeserialize {
 
         self.calc_mgr().set_updating_json(true);
 
-        if !data["cashflows"].is_null() {
-            let result = self.deserialize_cashflows(&data["cashflows"]);
+        if !data["preferences"].is_null() {
+            let result = self.deserialize_preferences(&data["preferences"]);
             match result {
                 Err(e) => {
                     self.calc_mgr().set_updating_json(false);
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager.borrow_mut().list_cashflow_mut().append_cashflows(o);
-                }
-            }
-        }
-
-        if !data["exchange-rates"].is_null() {
-            let result = self.deserialize_exchange_rates(&data["exchange-rates"]);
-            match result {
-                Err(e) => {
-                    self.calc_mgr().set_updating_json(false);
-                    return Err(e);
-                }
-                Ok(o) => {
-                    self.calc_manager.borrow_mut().set_list_exchange_rate(o);
+                    self.calc_manager.borrow_mut().set_preferences(o);
                 }
             }
         }
@@ -120,15 +107,15 @@ impl CalcJsonDeserialize {
             }
         }
 
-        if !data["preferences"].is_null() {
-            let result = self.deserialize_preferences(&data["preferences"]);
+        if !data["exchange-rates"].is_null() {
+            let result = self.deserialize_exchange_rates(&data["exchange-rates"]);
             match result {
                 Err(e) => {
                     self.calc_mgr().set_updating_json(false);
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager.borrow_mut().set_preferences(o);
+                    self.calc_manager.borrow_mut().set_list_exchange_rate(o);
                 }
             }
         }
@@ -142,6 +129,19 @@ impl CalcJsonDeserialize {
                 }
                 Ok(o) => {
                     self.calc_manager.borrow_mut().list_template_group_mut().append_template_groups(o);
+                }
+            }
+        }
+
+        if !data["cashflows"].is_null() {
+            let result = self.deserialize_cashflows(&data["cashflows"]);
+            match result {
+                Err(e) => {
+                    self.calc_mgr().set_updating_json(false);
+                    return Err(e);
+                }
+                Ok(o) => {
+                    self.calc_manager.borrow_mut().list_cashflow_mut().append_cashflows(o);
                 }
             }
         }
@@ -190,7 +190,8 @@ impl CalcJsonDeserialize {
                     panic!("Add cashflow failed");
                 }
                 Ok(o) => { 
-                    cashflows.add_cashflow(name, o);
+                    cashflows.add_cashflow(o);
+                    cashflows.get_element_by_name(name, true);
                 }
             }
 
