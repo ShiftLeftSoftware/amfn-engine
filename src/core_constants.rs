@@ -9,17 +9,8 @@
 
 /// The application name. 
 pub const APP_NAME: &str = "Amortization Functions (AmFn)";
-/// Version major string. 
-pub const ID_VERSION_MAJOR: &str = "1";
-/// Version minor string. 
-pub const ID_VERSION_MINOR: &str = "0";
 /// Version message. 
-pub const ID_VERSION: &str = "Version: 1.0";
-/// Copyright message. 
-pub const ID_COPYRIGHT: &str = 
-    "Copyright \u{00a9} 2021 ShiftLeft Software.\nAll rights reserved.";
-/// Error prefix. 
-pub const ERROR_PREFIX: &str = ">> ";
+pub const APP_VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
 
 /// Default encoding. 
 pub const DEFAULT_ENCODING: &str = "utf-8";
@@ -46,10 +37,10 @@ pub const DEFAULT_TEMPLATE_COLUMNS: &str =
     "Type~65|Date~50|Date-expr~30|Sort~30|Value~70|Value-expr~30|Periods~50|Periods-expr~30|Frequency~60|Intervals~50|End-date~50|Skip-periods~50|Parameter-list~40|Descriptor-list~40|Event-name~60|Next-name~60";
 /// Default - Event - Column order. 
 pub const DEFAULT_EVENT_COLUMNS: &str = 
-    "Type~65|Date~50|Value~70|Periods~50|Frequency~60|Intervals~50|End-date~50|Skip-periods~50|Parameter-list~40|Descriptor-list~40";
+    "Type~65|Date~50|Value~70|Periods~50|Frequency~60|Intervals~50|End-date~50|Skip-periods~50|Parameter-list~40";
 /// Default - Amortization - Column order. 
 pub const DEFAULT_AM_COLUMNS: &str = 
-    "Sequence~30|Type~65|Date~50|Decrease~70|Increase~70|Interest~70|Value-to-interest~70|Value-to-principal~70|Balance~70|Accrued-balance~70|Frequency~60|Intervals~50|Parameter-list~40|Descriptor-list~40";
+    "Sequence~30|Type~65|Date~50||Decrease~70|Increase~70|Periods~50|Interest~70||Value-to-interest~70|Value-to-principal~70|Balance~70|Accrued-balance~70|Frequency~60|Intervals~50|Parameter-list~40";
 /// Default sort - Principal change. 
 pub const DEFAULT_SORT_PRINCIPAL_CHANGE: usize = 10;
 /// Default sort - Current value. 
@@ -219,6 +210,8 @@ pub const JSON_SERIALIZE_AMORTIZATION_LIST_ROLLUPS: usize = 128;
 /// Serialize cashflows with amortization list (with rollup and detail elements)
 pub const JSON_SERIALIZE_AMORTIZATION_LIST_DETAILS: usize = 256;
 
+/// Error prefix. 
+pub const ERROR_PREFIX: &str = ">> ";
 /// Json line ending. 
 pub const LINE_ENDING: &str = "\n";
 /// Visible delimiter. 

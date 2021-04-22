@@ -7,12 +7,13 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use json::JsonValue;
-use regex::Regex;
-use rust_decimal::prelude::*;
 use std::cell::{Ref, RefCell};
 use std::collections::HashMap;
 use std::rc::Rc;
+
+use regex::Regex;
+use json::JsonValue;
+use rust_decimal::prelude::*;
 
 use super::{
     CalcManager, ElemLocaleFormat, ElemPreferences, ListLocale, ListCashflow, 
@@ -184,8 +185,10 @@ impl CalcJsonDeserialize {
                 }
             }
 
+            let group = String::from(self.calc_mgr().preferences().group());
             let preferences = self.calc_mgr().preferences().copy(true);
-            match cashflows.add_cashflow_prep(name, None, Option::from(preferences), "") {
+
+            match cashflows.add_cashflow_prep(name, None, Option::from(preferences), group.as_str()) {
                 Err(_e) => {
                     panic!("Add cashflow failed");
                 }
@@ -1299,6 +1302,7 @@ impl CalcJsonDeserialize {
             "",
             0,
             crate::DEFAULT_DECIMAL_DIGITS,
+            dec!(0.0),
             -1,
             -1,
             -1,
@@ -1409,6 +1413,13 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(_o) => {}
+            }
+        }
+
+        match prefs["target"].as_str() {
+            None => {}
+            Some(o) => {
+                preferences.set_target(CoreUtility::parse_decimal(o));
             }
         }
 

@@ -638,7 +638,10 @@ impl CalcUtility {
                     result = list_locale.format_decimal_out(list_am.value());
                 }
                 _ => {}
-            },
+            }
+            crate::ColumnType::Periods => {
+                result = format!("{}", list_am.periods());
+            }
             crate::ColumnType::Decrease => {
                 if list_am.principal_decrease() > dec!(0.0) {
                     result = list_locale.format_currency_out(
@@ -652,24 +655,19 @@ impl CalcUtility {
                     );
                 }
             }
-            crate::ColumnType::Increase => match list_am.elem_type() {
-                crate::ExtensionType::InterestChange => {
-                    result = list_locale.format_decimal_out(list_am.value());
+            crate::ColumnType::Increase => {
+                if list_am.principal_increase() > dec!(0.0) {
+                    result = list_locale.format_currency_out(
+                        CalcUtility::convert_currency_event(
+                            &calc_mgr,
+                            cashflow_currency_code.as_str(),
+                            event_currency_code.as_str(),
+                            list_am.principal_increase(),
+                        ),
+                        decimal_digits,
+                    );
                 }
-                _ => {
-                    if list_am.principal_increase() > dec!(0.0) {
-                        result = list_locale.format_currency_out(
-                            CalcUtility::convert_currency_event(
-                                &calc_mgr,
-                                cashflow_currency_code.as_str(),
-                                event_currency_code.as_str(),
-                                list_am.principal_increase(),
-                            ),
-                            decimal_digits,
-                        );
-                    }
-                }
-            },
+            }
             crate::ColumnType::Intervals => {
                 result = format!("{}", list_am.intervals());
             }

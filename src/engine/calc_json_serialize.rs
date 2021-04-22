@@ -7,9 +7,10 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use rust_decimal::prelude::*;
 use std::cell::{Cell, Ref, RefCell};
 use std::rc::Rc;
+
+use rust_decimal::prelude::*;
 
 use super::{
     CalcManager, ElemPreferences, ListCashflow, ListExchangeRate, ListTemplateEvent,
@@ -570,6 +571,7 @@ impl CalcJsonSerialize {
                 buf.push('{');
                 buf.push_str(crate::LINE_ENDING);
                 self.increment_depth();
+
                 buf.push_str(self.indent().as_str());
                 buf.push_str("\"name\": \"");
                 buf.push_str(cashflows.name());
@@ -1387,6 +1389,14 @@ impl CalcJsonSerialize {
         buf.push_str(preferences.fiscal_year_start().to_string().as_str());
         buf.push(',');
         buf.push_str(crate::LINE_ENDING);
+
+        if preferences.target() != dec!(0.0) {
+            buf.push_str(self.indent().as_str());
+            buf.push_str("\"target\": \"");
+            buf.push_str(preferences.target().to_string().as_str());
+            buf.push_str("\",");
+            buf.push_str(crate::LINE_ENDING);
+        }
 
         buf.push_str(self.indent().as_str());
         buf.push_str("\"combine-principal\": ");

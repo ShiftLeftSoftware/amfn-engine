@@ -482,16 +482,13 @@ impl CalcEngine {
     /// is the smallest amount greater than or equal to the given
     /// parameter value.
     ///
-    /// # Arguments
-    ///
-    /// * `balance` - Desired balance or 0.
-    ///
     /// # Return
     ///
     /// * The results from this method or an error code.
 
-    pub fn calculate_yield(&self, balance: Decimal) -> Result<ElemBalanceResult, crate::ErrorType> {
+    pub fn calculate_yield(&self) -> Result<ElemBalanceResult, crate::ErrorType> {
         let updating_json = self.calc_mgr().updating_json();
+        let target_value = self.calc_mgr().target();
 
         let mut list_am: ListAmortization;
         let mut list_statistic_helper: ListStatisticHelper;
@@ -524,7 +521,7 @@ impl CalcEngine {
                         o,
                         &mut list_am,
                         &mut list_statistic_helper,
-                        balance,
+                        target_value,
                     );
                 }
             }
@@ -560,19 +557,13 @@ impl CalcEngine {
     /// is the smallest amount greater than or equal to the given
     /// parameter value.
     ///
-    /// # Arguments
-    ///
-    /// * `target_value` - See description.
-    ///
     /// # Return
     ///
     /// * The results from this method or an error code.
 
-    pub fn calculate_value(
-        &self,
-        target_value: Decimal,
-    ) -> Result<ElemBalanceResult, crate::ErrorType> {
+    pub fn calculate_value(&self) -> Result<ElemBalanceResult, crate::ErrorType> {
         let updating_json = self.calc_mgr().updating_json();
+        let target_value = self.calc_mgr().target();
 
         let mut list_am: ListAmortization;
         let mut list_statistic_helper: ListStatisticHelper;
@@ -655,19 +646,13 @@ impl CalcEngine {
     /// is the smallest amount greater than or equal to the given
     /// parameter value.
     ///
-    /// # Arguments
-    ///
-    /// * `target_value` - See description.
-    ///
     /// # Return
     ///
     /// * The results from this method or an error code.
 
-    pub fn calculate_periods(
-        &self,
-        target_value: Decimal,
-    ) -> Result<ElemBalanceResult, crate::ErrorType> {
+    pub fn calculate_periods(&self) -> Result<ElemBalanceResult, crate::ErrorType> {
         let updating_json = self.calc_mgr().updating_json();
+        let target_value = self.calc_mgr().target();
 
         let mut list_am: ListAmortization;
         let mut list_statistic_helper: ListStatisticHelper;

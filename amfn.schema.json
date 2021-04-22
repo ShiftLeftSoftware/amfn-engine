@@ -796,6 +796,9 @@
 				},
 				"parameter-list": {
 					"$ref": "#/definitions/parameter-list"
+				},
+				"target": {
+					"type": "string"
 				}
 			},
 			"type": "object"

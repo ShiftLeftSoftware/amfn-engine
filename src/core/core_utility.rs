@@ -304,7 +304,7 @@ impl CoreUtility {
 
     pub fn date_now() -> usize {
         let dt: DateTime<Local> = Local::now();
-        (dt.year() as usize) * 10000 + (dt.month0() as usize) * 100 + (dt.day0() as usize)
+        (dt.year() as usize) * 10000 + (dt.month() as usize) * 100 + (dt.day() as usize)
     }
 
     /// Convert a date to a serial number.

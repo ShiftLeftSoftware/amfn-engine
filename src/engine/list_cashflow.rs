@@ -11,6 +11,8 @@ use std::cell::{Cell, Ref, RefMut, RefCell};
 use std::cmp::Ordering::Equal;
 use std::rc::Rc;
 
+use rust_decimal::prelude::*;
+
 use super::{CalcCalculate, CalcManager, ElemCashflow, ElemCashflowStats, ElemPreferences};
 use crate::core::{ElemBalanceResult, ListAmortization, ListEvent, ListStatisticHelper};
 use crate::{ListTrait};
@@ -211,7 +213,7 @@ impl ListCashflow {
         name_param: &str,
         list_event_param: Option<ListEvent>,
         elem_preferences_param: Option<ElemPreferences>,
-        group_param: &str,
+        group_param: &str
     ) -> Result<ElemCashflow, crate::ErrorType> {
         let name: String = String::from(name_param);
         let updating_json = self.calc_mgr().updating_json();
@@ -242,6 +244,7 @@ impl ListCashflow {
                     "",
                     0,
                     crate::DEFAULT_DECIMAL_DIGITS,
+                    dec!(0.0),
                     -1,
                     -1,
                     -1,
@@ -269,6 +272,7 @@ impl ListCashflow {
                     group.as_str(),
                     o.fiscal_year_start(),
                     o.decimal_digits(),
+                    o.target(),
                     o.combine_principal(),
                     o.compress_descriptor(),
                     o.statistic_events(),

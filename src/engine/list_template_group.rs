@@ -11,6 +11,8 @@ use std::cell::{Cell, Ref, RefCell};
 use std::cmp::Ordering::Equal;
 use std::rc::Rc;
 
+use rust_decimal::prelude::*;
+
 use super::{
     CalcExpression, CalcManager, CalcUtility, ElemPreferences, ElemTemplateGroup, ListTemplateEvent,
 };
@@ -292,6 +294,7 @@ impl ListTemplateGroup {
                     "",
                     0,
                     crate::DEFAULT_DECIMAL_DIGITS,
+                    dec!(0.0),
                     -1,
                     -1,
                     -1,
@@ -310,6 +313,7 @@ impl ListTemplateGroup {
                     o.group(),
                     o.fiscal_year_start(),
                     o.decimal_digits(),
+                    o.target(),
                     o.combine_principal(),
                     o.compress_descriptor(),
                     o.statistic_events(),

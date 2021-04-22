@@ -10,6 +10,8 @@
 use std::cell::{Cell, Ref, RefCell};
 use std::rc::Rc;
 
+use rust_decimal::prelude::*;
+
 use super::CalcManager;
 use crate::core::{ListDescriptor, ListParameter};
 use crate::ListTrait;
@@ -30,6 +32,8 @@ pub struct ElemPreferences {
     fiscal_year_start: Cell<usize>,
     /// Number of significant decimal digits.
     decimal_digits: Cell<usize>,
+    /// The target value for calculations (e.g., for loans this is usually 0)
+    target: Decimal,
 
     /// Parameter list.
     list_parameter: ListParameter,
@@ -60,6 +64,7 @@ impl ElemPreferences {
     /// * `group_param` - Group name.
     /// * `fiscal_year_start_param` - Fiscal year start.
     /// * `decimal_digits_param` - Decimal digits.
+    /// * `target_param` - Target value.
     /// * `combine_principal_param` - Combine principal.
     /// * `compress_descriptor_param` - Compress descriptors.
     /// * `statistic_events_param` - Statistic events.
@@ -82,6 +87,7 @@ impl ElemPreferences {
         group_param: &str,
         fiscal_year_start_param: usize,
         decimal_digits_param: usize,
+        target_param: Decimal,
         combine_principal_param: i32,
         compress_descriptor_param: i32,
         statistic_events_param: i32,
@@ -118,6 +124,7 @@ impl ElemPreferences {
             group: String::from(group_param),
             fiscal_year_start: Cell::new(fiscal_year_start_param),
             decimal_digits: Cell::new(decimal_digits_param),
+            target: target_param,
             combine_principal: combine_principal_param,
             compress_descriptor: compress_descriptor_param,
             statistic_events: statistic_events_param,
@@ -192,6 +199,7 @@ impl ElemPreferences {
             self.group.as_str(),
             self.fiscal_year_start.get(),
             self.decimal_digits.get(),
+            self.target,
             self.combine_principal,
             self.compress_descriptor,
             self.statistic_events,
@@ -260,6 +268,16 @@ impl ElemPreferences {
 
     pub fn decimal_digits(&self) -> usize {
         self.decimal_digits.get()
+    }
+
+    /// Get the target value.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn target(&self) -> Decimal {
+        self.target
     }
 
     /// Get the combine principal change events that are identical except
@@ -403,6 +421,16 @@ impl ElemPreferences {
 
     pub fn set_decimal_digits(&self, decimal_digits_param: usize) {
         self.decimal_digits.set(decimal_digits_param);
+    }
+
+    /// Set the target value.
+    ///
+    /// # Arguments
+    ///
+    /// * `target_param` - See description.
+
+    pub fn set_target(&mut self, target_param: Decimal) {
+        self.target = target_param;
     }
 
     /// Set the combine principal change events that are identical except

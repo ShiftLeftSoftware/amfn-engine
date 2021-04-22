@@ -7,9 +7,10 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use rust_decimal::prelude::*;
 use std::cell::{Cell, Ref, RefCell, RefMut};
 use std::rc::Rc;
+
+use rust_decimal::prelude::*;
 
 use super::{
     CalcExpression, CalcUtility, ElemPreferences, ListLocale, ListCashflow, ListExchangeRate, ListTemplateGroup,
@@ -95,6 +96,7 @@ impl CalcManager {
                     "",
                     0,
                     crate::DEFAULT_DECIMAL_DIGITS,
+                    dec!(0.0),
                     -1,
                     -1,
                     -1,
@@ -518,6 +520,22 @@ impl CalcManager {
         }
 
         crate::DEFAULT_ENCODING
+    }
+
+    /// Get the resolved target value.
+    /// The cashflow and user preferences are
+    /// searched in that order.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn target(&self) -> Decimal {
+        let cashflow_preferences = self.list_cashflow().preferences();
+        match cashflow_preferences.as_ref() {
+            None => self.preferences().target(),
+            Some(o) => o.target()
+        }
     }
 
     /// Searches the various descriptor lists, from lowest
