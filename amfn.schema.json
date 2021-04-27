@@ -587,7 +587,7 @@
 				"effective-frequency": {
 					"$ref": "#/definitions/frequency"
 				},
-				"amortization-frequency": {
+				"interest-frequency": {
 					"$ref": "#/definitions/frequency"
 				},
 				"interest-method": {

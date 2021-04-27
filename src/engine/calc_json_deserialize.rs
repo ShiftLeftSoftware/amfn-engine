@@ -973,10 +973,6 @@ impl CalcJsonDeserialize {
             }
             Some(o) => {
                 interest_change.set_round_decimal_digits(CoreUtility::parse_decimal(o));
-
-                if interest_change.round_balance() == crate::RoundType::None {
-                    interest_change.set_round_balance(crate::RoundType::Bankers);
-                }
             }
         }
 
