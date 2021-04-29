@@ -1034,16 +1034,15 @@ impl CalcCalculate {
         let intervals_in_year =
             CoreUtility::intervals_in_year(list_event.frequency(), crate::DEFAULT_DAYS_IN_YEAR);
         let intervals = list_event.intervals();
-        let mut periods = intervals_in_year * intervals * 10;
+        let mut periods: i32 = (intervals_in_year * intervals * 10) as i32;
+        let mut last_periods: i32 = -1;
         let mut iterations: usize = 1;
-        let mut last_periods: usize = 0;
-        let mut new_last_periods = true;
         let mut last_adjust_down = false;
 
         let dec_zero = dec!(0.0);
 
         while iterations <= crate::MAXIMUM_ITERATIONS_CALCULATE_PERIODS {
-            list_event.set_periods_result(periods);
+            list_event.set_periods_result(periods as usize);
 
             let result = self.expand_with_list(list_event, list_am, true);
             match result {
@@ -1087,8 +1086,8 @@ impl CalcCalculate {
             }
 
             if balance == new_value
-                || periods > intervals_in_year * intervals * 100
-                || (((periods as i32) - (last_periods as i32)).abs() <= 1
+                || periods > (intervals_in_year * intervals * 100) as i32
+                || ((periods - last_periods).abs() <= 1
                     && adjust_down != last_adjust_down
                     && if elem_balance_result.polarity() > 0 {
                         balance >= new_value
@@ -1102,18 +1101,15 @@ impl CalcCalculate {
             let orig_periods = periods;
 
             if adjust_down {
-                if new_last_periods || (iterations == 1 && last_periods > periods) {
+                if last_periods < 0 || (iterations == 1 && last_periods > periods) {
                     if periods > last_periods {
                         periods -= (periods - last_periods) * 2;
                     } else {
                         periods -= (last_periods - periods) * 2;
                     }
-                    if periods == 0 {
-                        periods = 1;
-                    }
-                    new_last_periods = false
+                    if periods <= 0 { periods = 1; }
                 } else {
-                    if ((periods as i32) - (last_periods as i32)).abs() <= 1 {
+                    if (periods - last_periods).abs() <= 1 {
                         periods -= 1;
                         if periods < 1 {
                             periods = 1;
@@ -1128,15 +1124,14 @@ impl CalcCalculate {
                 }
             } else {
                 // Adjust up
-                if new_last_periods || (iterations == 1 && last_periods < periods) {
+                if last_periods < 0 || (iterations == 1 && last_periods < periods) {
                     if periods > last_periods {
                         periods += (periods - last_periods) * 2;
                     } else {
                         periods += (last_periods - periods) * 2;
                     }
-                    new_last_periods = false
                 } else {
-                    if ((periods as i32) - (last_periods as i32)).abs() <= 1 {
+                    if (periods - last_periods).abs() <= 1 {
                         periods += 1;
                     } else if periods > last_periods {
                         periods += (periods - last_periods) / 2;
@@ -1151,15 +1146,15 @@ impl CalcCalculate {
             last_adjust_down = adjust_down;
         }
 
-        if periods > intervals_in_year * intervals * 100 {
+        if periods > (intervals_in_year * intervals * 100) as i32 {
             periods = 0;
         }
 
-        if periods == 0 {
+        if periods <= 0 {
             return Err(crate::ErrorType::CalcPeriods);
         }
 
-        list_event.set_periods(periods);
+        list_event.set_periods(periods as usize);
 
         let result_balance = self.balance_cashflow(
             list_am,
@@ -1178,7 +1173,7 @@ impl CalcCalculate {
             }
         }
 
-        elem_balance_result.set_result_integer(periods as i32);
+        elem_balance_result.set_result_integer(periods);
 
         Ok(elem_balance_result)
     }
@@ -1248,6 +1243,7 @@ impl CalcCalculate {
         let simple_calc = event_index + 1 == list_event.count()
             && list_event.periods() <= 1
             && list_event.value_expr().is_empty();
+            
         if simple_calc {
             principal = dec_zero;
         }
@@ -1292,8 +1288,13 @@ impl CalcCalculate {
                 self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
+
             if simple_calc {
-                principal = new_value - balance;
+                if elem_balance_result.polarity() > 0 {
+                    principal = balance - new_value;
+                } else {
+                    principal = new_value - balance;
+                }
                 break;
             }
 
