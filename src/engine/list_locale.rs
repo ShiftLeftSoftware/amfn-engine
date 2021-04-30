@@ -759,8 +759,10 @@ impl ListLocale {
     pub fn zerofill(&self, val: &str, size: usize) -> String {
 
         let mut text = String::from("");
-        while val.len() < size {
+        let mut len = (size as i32) - (val.len() as i32);
+        while len > 0 {
             text.push('0');
+            len -= 1;
         }
 
         format!("{}{}", text, val)
