@@ -17,8 +17,8 @@ use super::{
     ListTemplateGroup,
 };
 use crate::core::{
-    CoreUtility, ElemBalanceResult, ElemCurrentValue, ElemInterestChange, ElemPrincipalChange,
-    ElemStatisticValue, ElemExtension, ExtensionValue, ListAmortization, ListDescriptor, 
+    CoreUtility, ElemBalanceResult, ElemCurrentValue, ElemExtension, ElemInterestChange,
+    ElemPrincipalChange, ElemStatisticValue, ExtensionValue, ListAmortization, ListDescriptor,
     ListEvent, ListParameter,
 };
 use crate::ListTrait;
@@ -303,11 +303,24 @@ impl CalcJsonSerialize {
                 buf.push_str(crate::LINE_ENDING);
                 buf.push_str(self.indent().as_str());
                 buf.push_str("\"sort-order\": ");
-                buf.push_str(list_locale.format_integer_out(list_am.sort_order()).as_str());
+                buf.push_str(
+                    list_locale
+                        .format_integer_out(list_am.sort_order())
+                        .as_str(),
+                );
                 buf.push(',');
                 buf.push_str(crate::LINE_ENDING);
 
-                buf.push_str(self.serialize_extension(list_am.elem_extension(), true, false).as_str());
+                buf.push_str(
+                    self.serialize_extension(
+                        list_am.elem_extension(),
+                        list_am.value(),
+                        list_am.frequency(),
+                        true,
+                        false,
+                    )
+                    .as_str(),
+                );
 
                 match list_am.list_descriptor() {
                     None => {}
@@ -935,7 +948,16 @@ impl CalcJsonSerialize {
                 buf.push(',');
                 buf.push_str(crate::LINE_ENDING);
 
-                buf.push_str(self.serialize_extension(list_event.elem_extension(), true, false).as_str());
+                buf.push_str(
+                    self.serialize_extension(
+                        list_event.elem_extension(),
+                        dec!(0.0),
+                        list_event.frequency(),
+                        true,
+                        false,
+                    )
+                    .as_str(),
+                );
 
                 match list_event.list_parameter() {
                     None => {}
@@ -1056,10 +1078,11 @@ impl CalcJsonSerialize {
     pub fn serialize_extension(
         &self,
         ext: &ElemExtension,
+        value: Decimal,
+        frequency: crate::FrequencyType,
         add_comma: bool,
-        all_data: bool
+        all_data: bool,
     ) -> String {
-
         let mut buf = String::from("");
         buf.push_str(self.indent().as_str());
         buf.push_str("\"extension\": {");
@@ -1071,13 +1094,7 @@ impl CalcJsonSerialize {
                 self.serialize_current_value(o, &mut buf);
             }
             ExtensionValue::InterestChange(o) => {
-                self.serialize_interest_change(
-                    o,
-                    &mut buf,
-                    dec!(0.0),
-                    crate::FrequencyType::OneMonth,
-                    all_data
-                );
+                self.serialize_interest_change(o, &mut buf, value, frequency, all_data);
             }
             ExtensionValue::PrincipalChange(o) => {
                 self.serialize_principal_change(o, &mut buf);
@@ -1114,7 +1131,7 @@ impl CalcJsonSerialize {
         buf: &mut String,
         nar: Decimal,
         frequency: crate::FrequencyType,
-        all_data: bool
+        all_data: bool,
     ) {
         let calc_mgr = self.calc_mgr();
         let decimal_digits = calc_mgr.decimal_digits(false);
@@ -1169,21 +1186,12 @@ impl CalcJsonSerialize {
             buf.push_str(crate::LINE_ENDING);
             self.increment_depth();
             buf.push_str(self.indent().as_str());
-            buf.push_str("\"interest-statistics-dr\": \"");
-            buf.push_str(
-                list_locale
-                    .format_decimal_out(
-                        CoreUtility::rate_nar_to_dr(
-                            nar / dec!(100.0),
-                            interest_change.days_in_year(),
-                        ) * dec!(100.0),
-                    )
-                    .as_str(),
-            );
+            buf.push_str("\"nar\": \"");
+            buf.push_str(list_locale.format_decimal_out(nar).as_str());
             buf.push_str("\",");
             buf.push_str(crate::LINE_ENDING);
             buf.push_str(self.indent().as_str());
-            buf.push_str("\"interest-statistics-ear\": \"");
+            buf.push_str("\"ear\": \"");
             buf.push_str(
                 list_locale
                     .format_decimal_out(
@@ -1198,13 +1206,27 @@ impl CalcJsonSerialize {
             buf.push_str("\",");
             buf.push_str(crate::LINE_ENDING);
             buf.push_str(self.indent().as_str());
-            buf.push_str("\"interest-statistics-pr\": \"");
+            buf.push_str("\"pr\": \"");
             buf.push_str(
                 list_locale
                     .format_decimal_out(
                         CoreUtility::rate_nar_to_pr(
                             nar / dec!(100.0),
                             frequency,
+                            interest_change.days_in_year(),
+                        ) * dec!(100.0),
+                    )
+                    .as_str(),
+            );
+            buf.push_str("\",");
+            buf.push_str(crate::LINE_ENDING);
+            buf.push_str(self.indent().as_str());
+            buf.push_str("\"dr\": \"");
+            buf.push_str(
+                list_locale
+                    .format_decimal_out(
+                        CoreUtility::rate_nar_to_dr(
+                            nar / dec!(100.0),
                             interest_change.days_in_year(),
                         ) * dec!(100.0),
                     )

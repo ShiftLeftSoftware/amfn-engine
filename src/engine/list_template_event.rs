@@ -190,7 +190,7 @@ impl ListTemplateEvent {
         if self.sort_on_add {
             self.sort();
         }
-        
+
         self.get_element_by_name(name.as_str(), true);
 
         if !self.sort_on_add {

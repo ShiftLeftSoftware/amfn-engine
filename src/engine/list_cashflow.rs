@@ -7,7 +7,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::{Cell, Ref, RefMut, RefCell};
+use std::cell::{Cell, Ref, RefCell, RefMut};
 use std::cmp::Ordering::Equal;
 use std::rc::Rc;
 
@@ -15,7 +15,7 @@ use rust_decimal::prelude::*;
 
 use super::{CalcCalculate, CalcManager, ElemCashflow, ElemCashflowStats, ElemPreferences};
 use crate::core::{ElemBalanceResult, ListAmortization, ListEvent, ListStatisticHelper};
-use crate::{ListTrait};
+use crate::ListTrait;
 
 pub struct ListCashflow {
     /// Calculator manager element.
@@ -34,9 +34,7 @@ impl ListTrait for ListCashflow {
     /// Clear all cashflows from the cashflow list.
 
     fn clear(&mut self) {
-        self.calc_mgr()
-            .list_locale()
-            .select_cashflow_locale("");
+        self.calc_mgr().list_locale().select_cashflow_locale("");
 
         self.list_cashflow.clear();
         self.list_index.set(usize::MAX);
@@ -96,10 +94,14 @@ impl ListTrait for ListCashflow {
         self.list_index.set(index_param);
 
         if self.calc_mgr().list_cashflow().index() >= // From deserialize
-            self.calc_mgr().list_cashflow().count() { return true; }
+            self.calc_mgr().list_cashflow().count()
+        {
+            return true;
+        }
 
-        self.calc_mgr().list_locale().select_cashflow_locale(
-            self.calc_mgr().locale(true).as_str());
+        self.calc_mgr()
+            .list_locale()
+            .select_cashflow_locale(self.calc_mgr().locale(true).as_str());
 
         true
     }
@@ -213,7 +215,7 @@ impl ListCashflow {
         name_param: &str,
         list_event_param: Option<ListEvent>,
         elem_preferences_param: Option<ElemPreferences>,
-        group_param: &str
+        group_param: &str,
     ) -> Result<ElemCashflow, crate::ErrorType> {
         let name: String = String::from(name_param);
         let updating_json = self.calc_mgr().updating_json();
@@ -308,9 +310,7 @@ impl ListCashflow {
     ///
     /// * `elem_cashflow` - Cashflow element to add.
 
-    pub fn add_cashflow(&mut self,
-        elem_cashflow: ElemCashflow
-    ) {
+    pub fn add_cashflow(&mut self, elem_cashflow: ElemCashflow) {
         self.list_cashflow.push(elem_cashflow);
         self.sort();
     }
@@ -324,9 +324,13 @@ impl ListCashflow {
     pub fn append_cashflows(&mut self, mut list_cashflow: ListCashflow) {
         loop {
             match list_cashflow.list_cashflow.pop() {
-                None => { break; }
-                Some(o) => { self.list_cashflow.push(o); }
-            }            
+                None => {
+                    break;
+                }
+                Some(o) => {
+                    self.list_cashflow.push(o);
+                }
+            }
         }
     }
 
@@ -344,7 +348,6 @@ impl ListCashflow {
         &self,
         calc_manager_param: &Rc<RefCell<CalcManager>>,
     ) -> ListCashflow {
-
         let mut list_cashflow = ListCashflow::new();
         list_cashflow.set_calc_mgr(calc_manager_param);
 
@@ -378,13 +381,13 @@ impl ListCashflow {
                         self.name(),
                         Option::from(new_list_event),
                         Option::from(preferences),
-                        group.as_str()
+                        group.as_str(),
                     ) {
                         Err(_e) => {
                             panic!("Cannot create cashflow")
                         }
                         Ok(o) => {
-                            list_cashflow.add_cashflow(o);       
+                            list_cashflow.add_cashflow(o);
                             list_cashflow.get_element_by_name(self.name(), true);
                         }
                     }
@@ -410,15 +413,21 @@ impl ListCashflow {
 
         let list_event: &ListEvent;
         match self.list_event() {
-            None => { panic!("Event list index not set"); }
-            Some(o) => { list_event = o; }
+            None => {
+                panic!("Event list index not set");
+            }
+            Some(o) => {
+                list_event = o;
+            }
         }
 
         let orig_index = list_event.index();
         let mut index: usize = 0;
 
         loop {
-            if !list_event.get_element(index) { break; }
+            if !list_event.get_element(index) {
+                break;
+            }
 
             match list_event.elem_type() {
                 crate::ExtensionType::CurrentValue => {
@@ -477,18 +486,21 @@ impl ListCashflow {
         omit_statistic_events: bool,
         updating_json: bool,
     ) -> Result<ListAmortization, crate::ErrorType> {
-
         match self.calc_mgr().list_cashflow().list_amortization() {
             None => Err(crate::ErrorType::Cashflow),
             Some(o) => {
-                let result = self.calc_mgr().list_cashflow().calculate().create_cashflow_output(
-                    o,
-                    include_rollups,
-                    include_details,
-                    compress_descriptor,
-                    omit_statistic_events,
-                    updating_json,
-                );
+                let result = self
+                    .calc_mgr()
+                    .list_cashflow()
+                    .calculate()
+                    .create_cashflow_output(
+                        o,
+                        include_rollups,
+                        include_details,
+                        compress_descriptor,
+                        omit_statistic_events,
+                        updating_json,
+                    );
 
                 match result {
                     Err(e) => Err(e),
@@ -812,7 +824,7 @@ impl ListCashflow {
 
         true
     }
-    
+
     /// Set the list event.
     ///
     /// # Arguments
@@ -917,11 +929,11 @@ impl ListCashflow {
     /// flow preferences are updated.
 
     pub fn update_preferences(&self) -> bool {
-
         match self.preferences() {
             None => false,
             Some(o) => {
-                self.calculate().set_fiscal_year_start(o.fiscal_year_start());
+                self.calculate()
+                    .set_fiscal_year_start(o.fiscal_year_start());
                 self.calculate().set_decimal_digits(o.decimal_digits());
                 true
             }

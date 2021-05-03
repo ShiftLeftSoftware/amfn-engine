@@ -1222,8 +1222,10 @@ impl CoreUtility {
 
     pub fn parse_date(text: &str) -> usize {
         let tokens: Vec<_> = text.split('-').collect();
-        if tokens.len() != 3 { return 0; }
-        
+        if tokens.len() != 3 {
+            return 0;
+        }
+
         let yyyy = tokens[0].parse::<usize>().unwrap_or(2000);
         let mm = tokens[1].parse::<usize>().unwrap_or(1);
         let dd = tokens[2].parse::<usize>().unwrap_or(1);

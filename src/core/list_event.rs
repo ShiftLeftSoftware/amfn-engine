@@ -200,7 +200,7 @@ impl ListEvent {
         );
 
         self.list_event.push(new_elem_event);
-        
+
         if self.sort_on_add.get() {
             self.sort();
         }
@@ -746,11 +746,7 @@ impl ListEvent {
     ///
     /// * True if successful, otherwise false.
 
-    pub fn get_element_by_date(
-        &self,
-        date_param: usize,
-        sort_param: usize,
-    ) -> bool {
+    pub fn get_element_by_date(&self, date_param: usize, sort_param: usize) -> bool {
         for (index, elem) in self.list_event.iter().enumerate() {
             if elem.event_date() == date_param && elem.sort_order() == sort_param {
                 self.set_index(index);

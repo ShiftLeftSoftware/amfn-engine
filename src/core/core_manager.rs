@@ -7,7 +7,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use super::{ListKey};
+use super::ListKey;
 
 pub struct CoreManager {
     /// Table of event type mappings.
@@ -69,7 +69,7 @@ impl CoreManager {
             operators: ListKey::new(),
             functions: ListKey::new(),
             map_error: ListKey::new(),
-            map_col_names: ListKey::new()
+            map_col_names: ListKey::new(),
         };
         // Initialize engine lists
 
@@ -603,11 +603,8 @@ impl CoreManager {
         mgr.map_col_names
             .add_key("Sequence", crate::ColumnType::Sequence as usize, 0);
 
-        mgr.map_col_names.add_key(
-            "Type",
-            crate::ColumnType::EventType as usize,
-            0,
-        );
+        mgr.map_col_names
+            .add_key("Type", crate::ColumnType::EventType as usize, 0);
 
         mgr.map_col_names.add_key(
             "Date",
@@ -656,11 +653,8 @@ impl CoreManager {
             crate::MAPCOLNAMES_EDITABLE,
         );
 
-        mgr.map_col_names.add_key(
-            "Skip-periods",
-            crate::ColumnType::SkipPeriods as usize,
-            0,
-        );
+        mgr.map_col_names
+            .add_key("Skip-periods", crate::ColumnType::SkipPeriods as usize, 0);
 
         mgr.map_col_names.add_key(
             "Intervals",
@@ -674,11 +668,8 @@ impl CoreManager {
             crate::MAPCOLNAMES_EDITABLE,
         );
 
-        mgr.map_col_names.add_key(
-            "End-date",
-            crate::ColumnType::EndDate as usize,
-            0
-        );
+        mgr.map_col_names
+            .add_key("End-date", crate::ColumnType::EndDate as usize, 0);
 
         mgr.map_col_names.add_key(
             "Descriptor-list",
@@ -727,12 +718,14 @@ impl CoreManager {
 
         mgr.map_col_names.add_key(
             "Event-name",
-            crate::ColumnType::EventName as usize, 
-            crate::MAPCOLNAMES_EDITABLE);
+            crate::ColumnType::EventName as usize,
+            crate::MAPCOLNAMES_EDITABLE,
+        );
         mgr.map_col_names.add_key(
             "Next-name",
-            crate::ColumnType::NextName as usize, 
-            crate::MAPCOLNAMES_EDITABLE);
+            crate::ColumnType::NextName as usize,
+            crate::MAPCOLNAMES_EDITABLE,
+        );
 
         mgr
     }

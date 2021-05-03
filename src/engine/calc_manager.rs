@@ -13,11 +13,12 @@ use std::rc::Rc;
 use rust_decimal::prelude::*;
 
 use super::{
-    CalcExpression, CalcUtility, ElemPreferences, ListLocale, ListCashflow, ListExchangeRate, ListTemplateGroup,
+    CalcExpression, CalcUtility, ElemPreferences, ListCashflow, ListExchangeRate, ListLocale,
+    ListTemplateGroup,
 };
 use crate::core::{
-    CoreManager, CoreUtility, ElemColumn, ElemSymbol, ElemExtension, ListAmortization, ListColumn, ListDescriptor,
-    ListEvent, ListSummary,
+    CoreManager, CoreUtility, ElemColumn, ElemExtension, ElemSymbol, ListAmortization, ListColumn,
+    ListDescriptor, ListEvent, ListSummary,
 };
 use crate::ListTrait;
 
@@ -534,7 +535,7 @@ impl CalcManager {
         let cashflow_preferences = self.list_cashflow().preferences();
         match cashflow_preferences.as_ref() {
             None => self.preferences().target(),
-            Some(o) => o.target()
+            Some(o) => o.target(),
         }
     }
 
@@ -826,9 +827,7 @@ impl CalcManager {
             return String::from(self.preferences().locale_str());
         }
 
-        String::from(
-            self.list_locale.get_locale_str(false),
-        )
+        String::from(self.list_locale.get_locale_str(false))
     }
 
     /// Get the statistic events from the compressed
@@ -1108,7 +1107,7 @@ impl CalcManager {
         CalcUtility::parse_summary(self.calc_manager())
     }
 
-    /// Set the appropriate event list value and 
+    /// Set the appropriate event list value and
     /// return it as a string.
     ///
     /// # Arguments
@@ -1130,13 +1129,16 @@ impl CalcManager {
         col_type: &str,
         col_code: &str,
         index: usize,
-        value_param: &str
+        value_param: &str,
     ) -> String {
         CalcUtility::set_event_value(
-            calc_manager, 
+            calc_manager,
             col_name_index,
             col_type,
-            col_code, index, value_param)
+            col_code,
+            index,
+            value_param,
+        )
     }
 
     /// Set the appropriate event list extension values.
@@ -1154,10 +1156,9 @@ impl CalcManager {
     pub fn util_set_extension_values(
         calc_manager: &Rc<RefCell<CalcManager>>,
         index: usize,
-        ext_param: &ElemExtension
+        ext_param: &ElemExtension,
     ) -> bool {
-        CalcUtility::set_extension_values(
-            calc_manager, index, ext_param)
+        CalcUtility::set_extension_values(calc_manager, index, ext_param)
     }
 
     /// Set the appropriate event list parameter values.
@@ -1175,10 +1176,9 @@ impl CalcManager {
     pub fn util_set_parameter_values(
         calc_manager: &Rc<RefCell<CalcManager>>,
         index: usize,
-        parameters: Vec<String>
+        parameters: Vec<String>,
     ) -> bool {
-        CalcUtility::set_parameter_values(
-            calc_manager, index, parameters)
+        CalcUtility::set_parameter_values(calc_manager, index, parameters)
     }
 
     /// Calculates number of intervals between two dates.

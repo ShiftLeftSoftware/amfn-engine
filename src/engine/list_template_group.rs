@@ -190,27 +190,25 @@ impl ListTemplateGroup {
     ///
     /// * ERROR_NONE if successful, otherwise error code.
 
-    pub fn add_template_group(
-        &mut self,
-        group_param: &str
-    ) -> Result<(), crate::ErrorType> {
-
+    pub fn add_template_group(&mut self, group_param: &str) -> Result<(), crate::ErrorType> {
         let prefs = self
             .calc_mgr()
             .preferences()
             .copy(self.calc_mgr().updating_json());
 
         match self.create_template_group(group_param, Option::from(prefs), true) {
-            Err(e) => { return Err(e); }
+            Err(e) => {
+                return Err(e);
+            }
             Ok(o) => {
                 self.list_template_group.push(o);
-        
+
                 if self.sort_on_add() {
                     self.sort();
                 }
-        
+
                 self.get_element_by_group(group_param, true);
-            
+
                 if !self.sort_on_add() {
                     self.sort_updated.set(true);
                 }
@@ -229,9 +227,13 @@ impl ListTemplateGroup {
     pub fn append_template_groups(&mut self, mut list_template_group: ListTemplateGroup) {
         loop {
             match list_template_group.list_template_group.pop() {
-                None => { break; }
-                Some(o) => { self.list_template_group.push(o); }
-            }            
+                None => {
+                    break;
+                }
+                Some(o) => {
+                    self.list_template_group.push(o);
+                }
+            }
         }
     }
 

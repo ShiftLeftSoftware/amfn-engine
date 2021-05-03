@@ -31,7 +31,7 @@ pub struct ElemColumn {
     /// Width of column.
     column_width: usize,
     /// Column exclude.
-    column_editable: bool
+    column_editable: bool,
 }
 
 /// The column element implementation.
@@ -71,7 +71,7 @@ impl ElemColumn {
         format_param: crate::FormatType,
         decimal_digits_param: usize,
         column_width_param: usize,
-        column_editable_param: bool
+        column_editable_param: bool,
     ) -> ElemColumn {
         ElemColumn {
             col_name: String::from(col_name_param),
@@ -85,7 +85,7 @@ impl ElemColumn {
             format: format_param,
             decimal_digits: decimal_digits_param,
             column_width: column_width_param,
-            column_editable: column_editable_param
+            column_editable: column_editable_param,
         }
     }
 

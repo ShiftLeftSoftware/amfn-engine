@@ -171,7 +171,7 @@ impl ListColumn {
             format_param,
             decimal_digits_param,
             column_width_param,
-            column_editable_param
+            column_editable_param,
         );
 
         let new_index: usize = self.list_column.len();
@@ -191,7 +191,7 @@ impl ListColumn {
             None => {
                 panic!("Column list index not set");
             }
-            Some(o) => o
+            Some(o) => o,
         }
     }
 

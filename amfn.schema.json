@@ -736,6 +736,12 @@
 				"name": {
 					"type": "string"
 				},
+				"label": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
 				"parameter-type": {
 					"$ref": "#/definitions/parameter-type"
 				},

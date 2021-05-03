@@ -130,13 +130,21 @@ impl ListParameter {
     /// # Arguments
     ///
     /// * `name_param` - Name of the parameter.
-    /// * `elem_level_param` - Element level
+    /// * `label_param` - Label of the parameter.
+    /// * `desc_param` - Description of the parameter.
+    /// * `updating_json_param` - Updating from json.
     ///
     /// # Return
     ///
     /// * True if successful, otherwise false.
 
-    pub fn add_parameter(&mut self, name_param: &str, updating_json_param: bool) -> bool {
+    pub fn add_parameter(
+        &mut self,
+        name_param: &str,
+        label_param: &str,
+        desc_param: &str,
+        updating_json_param: bool,
+    ) -> bool {
         let mut name: String = String::from(name_param);
         let mut update_element: bool = false;
 
@@ -169,7 +177,8 @@ impl ListParameter {
                 }
             }
         }
-        let new_elem_param: ElemParameter = ElemParameter::new(name.as_str());
+        let new_elem_param: ElemParameter =
+            ElemParameter::new(name.as_str(), label_param, desc_param);
 
         self.list_parameter.push(new_elem_param);
 
@@ -222,7 +231,12 @@ impl ListParameter {
                 continue; // Already present
             }
 
-            list_parameter.add_parameter(elem.name(), updating_json_param);
+            list_parameter.add_parameter(
+                elem.name(),
+                elem.label(),
+                elem.description(),
+                updating_json_param,
+            );
 
             match elem.param_type() {
                 crate::TokenType::Integer => {
@@ -289,6 +303,36 @@ impl ListParameter {
                 panic!("Parameter list index not set");
             }
             Some(o) => o.name(),
+        }
+    }
+
+    /// Get the label of the parameter.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn label(&self) -> &str {
+        match self.list_parameter.get(self.list_index.get()) {
+            None => {
+                panic!("Parameter list index not set");
+            }
+            Some(o) => o.label(),
+        }
+    }
+
+    /// Get the description of the parameter.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn description(&self) -> &str {
+        match self.list_parameter.get(self.list_index.get()) {
+            None => {
+                panic!("Parameter list index not set");
+            }
+            Some(o) => o.description(),
         }
     }
 
@@ -470,6 +514,46 @@ impl ListParameter {
             None => false,
             Some(o) => {
                 o.set_name(name_param);
+                true
+            }
+        }
+    }
+
+    /// Set the label of the parameter.
+    ///
+    /// # Arguments
+    ///
+    /// * `name_param` - See description.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
+
+    pub fn set_label(&mut self, label_param: &str) -> bool {
+        match self.list_parameter.get_mut(self.list_index.get()) {
+            None => false,
+            Some(o) => {
+                o.set_label(label_param);
+                true
+            }
+        }
+    }
+
+    /// Set the description of the parameter.
+    ///
+    /// # Arguments
+    ///
+    /// * `name_param` - See description.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
+
+    pub fn set_description(&mut self, desc_param: &str) -> bool {
+        match self.list_parameter.get_mut(self.list_index.get()) {
+            None => false,
+            Some(o) => {
+                o.set_description(desc_param);
                 true
             }
         }

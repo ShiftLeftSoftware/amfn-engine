@@ -14,6 +14,10 @@ use super::ElemSymbol;
 pub struct ElemParameter {
     /// Name of the parameter.
     name: String,
+    /// Label of the parameter.
+    label: String,
+    /// Description of the parameter (i.e., help).
+    description: String,
     /// Parameter symbol.
     symbol: ElemSymbol,
 }
@@ -26,14 +30,18 @@ impl ElemParameter {
     /// # Arguments
     ///
     /// * `name_param` - Parameter name.
+    /// * `label_param` - Parameter label.
+    /// * `desc_param` - Parameter description.
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn new(name_param: &str) -> ElemParameter {
+    pub fn new(name_param: &str, label_param: &str, desc_param: &str) -> ElemParameter {
         ElemParameter {
             name: String::from(name_param),
+            label: String::from(label_param),
+            description: String::from(desc_param),
             symbol: ElemSymbol::new(),
         }
     }
@@ -64,6 +72,26 @@ impl ElemParameter {
 
     pub fn name(&self) -> &str {
         self.name.as_str()
+    }
+
+    /// Get the parameter label.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn label(&self) -> &str {
+        self.label.as_str()
+    }
+
+    /// Get the parameter description.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn description(&self) -> &str {
+        self.description.as_str()
     }
 
     /// Get the parameter type.
@@ -124,6 +152,26 @@ impl ElemParameter {
 
     pub fn set_name(&mut self, name_param: &str) {
         self.name = String::from(name_param);
+    }
+
+    /// Set the parameter label.
+    ///
+    /// # Arguments
+    ///
+    /// * `label_param` - See description.
+
+    pub fn set_label(&mut self, label_param: &str) {
+        self.label = String::from(label_param);
+    }
+
+    /// Set the parameter description.
+    ///
+    /// # Arguments
+    ///
+    /// * `desc_param` - See description.
+
+    pub fn set_description(&mut self, desc_param: &str) {
+        self.description = String::from(desc_param);
     }
 
     /// Set the parameter type.

@@ -76,76 +76,76 @@ impl CalcUtility {
         let updating_json = calc_manager.borrow().updating_json();
         match elem_type {
             crate::ExtensionType::CurrentValue => {
-                list_parameter.add_parameter("intEOM", updating_json);
+                list_parameter.add_parameter("intEOM", "", "", updating_json);
                 list_parameter.set_integer(if elem_extension.cv_eom() { 1 } else { 0 });
-                list_parameter.add_parameter("intPassive", updating_json);
+                list_parameter.add_parameter("intPassive", "", "", updating_json);
                 list_parameter.set_integer(if elem_extension.cv_passive() { 1 } else { 0 });
-                list_parameter.add_parameter("intPresent", updating_json);
+                list_parameter.add_parameter("intPresent", "", "", updating_json);
                 list_parameter.set_integer(if elem_extension.cv_present() { 1 } else { 0 });
             }
             crate::ExtensionType::InterestChange => {
-                list_parameter.add_parameter("strMethod", updating_json);
+                list_parameter.add_parameter("strMethod", "", "", updating_json);
                 list_parameter.set_string(
                     CoreUtility::get_interest_method_mnemonic_short(elem_extension.ic_method())
                         .as_str(),
                 );
-                list_parameter.add_parameter("strDayCount", updating_json);
+                list_parameter.add_parameter("strDayCount", "", "", updating_json);
                 list_parameter.set_string(
                     CoreUtility::get_day_count_basis_mnemonic_short(
                         elem_extension.ic_day_count_basis(),
                     )
                     .as_str(),
                 );
-                list_parameter.add_parameter("intDaysInYear", updating_json);
+                list_parameter.add_parameter("intDaysInYear", "", "", updating_json);
                 list_parameter.set_integer(elem_extension.ic_days_in_year());
-                list_parameter.add_parameter("strEffFreq", updating_json);
+                list_parameter.add_parameter("strEffFreq", "", "", updating_json);
                 list_parameter.set_string(
                     CoreUtility::get_frequency_mnemonic(elem_extension.ic_effective_frequency())
                         .as_str(),
                 );
-                list_parameter.add_parameter("strExpFreq", updating_json);
+                list_parameter.add_parameter("strExpFreq", "", "", updating_json);
                 list_parameter.set_string(
                     CoreUtility::get_frequency_mnemonic(elem_extension.ic_interest_frequency())
                         .as_str(),
                 );
-                list_parameter.add_parameter("strRound", updating_json);
+                list_parameter.add_parameter("strRound", "", "", updating_json);
                 list_parameter.set_string(
                     CoreUtility::get_round_balance(elem_extension.ic_round_balance()).as_str(),
                 );
-                list_parameter.add_parameter("decRoundDD", updating_json);
+                list_parameter.add_parameter("decRoundDD", "", "", updating_json);
                 list_parameter.set_decimal(elem_extension.ic_round_decimal_digits());
             }
             crate::ExtensionType::StatisticValue => {
-                list_parameter.add_parameter("strName", updating_json);
+                list_parameter.add_parameter("strName", "", "", updating_json);
                 list_parameter.set_string(elem_extension.sv_name());
-                list_parameter.add_parameter("intEOM", updating_json);
+                list_parameter.add_parameter("intEOM", "", "", updating_json);
                 list_parameter.set_integer(if elem_extension.sv_eom() { 1 } else { 0 });
-                list_parameter.add_parameter("intFinal", updating_json);
+                list_parameter.add_parameter("intFinal", "", "", updating_json);
                 list_parameter.set_integer(if elem_extension.sv_is_final() { 1 } else { 0 });
             }
             _ => {
-                list_parameter.add_parameter("strPrinType", updating_json);
+                list_parameter.add_parameter("strPrinType", "", "", updating_json);
                 list_parameter.set_string(
                     CoreUtility::get_principal_type_mnemonic_short(elem_extension.pc_type())
                         .as_str(),
                 );
-                list_parameter.add_parameter("intEOM", updating_json);
+                list_parameter.add_parameter("intEOM", "", "", updating_json);
                 list_parameter.set_integer(if elem_extension.pc_eom() { 1 } else { 0 });
-                list_parameter.add_parameter("intPrinFirst", updating_json);
+                list_parameter.add_parameter("intPrinFirst", "", "", updating_json);
                 list_parameter.set_integer(if elem_extension.pc_principal_first() {
                     1
                 } else {
                     0
                 });
-                list_parameter.add_parameter("intBalStats", updating_json);
+                list_parameter.add_parameter("intBalStats", "", "", updating_json);
                 list_parameter.set_integer(if elem_extension.pc_balance_statistics() {
                     1
                 } else {
                     0
                 });
-                list_parameter.add_parameter("intAuxiliary", updating_json);
+                list_parameter.add_parameter("intAuxiliary", "", "", updating_json);
                 list_parameter.set_integer(if elem_extension.pc_auxiliary() { 1 } else { 0 });
-                list_parameter.add_parameter("intPassive", updating_json);
+                list_parameter.add_parameter("intPassive", "", "", updating_json);
                 list_parameter.set_integer(if elem_extension.pc_aux_passive() {
                     1
                 } else {
@@ -185,7 +185,8 @@ impl CalcUtility {
             }
 
             if list_descriptor.desc_type() == crate::TYPE_LOCALE {
-                calc_mgr.list_locale()
+                calc_mgr
+                    .list_locale()
                     .select_event_locale(list_descriptor.code());
             }
 
@@ -390,7 +391,8 @@ impl CalcUtility {
                                 crate::FormatType::Currency => match o.value().parse::<Decimal>() {
                                     Err(_e) => {}
                                     Ok(o2) => {
-                                        result = list_locale.format_currency_out(o2, decimal_digits);
+                                        result =
+                                            list_locale.format_currency_out(o2, decimal_digits);
                                     }
                                 },
                                 _ => {
@@ -442,7 +444,9 @@ impl CalcUtility {
             crate::ColumnType::SkipPeriods => {
                 if list_event.skip_mask_len() > 0 {
                     result = CoreUtility::skip_mask_to_string(
-                        list_event.skip_mask_len(), list_event.skip_mask());
+                        list_event.skip_mask_len(),
+                        list_event.skip_mask(),
+                    );
                 }
             }
             crate::ColumnType::Intervals => {
@@ -638,7 +642,7 @@ impl CalcUtility {
                     result = list_locale.format_decimal_out(list_am.value());
                 }
                 _ => {}
-            }
+            },
             crate::ColumnType::Periods => {
                 result = format!("{}", list_am.periods());
             }
@@ -1000,7 +1004,8 @@ impl CalcUtility {
                 }
 
                 column_editable = (calc_manager.borrow().mgr().map_col_names().value_ext()
-                    & crate::MAPCOLNAMES_EDITABLE) != 0;
+                    & crate::MAPCOLNAMES_EDITABLE)
+                    != 0;
             } else {
                 desc_text = calc_manager.borrow().descriptor_value(
                     crate::GROUP_COLVALUE,
@@ -1158,7 +1163,7 @@ impl CalcUtility {
                 format,
                 decimal_digits,
                 width,
-                column_editable
+                column_editable,
             );
         }
         list_column
@@ -1418,7 +1423,7 @@ impl CalcUtility {
         list_summary
     }
 
-    /// Set the appropriate event list value and 
+    /// Set the appropriate event list value and
     /// return it as a string.
     ///
     /// # Arguments
@@ -1440,17 +1445,17 @@ impl CalcUtility {
         col_type: &str,
         col_code: &str,
         index: usize,
-        value_param: &str
+        value_param: &str,
     ) -> String {
-        let calc_manager = Rc::clone(calc_manager_param);  
+        let calc_manager = Rc::clone(calc_manager_param);
         let mut result = String::from("");
-        
+
         {
             let calc_mgr = calc_manager.borrow();
             let list_locale = calc_mgr.list_locale();
             let list_cashflow = calc_mgr.list_cashflow();
             let list_event_opt = list_cashflow.list_event();
-    
+
             let list_event: &ListEvent;
             match list_event_opt.as_ref() {
                 None => {
@@ -1461,13 +1466,15 @@ impl CalcUtility {
                 }
             }
 
-            if !list_event.get_element(index) { return result; }
+            if !list_event.get_element(index) {
+                return result;
+            }
 
             list_locale.select_event_locale("");
             if col_type == crate::TYPE_LOCALE && !col_code.is_empty() {
                 list_locale.select_event_locale(col_code);
             }
-        
+
             match CoreUtility::get_col_name(col_name_index) {
                 crate::ColumnType::Date => {
                     result = list_locale.format_date_in(value_param);
@@ -1523,7 +1530,7 @@ impl CalcUtility {
                     list_event = o;
                 }
             }
-        
+
             match CoreUtility::get_col_name(col_name_index) {
                 crate::ColumnType::Date => {
                     list_event.set_event_date(CoreUtility::parse_date(result.as_str()));
@@ -1553,7 +1560,8 @@ impl CalcUtility {
                     list_event.set_periods_expr(result.as_str());
                 }
                 crate::ColumnType::SkipPeriods => {
-                    let (skip_mask_len, skip_mask) = CoreUtility::string_to_skip_mask(result.as_str());
+                    let (skip_mask_len, skip_mask) =
+                        CoreUtility::string_to_skip_mask(result.as_str());
                     list_event.set_skip_mask(skip_mask_len, skip_mask);
                 }
                 crate::ColumnType::Intervals => {
@@ -1566,13 +1574,25 @@ impl CalcUtility {
             }
         }
 
-        let column = ElemColumn::new("", col_name_index, 
-            "", "", "", "", "", "", crate::FormatType::String, 0, 0, false);
+        let column = ElemColumn::new(
+            "",
+            col_name_index,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            crate::FormatType::String,
+            0,
+            0,
+            false,
+        );
         result = CalcUtility::get_event_value(calc_manager_param, &column);
 
         {
             let calc_mgr = calc_manager.borrow();
-            let list_locale = calc_mgr.list_locale();    
+            let list_locale = calc_mgr.list_locale();
             list_locale.select_event_locale("");
         }
 
@@ -1594,9 +1614,9 @@ impl CalcUtility {
     pub fn set_extension_values(
         calc_manager_param: &Rc<RefCell<CalcManager>>,
         index: usize,
-        ext_param: &ElemExtension
+        ext_param: &ElemExtension,
     ) -> bool {
-        let calc_manager = Rc::clone(calc_manager_param);  
+        let calc_manager = Rc::clone(calc_manager_param);
         let mut calc_mgr = calc_manager.borrow_mut();
         let list_cashflow = calc_mgr.list_cashflow_mut();
         let mut list_event_opt = list_cashflow.list_event_mut();
@@ -1612,9 +1632,13 @@ impl CalcUtility {
         }
 
         let orig_list_index = list_event.index();
-        if !list_event.get_element(index) { return false; }
+        if !list_event.get_element(index) {
+            return false;
+        }
 
-        if list_event.elem_type() != ext_param.extension_type() { return false; }
+        if list_event.elem_type() != ext_param.extension_type() {
+            return false;
+        }
 
         let elem_type = list_event.elem_type();
         let ext = list_event.elem_extension_mut();
@@ -1649,11 +1673,11 @@ impl CalcUtility {
             }
         }
 
-        list_event.get_element(orig_list_index);          
- 
+        list_event.get_element(orig_list_index);
+
         true
     }
-    
+
     /// Set the appropriate event list parameter values.
     ///
     /// # Arguments
@@ -1669,38 +1693,51 @@ impl CalcUtility {
     pub fn set_parameter_values(
         calc_manager: &Rc<RefCell<CalcManager>>,
         index_param: usize,
-        parameters: Vec<String>
+        parameters: Vec<String>,
     ) -> bool {
-
         let mut calc_mgr = calc_manager.borrow_mut();
         let list_cashflow = calc_mgr.list_cashflow_mut();
 
         let list_event: &mut ListEvent;
         match list_cashflow.list_event_mut() {
-            None => { return false; }
-            Some(o) => { list_event = o; }
+            None => {
+                return false;
+            }
+            Some(o) => {
+                list_event = o;
+            }
         }
 
         let orig_index = list_event.index();
-        if !list_event.get_element(index_param) { return false; }
+        if !list_event.get_element(index_param) {
+            return false;
+        }
 
         let list_parameter: &mut ListParameter;
         match list_event.list_parameter_mut() {
-            None => { return false; }
-            Some(o) => { list_parameter = o; }
+            None => {
+                return false;
+            }
+            Some(o) => {
+                list_parameter = o;
+            }
         }
 
         let orig_param_index = list_parameter.index();
         let mut index: usize = 0;
         loop {
-            if !list_parameter.get_element(index) { break; }
+            if !list_parameter.get_element(index) {
+                break;
+            }
 
             match list_parameter.param_type() {
                 crate::TokenType::Integer => {
-                    list_parameter.set_integeri(CoreUtility::parse_integeri(parameters[index].as_str()));
+                    list_parameter
+                        .set_integeri(CoreUtility::parse_integeri(parameters[index].as_str()));
                 }
                 crate::TokenType::Decimal => {
-                    list_parameter.set_decimal(CoreUtility::parse_decimal(parameters[index].as_str()));                    
+                    list_parameter
+                        .set_decimal(CoreUtility::parse_decimal(parameters[index].as_str()));
                 }
                 _ => {
                     list_parameter.set_string(parameters[index].as_str());
@@ -1714,5 +1751,4 @@ impl CalcUtility {
 
         true
     }
-
 }

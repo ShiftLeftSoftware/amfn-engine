@@ -179,7 +179,7 @@ impl CalcCalculate {
         }
         self.expr_mut().clear();
         list_statistic_helper.clear();
-        
+
         let mut elem_balance_result = ElemBalanceResult::new();
         self.last_interest_date.set(0);
 
@@ -965,7 +965,7 @@ impl CalcCalculate {
         }
 
         list_event.set_value(calc_interest);
-        
+
         let result_balance = self.balance_cashflow(
             list_am,
             list_statistic_helper,
@@ -984,7 +984,7 @@ impl CalcCalculate {
         }
 
         elem_balance_result.set_result_decimal(calc_interest);
-        
+
         Ok(elem_balance_result)
     }
 
@@ -1075,7 +1075,7 @@ impl CalcCalculate {
                     } else {
                         elem_balance_result.acc_balance()
                     }),
-                    self.decimal_digits.get(),
+                self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
             let mut adjust_down;
@@ -1107,7 +1107,9 @@ impl CalcCalculate {
                     } else {
                         periods -= (last_periods - periods) * 2;
                     }
-                    if periods <= 0 { periods = 1; }
+                    if periods <= 0 {
+                        periods = 1;
+                    }
                 } else {
                     if (periods - last_periods).abs() <= 1 {
                         periods -= 1;
@@ -1243,7 +1245,7 @@ impl CalcCalculate {
         let simple_calc = event_index + 1 == list_event.count()
             && list_event.periods() <= 1
             && list_event.value_expr().is_empty();
-            
+
         if simple_calc {
             principal = dec_zero;
         }
@@ -1307,17 +1309,19 @@ impl CalcCalculate {
 
             if balance == new_value
                 || principal > max_calc_principal
-                || (CoreUtility::round(principal, self.decimal_digits.get(), crate::RoundType::Bankers)
-                    == CoreUtility::round(
-                        last_principal,
-                        self.decimal_digits.get(),
-                        crate::RoundType::Bankers,
-                    )
-                    && (if elem_balance_result.polarity() > 0 {
-                        balance >= new_value
-                    } else {
-                        balance <= new_value
-                    }))
+                || (CoreUtility::round(
+                    principal,
+                    self.decimal_digits.get(),
+                    crate::RoundType::Bankers,
+                ) == CoreUtility::round(
+                    last_principal,
+                    self.decimal_digits.get(),
+                    crate::RoundType::Bankers,
+                ) && (if elem_balance_result.polarity() > 0 {
+                    balance >= new_value
+                } else {
+                    balance <= new_value
+                }))
             {
                 break;
             }
@@ -1379,8 +1383,11 @@ impl CalcCalculate {
 
         if principal > dec_zero {
             // Make sure that rounding does not affect the result in the wrong direction
-            principal =
-                CoreUtility::round(principal, self.decimal_digits.get(), crate::RoundType::Bankers);
+            principal = CoreUtility::round(
+                principal,
+                self.decimal_digits.get(),
+                crate::RoundType::Bankers,
+            );
             if value_expr_am {
                 list_event.set_value_result(principal);
                 let result = self.expand_with_list(list_event, list_am, true);
@@ -1417,7 +1424,7 @@ impl CalcCalculate {
                     } else {
                         elem_balance_result.acc_balance()
                     }),
-                    self.decimal_digits.get(),
+                self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
 
@@ -1559,7 +1566,7 @@ impl CalcCalculate {
                     } else {
                         elem_balance_result.acc_balance()
                     }),
-                    self.decimal_digits.get(),
+                self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
             if balance.abs() >= max_calc_principal {
@@ -1672,7 +1679,7 @@ impl CalcCalculate {
                     } else {
                         elem_balance_result.acc_balance()
                     }),
-                    self.decimal_digits.get(),
+                self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
 
@@ -2512,18 +2519,18 @@ impl CalcCalculate {
 
             if !optimize {
                 let mut new_list_parameter = list_parameter.copy(updating_json);
-                new_list_parameter.add_parameter("intDate", updating_json);
+                new_list_parameter.add_parameter("intDate", "", "", updating_json);
                 new_list_parameter.set_integer(orig_date);
-                new_list_parameter.add_parameter("decValue", updating_json);
+                new_list_parameter.add_parameter("decValue", "", "", updating_json);
                 new_list_parameter.set_decimal(orig_value);
-                new_list_parameter.add_parameter("intPeriods", updating_json);
+                new_list_parameter.add_parameter("intPeriods", "", "", updating_json);
                 new_list_parameter.set_integer(periods);
-                new_list_parameter.add_parameter("intIntervals", updating_json);
+                new_list_parameter.add_parameter("intIntervals", "", "", updating_json);
                 new_list_parameter.set_integer(intervals);
-                new_list_parameter.add_parameter("strFrequency", updating_json);
+                new_list_parameter.add_parameter("strFrequency", "", "", updating_json);
                 new_list_parameter
                     .set_string(CoreUtility::get_frequency_mnemonic(frequency).as_str());
-                new_list_parameter.add_parameter("intEOM", updating_json);
+                new_list_parameter.add_parameter("intEOM", "", "", updating_json);
                 new_list_parameter.set_integer(if new_eom { 1 } else { 0 });
 
                 CalcUtility::evaluate_descriptors(

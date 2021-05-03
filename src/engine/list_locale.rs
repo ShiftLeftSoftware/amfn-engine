@@ -12,9 +12,9 @@ use rust_decimal::prelude::*;
 use std::cell::Cell;
 use std::collections::HashMap;
 
-use crate::core::CoreUtility; 
 use super::{ElemLocale, ElemLocaleFormat};
-use crate::{ListTrait};
+use crate::core::CoreUtility;
+use crate::ListTrait;
 
 pub struct ListLocale {
     list_locale: Vec<ElemLocale>,
@@ -35,7 +35,6 @@ pub struct ListLocale {
 /// List of currently active cashflows list implementation.
 
 impl ListTrait for ListLocale {
-
     /// Clear all locales selects.
 
     fn clear(&mut self) {
@@ -176,9 +175,13 @@ impl ListLocale {
     pub fn append_locales(&mut self, mut list_locale: ListLocale) {
         loop {
             match list_locale.list_locale.pop() {
-                None => { break; }
-                Some(o) => { self.list_locale.push(o); }
-            }            
+                None => {
+                    break;
+                }
+                Some(o) => {
+                    self.list_locale.push(o);
+                }
+            }
         }
     }
 
@@ -387,7 +390,7 @@ impl ListLocale {
     pub fn event_currency_code(&self) -> &str {
         self.get_locale(true).currency_code()
     }
-    
+
     /// Format a date and return the internal format.
     ///
     /// # Arguments
@@ -402,31 +405,47 @@ impl ListLocale {
         let text: String;
 
         match Regex::new(self.get_locale(true).format_in().date_regex()) {
-            Err(_e) => { return String::from(display_val); }
-            Ok(o) => { 
-                text = o.replace(display_val,
-                    self.get_locale(true).format_in().date_replace()).to_string();
+            Err(_e) => {
+                return String::from(display_val);
+            }
+            Ok(o) => {
+                text = o
+                    .replace(
+                        display_val,
+                        self.get_locale(true).format_in().date_replace(),
+                    )
+                    .to_string();
             }
         }
 
         let dd: Vec<_> = text.split('-').collect();
-        if dd.len() != 3 { 
+        if dd.len() != 3 {
             let now = CoreUtility::date_now();
             return format!("{:04}-{:02}-{:02}", now / 10000, now / 100 % 100, now % 100);
         }
 
         let mut year = String::from(dd[0]);
         if year.len() < 3 {
-            let century = if CoreUtility::parse_integer(year.as_str()) < crate::SERIAL_BASE_CENTURY { "20" } else { "19" };
+            let century = if CoreUtility::parse_integer(year.as_str()) < crate::SERIAL_BASE_CENTURY
+            {
+                "20"
+            } else {
+                "19"
+            };
             year = format!("{}{}", century, self.zerofill(year.as_str(), 2));
         }
 
-        if year.len() != 4 { 
+        if year.len() != 4 {
             let now = CoreUtility::date_now();
             return format!("{:04}-{:02}-{:02}", now / 10000, now / 100 % 100, now % 100);
         }
 
-        format!("{:04}-{:02}-{:02}", year , self.zerofill(dd[1], 2), self.zerofill(dd[2], 2))
+        format!(
+            "{:04}-{:02}-{:02}",
+            year,
+            self.zerofill(dd[1], 2),
+            self.zerofill(dd[2], 2)
+        )
     }
 
     /// Format an integer and return the internal format.
@@ -443,8 +462,11 @@ impl ListLocale {
         match Regex::new(self.get_locale(true).format_in().integer_regex()) {
             Err(_e) => String::from(display_val),
             Ok(o) => o
-                .replace(display_val,
-                self.get_locale(true).format_in().integer_replace()).to_string()
+                .replace(
+                    display_val,
+                    self.get_locale(true).format_in().integer_replace(),
+                )
+                .to_string(),
         }
     }
 
@@ -462,8 +484,11 @@ impl ListLocale {
         match Regex::new(self.get_locale(true).format_in().decimal_regex()) {
             Err(_e) => String::from(display_val),
             Ok(o) => o
-                .replace(display_val,
-                self.get_locale(true).format_in().decimal_replace()).to_string()
+                .replace(
+                    display_val,
+                    self.get_locale(true).format_in().decimal_replace(),
+                )
+                .to_string(),
         }
     }
 
@@ -481,8 +506,11 @@ impl ListLocale {
         match Regex::new(self.get_locale(true).format_in().currency_regex()) {
             Err(_e) => String::from(display_val),
             Ok(o) => o
-                .replace(display_val,
-                self.get_locale(true).format_in().currency_replace()).to_string()
+                .replace(
+                    display_val,
+                    self.get_locale(true).format_in().currency_replace(),
+                )
+                .to_string(),
         }
     }
 
@@ -596,7 +624,7 @@ impl ListLocale {
             text.push('.');
         }
 
-        let mut zeros = decimal_digits - fract.len(); 
+        let mut zeros = decimal_digits - fract.len();
         while zeros > 0 {
             text.push('0');
             zeros -= 1;
@@ -757,7 +785,6 @@ impl ListLocale {
     /// * See description.
 
     pub fn zerofill(&self, val: &str, size: usize) -> String {
-
         let mut text = String::from("");
         let mut len = (size as i32) - (val.len() as i32);
         while len > 0 {

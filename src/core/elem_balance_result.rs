@@ -73,7 +73,7 @@ pub struct ElemBalanceResult {
     /// Result decimal.
     result_decimal: Cell<Decimal>,
     /// Result integer.
-    result_integer: Cell<i32>
+    result_integer: Cell<i32>,
 }
 
 /// Balance result definition default implementation.
@@ -171,7 +171,7 @@ impl ElemBalanceResult {
             int_last_index: self.int_last_index,
             result_yield: Cell::new(self.result_yield()),
             result_decimal: Cell::new(self.result_decimal()),
-            result_integer: Cell::new(self.result_integer())
+            result_integer: Cell::new(self.result_integer()),
         }
     }
 

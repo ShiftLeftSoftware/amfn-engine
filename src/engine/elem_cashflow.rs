@@ -54,7 +54,7 @@ impl ElemCashflow {
         name_param: &str,
         preferences_param: ElemPreferences,
         list_event_param: Option<ListEvent>,
-        calculate_param: CalcCalculate
+        calculate_param: CalcCalculate,
     ) -> ElemCashflow {
         let tlist_event: ListEvent;
         match list_event_param {
