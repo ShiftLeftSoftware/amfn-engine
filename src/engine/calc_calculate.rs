@@ -1242,9 +1242,18 @@ impl CalcCalculate {
             return Err(crate::ErrorType::Index);
         }
 
+        let mut last_date: usize = 0;
+        if list_am.count() > 0 {
+            let orig_index = list_am.index();
+            list_am.get_element(list_am.count() - 1);
+            last_date = list_am.event_date();
+            list_am.get_element(orig_index);
+        }
+
         let simple_calc = event_index + 1 == list_event.count()
             && list_event.periods() <= 1
-            && list_event.value_expr().is_empty();
+            && list_event.value_expr().is_empty()
+            && list_event.event_date() >= last_date;
 
         if simple_calc {
             principal = dec_zero;

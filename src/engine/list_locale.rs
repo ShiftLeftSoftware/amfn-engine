@@ -587,7 +587,16 @@ impl ListLocale {
     /// * See description.
 
     pub fn format_decimal_out(&self, val: Decimal) -> String {
-        let text = CoreUtility::util_round(val, crate::MAXIMUM_DISPLAY_DECIMAL_DIGITS).to_string();
+        let mut text = CoreUtility::util_round(val, crate::MAXIMUM_DISPLAY_DECIMAL_DIGITS).to_string();
+
+        let tokens: Vec<_> = text.split('.').collect();
+        if tokens.len() > 1 {
+            let mut fract = String::from(tokens[1]);
+            fract.truncate(crate::MAXIMUM_DISPLAY_DECIMAL_DIGITS);
+            text = format!("{}.{}", tokens[0], fract);
+        } else {
+            text.push_str(".0");
+        }
 
         match Regex::new(self.get_locale(true).format_out().decimal_regex()) {
             Err(_e) => String::from(text.as_str()),
