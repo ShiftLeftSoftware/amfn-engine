@@ -1531,6 +1531,8 @@ impl CalcUtility {
                 }
             }
 
+            list_event.set_sort_on_add(false);
+
             match CoreUtility::get_col_name(col_name_index) {
                 crate::ColumnType::Date => {
                     list_event.set_event_date(CoreUtility::parse_date(result.as_str()));
@@ -1588,7 +1590,26 @@ impl CalcUtility {
             0,
             false,
         );
+
         result = CalcUtility::get_event_value(calc_manager_param, &column);
+
+        {
+            let mut calc_mgr = calc_manager.borrow_mut();
+            let list_cashflow = calc_mgr.list_cashflow_mut();
+            let mut list_event_opt = list_cashflow.list_event_mut();
+
+            let list_event: &mut ListEvent;
+            match list_event_opt.as_mut() {
+                None => {
+                    return result;
+                }
+                Some(o) => {
+                    list_event = o;
+                }
+            }
+
+            list_event.set_sort_on_add(true);
+        }
 
         {
             let calc_mgr = calc_manager.borrow();
