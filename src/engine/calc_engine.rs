@@ -1578,6 +1578,10 @@ impl CalcEngine {
                 return Err(crate::ErrorType::Index);
             }
 
+            if list_template_event.list_event().get_element(0) {
+                frequency = list_template_event.list_event().frequency();
+            }
+
             if !list_cashflow.get_element(cf_index) {
                 return Err(crate::ErrorType::Index);
             }
