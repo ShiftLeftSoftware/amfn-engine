@@ -25,9 +25,9 @@ use crate::ListTrait;
 pub struct CalcManager {
     /// Calc manager element (injected from the engine and cloned).
     calc_manager: Option<Rc<RefCell<CalcManager>>>,
-    /// Core manager element.
-    core_manager: Rc<RefCell<CoreManager>>,
 
+    /// Core manager element.
+    core_manager: CoreManager,
     /// List of locales.
     list_locale: ListLocale,
 
@@ -63,7 +63,7 @@ impl CalcManager {
     pub fn new(core_manager_param: CoreManager) -> CalcManager {
         CalcManager {
             calc_manager: None,
-            core_manager: Rc::new(RefCell::new(core_manager_param)),
+            core_manager: core_manager_param,
             list_locale: ListLocale::new(),
             elem_preferences: None,
             list_cashflow: ListCashflow::new(),
@@ -163,28 +163,8 @@ impl CalcManager {
     ///
     /// * See description.
 
-    pub fn core_manager(&self) -> &Rc<RefCell<CoreManager>> {
+    pub fn core_manager(&self) -> &CoreManager {
         &self.core_manager
-    }
-
-    /// Get the core manager reference.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn mgr(&self) -> Ref<CoreManager> {
-        self.core_manager.borrow()
-    }
-
-    /// Get the mutable core manager reference.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn mgr_mut(&mut self) -> RefMut<CoreManager> {
-        self.core_manager.borrow_mut()
     }
 
     /// Clear all engine elements and lists.
@@ -786,14 +766,13 @@ impl CalcManager {
     ///
     /// * See description.
     pub fn get_error_string(&self, error: crate::ErrorType) -> String {
-        let mgr = self.mgr();
 
         let error_index = error as usize;
-        if !mgr.map_error().get_element_by_value(error_index) {
+        if !self.core_manager.map_error().get_element_by_value(error_index) {
             return format!("{}{}", crate::ERROR_PREFIX, error_index);
         }
 
-        let key = mgr.map_error().key();
+        let key = self.core_manager.map_error().key();
         let fs = String::from(self.list_locale.get_resource(key));
 
         fs

@@ -455,11 +455,12 @@ impl CalcUtility {
             crate::ColumnType::Frequency => {
                 calc_manager
                     .borrow()
-                    .mgr()
+                    .core_manager()
                     .map_frequency()
                     .get_element_by_value(list_event.frequency() as usize);
                 result =
-                    String::from(list_locale.get_resource(calc_mgr.mgr().map_frequency().key()));
+                    String::from(list_locale.get_resource(
+                        calc_mgr.core_manager().map_frequency().key()));
             }
             crate::ColumnType::EndDate => {
                 if list_event.periods() > 1 {
@@ -678,11 +679,12 @@ impl CalcUtility {
             crate::ColumnType::Frequency => {
                 calc_manager
                     .borrow()
-                    .mgr()
+                    .core_manager()
                     .map_frequency()
                     .get_element_by_value(list_am.frequency() as usize);
                 result =
-                    String::from(list_locale.get_resource(calc_mgr.mgr().map_frequency().key()));
+                    String::from(list_locale.get_resource(
+                        calc_mgr.core_manager().map_frequency().key()));
             }
             crate::ColumnType::ParameterList => match list_am.list_parameter().as_ref() {
                 None => {
@@ -967,11 +969,11 @@ impl CalcUtility {
 
             if calc_manager
                 .borrow()
-                .mgr()
+                .core_manager()
                 .map_col_names()
                 .get_element_by_key(col_name)
             {
-                col_name_index = calc_manager.borrow().mgr().map_col_names().value();
+                col_name_index = calc_manager.borrow().core_manager().map_col_names().value();
 
                 col_header = calc_manager.borrow().descriptor_value(
                     crate::GROUP_COLHEADER,
@@ -1003,7 +1005,7 @@ impl CalcUtility {
                     }
                 }
 
-                column_editable = (calc_manager.borrow().mgr().map_col_names().value_ext()
+                column_editable = (calc_manager.borrow().core_manager().map_col_names().value_ext()
                     & crate::MAPCOLNAMES_EDITABLE)
                     != 0;
             } else {
@@ -1042,14 +1044,14 @@ impl CalcUtility {
 
                     if !calc_manager
                         .borrow()
-                        .mgr()
+                        .core_manager()
                         .map_col_names()
                         .get_element_by_key(col_name)
                     {
                         continue;
                     }
 
-                    col_name_index = calc_manager.borrow().mgr().map_col_names().value();
+                    col_name_index = calc_manager.borrow().core_manager().map_col_names().value();
 
                     col_header = calc_manager.borrow().descriptor_value(
                         crate::GROUP_COLHEADER,
