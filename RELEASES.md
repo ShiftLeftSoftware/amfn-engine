@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.3.2 - 2021-05-15
+
+* Simplify structure; eliminate unneeded RefCells
+
+[0.3.2]: https://github.com/ShiftLeftSoftware/amfn-wasm/releases/v0.3.2
+
 ## 0.3.1 - 2021-05-10
 
 * Fix minor issues including grid positioning
