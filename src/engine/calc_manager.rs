@@ -7,24 +7,20 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::{Cell, Ref, RefCell, RefMut};
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use rust_decimal::prelude::*;
 
 use super::{
-    CalcExpression, CalcUtility, ElemPreferences, ListCashflow, ListExchangeRate, ListLocale,
-    ListTemplateGroup,
+    CalcExpression, ElemPreferences, ListCashflow, ListExchangeRate, ListLocale, ListTemplateGroup,
 };
 use crate::core::{
-    CoreManager, CoreUtility, ElemColumn, ElemExtension, ElemSymbol, ListAmortization, ListColumn,
-    ListDescriptor, ListEvent, ListSummary,
+    CoreManager, CoreUtility, ElemSymbol, ListDescriptor, ListEvent,
 };
 use crate::ListTrait;
 
 pub struct CalcManager {
-    /// Calc manager element (injected from the engine and cloned).
-    calc_manager: Option<Rc<RefCell<CalcManager>>>,
 
     /// Core manager element.
     core_manager: CoreManager,
@@ -35,11 +31,9 @@ pub struct CalcManager {
     elem_preferences: Option<ElemPreferences>,
     /// List of cashflows.
     list_cashflow: ListCashflow,
-    /// List of events representing the paste buffer.
-    list_event_pb: Option<ListEvent>,
 
     /// List of exchange rates.
-    list_exchange_rate: Option<ListExchangeRate>,
+    list_exchange_rate: ListExchangeRate,
     /// List of template groups.
     list_template_group: ListTemplateGroup,
 
@@ -62,13 +56,11 @@ impl CalcManager {
 
     pub fn new(core_manager_param: CoreManager) -> CalcManager {
         CalcManager {
-            calc_manager: None,
             core_manager: core_manager_param,
             list_locale: ListLocale::new(),
             elem_preferences: None,
             list_cashflow: ListCashflow::new(),
-            list_event_pb: None,
-            list_exchange_rate: None,
+            list_exchange_rate: ListExchangeRate::new(),
             list_template_group: ListTemplateGroup::new(),
             updating_json: Cell::new(false),
         }
@@ -78,83 +70,26 @@ impl CalcManager {
     ///
     /// # Arguments
     ///
-    /// * `calc_manager_param` - Calculation manager element.
+    /// * `calc_manager` - Calculation manager.
 
-    pub fn init_calc_manager(&mut self, calc_manager_param: &Rc<RefCell<CalcManager>>) {
-        // Clone the engine's calculation manager
-        self.calc_manager = Option::from(Rc::clone(calc_manager_param));
-
-        match self.calc_manager.as_ref() {
-            None => {
-                panic!("Calculator manager not set");
-            }
-            Some(o) => {
-                self.elem_preferences = Option::from(ElemPreferences::new(
-                    o,
-                    "",
-                    "",
-                    "",
-                    "",
-                    0,
-                    crate::DEFAULT_DECIMAL_DIGITS,
-                    dec!(0.0),
-                    -1,
-                    -1,
-                    -1,
-                    None,
-                    None,
-                    false,
-                    false,
-                ));
-                self.list_event_pb = Option::from(ListEvent::new(false));
-                self.list_exchange_rate = Option::from(ListExchangeRate::new());
-            }
-        }
-    }
-
-    /// Returns the calculation manager element.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    fn calc_manager(&self) -> &Rc<RefCell<CalcManager>> {
-        match self.calc_manager.as_ref() {
-            None => {
-                panic!("Missing calc manager");
-            }
-            Some(o) => o,
-        }
-    }
-
-    /// Returns the calculation manager.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    fn calc_mgr(&self) -> Ref<CalcManager> {
-        match self.calc_manager.as_ref() {
-            None => {
-                panic!("Missing calc manager");
-            }
-            Some(o) => o.borrow(),
-        }
-    }
-
-    /// Returns the mutable calculation manager.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    fn calc_mgr_mut(&self) -> RefMut<CalcManager> {
-        match self.calc_manager.as_ref() {
-            None => {
-                panic!("Missing calc manager");
-            }
-            Some(o) => o.borrow_mut(),
-        }
+    pub fn init_calc_manager(&mut self, calc_manager: &Rc<RefCell<CalcManager>>) {
+        self.elem_preferences = Option::from(ElemPreferences::new(
+            calc_manager,
+            "",
+            "",
+            "",
+            "",
+            0,
+            crate::DEFAULT_DECIMAL_DIGITS,
+            dec!(0.0),
+            -1,
+            -1,
+            -1,
+            None,
+            None,
+            false,
+            false,
+        ));
     }
 
     /// Get the core manager.
@@ -174,7 +109,6 @@ impl CalcManager {
         self.list_template_group_mut().clear();
         self.list_cashflow_mut().clear();
         self.list_exchange_rate_mut().clear();
-        self.list_event_pb_mut().clear();
     }
 
     /// Copies the event list from the currently selected template event into
@@ -182,6 +116,7 @@ impl CalcManager {
     ///
     /// # Arguments
     ///
+    /// * `calc_manager` - Calculation manager.
     /// * `date_param` - Base starting date for the new event(s).
     /// * `end_date_param` - Base ending date for the new event(s).
     /// * `new_date_param` - Next date for the new event(s) (i.e.,
@@ -194,6 +129,7 @@ impl CalcManager {
 
     pub fn copy_template_events(
         &self,
+        calc_manager: &Rc<RefCell<CalcManager>>,
         date_param: usize,
         end_date_param: usize,
         new_date_param: usize,
@@ -240,7 +176,7 @@ impl CalcManager {
 
             if !new_list_event.date_expr().is_empty() {
                 let mut calc_expression =
-                    CalcExpression::new(self.calc_manager(), fiscal_year_start, decimal_digits);
+                    CalcExpression::new(calc_manager, fiscal_year_start, decimal_digits);
 
                 calc_expression.init_expression(
                     None,
@@ -683,12 +619,7 @@ impl CalcManager {
     /// * See description.
 
     pub fn list_exchange_rate(&self) -> &ListExchangeRate {
-        match self.list_exchange_rate.as_ref() {
-            None => {
-                panic!("Missing list exchange rate")
-            }
-            Some(o) => o,
-        }
+        &self.list_exchange_rate
     }
 
     /// Get the mutable list of exchange rates.
@@ -698,42 +629,7 @@ impl CalcManager {
     /// * See description.
 
     pub fn list_exchange_rate_mut(&mut self) -> &mut ListExchangeRate {
-        match self.list_exchange_rate.as_mut() {
-            None => {
-                panic!("Missing list exchange rate")
-            }
-            Some(o) => o,
-        }
-    }
-
-    /// Get the list of events representing the paste buffer.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list_event_pb(&self) -> &ListEvent {
-        match self.list_event_pb.as_ref() {
-            None => {
-                panic!("Missing list event paste buffer")
-            }
-            Some(o) => o,
-        }
-    }
-
-    /// Get the mutable list of events representing the paste buffer.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list_event_pb_mut(&mut self) -> &mut ListEvent {
-        match self.list_event_pb.as_mut() {
-            None => {
-                panic!("Missing list event paste buffer")
-            }
-            Some(o) => o,
-        }
+        &mut self.list_exchange_rate
     }
 
     /// Get the list of template groups.
@@ -888,7 +784,7 @@ impl CalcManager {
     /// * `list_exchange_rate` - See description.
 
     pub fn set_list_exchange_rate(&mut self, list_exchange_rate: ListExchangeRate) {
-        self.list_exchange_rate = Option::from(list_exchange_rate);
+        self.list_exchange_rate = list_exchange_rate;
     }
 
     /// Set the list template group.
@@ -911,55 +807,6 @@ impl CalcManager {
         self.updating_json.set(value_param);
     }
 
-    /// Performs a deep copy of the selected events into the event list paste buffer.
-    ///
-    /// # Arguments
-    ///
-    /// * `count` - The direction (i.e., positive or negative)
-    ///     and the number of events to copy.
-
-    pub fn pb_copy(&self, count: i32) -> Result<(), crate::ErrorType> {
-        let updating_json = self.updating_json.get();
-
-        let calc_mgr = self.calc_mgr();
-        let list_event_opt = calc_mgr.list_cashflow().list_event();
-        let list_event: &ListEvent;
-        match list_event_opt.as_ref() {
-            None => {
-                panic!("Missing list event");
-            }
-            Some(o) => {
-                list_event = &o;
-            }
-        }
-
-        let mut reg_mut = self.calc_mgr_mut();
-        let list_event_pb = reg_mut.list_event_pb_mut();
-
-        list_event_pb.clear();
-
-        list_event.copy_list_event_selected(list_event_pb, count, updating_json)
-    }
-
-    /// Performs a deep copy of the event list paste buffer into the selected event list.
-    ///
-    /// # Return
-    ///
-    /// * ERROR_NONE if successful, otherwise an error value.
-
-    pub fn pb_paste(&self) -> Result<(), crate::ErrorType> {
-        let updating_json = self.updating_json.get();
-
-        let mut calc_mgr = self.calc_mgr_mut();
-
-        match calc_mgr.list_cashflow_mut().list_event_mut() {
-            None => {
-                panic!("Missing list event");
-            }
-            Some(mut o) => self.list_event_pb().copy_list_event(&mut o, updating_json),
-        }
-    }
-
     /// Get the column name resource key.
     ///
     /// # Arguments
@@ -972,192 +819,6 @@ impl CalcManager {
 
     pub fn col_name_resource_key(column_value: crate::ColumnType) -> String {
         CoreUtility::get_col_name_resource_key(column_value)
-    }
-
-    /// Convert a value from the cashflow code to the event code.
-    /// Cross rates are used if the exchange rate is unavailable and
-    /// the cross rate international currency code is not empty.
-    ///
-    /// # Arguments
-    ///
-    /// * `value` - The value to convert.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn util_convert_currency_event(&self, value: Decimal) -> Decimal {
-        let cashflow_currency_code = self.list_locale.cashflow_currency_code();
-        let event_currency_code = self.list_locale.event_currency_code();
-
-        CalcUtility::convert_currency_event(
-            &self.calc_mgr(),
-            cashflow_currency_code,
-            event_currency_code,
-            value,
-        )
-    }
-
-    /// Convert a value from a currency code to another currency code.
-    /// Cross rates are used if the exchange rate is unavailable and
-    /// the cross rate international currency code is not empty.
-    ///
-    /// # Arguments
-    ///
-    /// * `value` - The value to convert.
-    /// * `from_code` - The current currency code.
-    /// * `to_code` - The new currency code.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn util_convert_currency_value(
-        &self,
-        value: Decimal,
-        from_code: &str,
-        to_code: &str,
-    ) -> Decimal {
-        if from_code.is_empty() || from_code == to_code {
-            return value;
-        }
-        self.list_exchange_rate().convert_currency(
-            value,
-            from_code,
-            to_code,
-            self.cross_rate_code(true),
-        )
-    }
-
-    /// Get the appropriate event list value as a string.
-    ///
-    /// # Arguments
-    ///
-    /// * `elem_column` - Column element.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn util_event_value(&self, elem_column: &ElemColumn) -> String {
-        CalcUtility::get_event_value(self.calc_manager(), elem_column)
-    }
-
-    /// Get the appropriate amortization list value as a string.
-    ///
-    /// # Arguments
-    ///
-    /// * `elem_column` - Column element.
-    /// * `list_am_opt` - Amortization list.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn util_am_value(
-        &self,
-        elem_column: &ElemColumn,
-        list_am_opt: &ListAmortization,
-    ) -> String {
-        CalcUtility::get_am_value(self.calc_manager(), elem_column, list_am_opt)
-    }
-
-    /// Create and return a column list object.
-    ///
-    /// # Arguments
-    ///
-    /// * `event_type` - The type of table.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn util_parse_columns(&self, event_type: crate::TableType) -> ListColumn {
-        CalcUtility::parse_columns(self.calc_manager(), event_type, true)
-    }
-
-    /// Create and return a summary list object.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn util_parse_summary(&self) -> ListSummary {
-        CalcUtility::parse_summary(self.calc_manager())
-    }
-
-    /// Set the appropriate event list value and
-    /// return it as a string.
-    ///
-    /// # Arguments
-    ///
-    /// * `calc_manager` - Calculation manager.
-    /// * `col_name_index` - Column name index.
-    /// * `col_type` - Column type.
-    /// * `col_code` - Column code.
-    /// * `index` - Event row index.
-    /// * `value_param` - Value to set as a string.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn util_set_event_value(
-        calc_manager: &Rc<RefCell<CalcManager>>,
-        col_name_index: usize,
-        col_type: &str,
-        col_code: &str,
-        index: usize,
-        value_param: &str,
-    ) -> String {
-        CalcUtility::set_event_value(
-            calc_manager,
-            col_name_index,
-            col_type,
-            col_code,
-            index,
-            value_param,
-        )
-    }
-
-    /// Set the appropriate event list extension values.
-    ///
-    /// # Arguments
-    ///
-    /// * `calc_manager` - Calculation manager.
-    /// * `index` - Event row index.
-    /// * `ext_param` - Extension values to set.
-    ///
-    /// # Return
-    ///
-    /// * True if successful, otherwise false.
-
-    pub fn util_set_extension_values(
-        calc_manager: &Rc<RefCell<CalcManager>>,
-        index: usize,
-        ext_param: &ElemExtension,
-    ) -> bool {
-        CalcUtility::set_extension_values(calc_manager, index, ext_param)
-    }
-
-    /// Set the appropriate event list parameter values.
-    ///
-    /// # Arguments
-    ///
-    /// * `cf_index` - The cashflow index.
-    /// * `index_param` - Event row index.
-    /// * `parameters` - Parameters to set.
-    ///
-    /// # Return
-    ///
-    /// * True if successful, otherwise false.
-
-    pub fn util_set_parameter_values(
-        calc_manager: &Rc<RefCell<CalcManager>>,
-        index: usize,
-        parameters: Vec<String>,
-    ) -> bool {
-        CalcUtility::set_parameter_values(calc_manager, index, parameters)
     }
 
     /// Calculates number of intervals between two dates.

@@ -1705,7 +1705,7 @@ impl CalcUtility {
     ///
     /// # Arguments
     ///
-    /// * `cf_index` - The cashflow index.
+    /// * `calc_manager` - Calculation manager.
     /// * `index_param` - Event row index.
     /// * `parameters` - Parameters to set.
     ///

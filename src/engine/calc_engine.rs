@@ -17,8 +17,8 @@ use super::{
     CalcExpression, CalcManager, CalcUtility, ElemCashflow, ElemCashflowStats, ElemPreferences,
 };
 use crate::core::{
-    CoreManager, CoreUtility, ElemBalanceResult, ElemSymbol, ListAmortization, ListDescriptor,
-    ListEvent, ListParameter, ListStatisticHelper,
+    CoreManager, CoreUtility, ElemBalanceResult, ElemSymbol, ElemColumn, ElemExtension, ListColumn, 
+    ListAmortization, ListDescriptor, ListEvent, ListParameter, ListSummary, ListStatisticHelper,
 };
 use crate::ListTrait;
 
@@ -276,6 +276,7 @@ impl CalcEngine {
     ) -> Result<ListEvent, crate::ErrorType> {
         let new_list_event: ListEvent;
         match self.calc_mgr().copy_template_events(
+            &self.calc_manager,
             date_param,
             end_date_param,
             new_date_param,
@@ -2244,5 +2245,129 @@ impl CalcEngine {
         let decimal_digits = calc_mgr.decimal_digits(false);
 
         CoreUtility::util_round(val, decimal_digits)
+    }
+
+    /// Get the appropriate amortization list value as a string.
+    ///
+    /// # Arguments
+    ///
+    /// * `elem_column` - Column element.
+    /// * `list_am_opt` - Amortization list.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn am_value(&self, elem_column: &ElemColumn, list_am_opt: &ListAmortization) -> String {
+        CalcUtility::get_am_value(self.calc_manager(), elem_column, list_am_opt)
+    }
+
+    /// Get the appropriate event list value as a string.
+    ///
+    /// # Arguments
+    ///
+    /// * `elem_column` - Column element.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn event_value(&self, elem_column: &ElemColumn) -> String {
+        CalcUtility::get_event_value(self.calc_manager(), elem_column)
+    }
+
+    /// Create and return a column list object.
+    ///
+    /// # Arguments
+    ///
+    /// * `event_type` - The type of table.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn parse_columns(&self, event_type: crate::TableType) -> ListColumn {
+        CalcUtility::parse_columns(self.calc_manager(), event_type, true)
+    }
+
+    /// Create and return a summary list object.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn parse_summary(&self) -> ListSummary {
+        CalcUtility::parse_summary(self.calc_manager())
+    }
+
+    /// Set the appropriate event list value and
+    /// return it as a string.
+    ///
+    /// # Arguments
+    ///
+    /// * `col_name_index` - Column name index.
+    /// * `col_type` - Column type.
+    /// * `col_code` - Column code.
+    /// * `index` - Event row index.
+    /// * `value_param` - Value to set as a string.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn set_event_value(
+        &self, 
+        col_name_index: usize,
+        col_type: &str,
+        col_code: &str,
+        index: usize,
+        value_param: &str,
+    ) -> String {
+        CalcUtility::set_event_value(
+            self.calc_manager(),
+            col_name_index,
+            col_type,
+            col_code,
+            index,
+            value_param,
+        )
+    }
+
+    /// Set the appropriate event list extension values.
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - Event row index.
+    /// * `ext_param` - Extension values to set.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
+
+    pub fn set_extension_values(
+        &self, 
+        index: usize,
+        ext_param: &ElemExtension,
+    ) -> bool {
+        CalcUtility::set_extension_values(self.calc_manager(), index, ext_param)
+    }
+
+    /// Set the appropriate event list parameter values.
+    ///
+    /// # Arguments
+    ///
+    /// * `index_param` - Event row index.
+    /// * `parameters` - Parameters to set.
+    ///
+    /// # Return
+    ///
+    /// * True if successful, otherwise false.
+
+    pub fn set_parameter_values(
+        &self, 
+        index_param: usize,
+        parameters: Vec<String>,
+    ) -> bool {
+        CalcUtility::set_parameter_values(self.calc_manager(), index_param, parameters)
     }
 }

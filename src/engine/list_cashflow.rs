@@ -7,7 +7,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::{Cell, Ref, RefCell, RefMut};
+use std::cell::{Cell, Ref, RefCell};
 use std::cmp::Ordering::Equal;
 use std::rc::Rc;
 
@@ -165,21 +165,6 @@ impl ListCashflow {
                 panic!("Missing calc manager");
             }
             Some(o) => o.borrow(),
-        }
-    }
-
-    /// Returns the mutable calculation manager.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    fn calc_mgr_mut(&mut self) -> RefMut<CalcManager> {
-        match self.calc_manager.as_mut() {
-            None => {
-                panic!("Missing calc manager");
-            }
-            Some(o) => o.borrow_mut(),
         }
     }
 
