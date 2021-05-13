@@ -23,16 +23,18 @@ pub struct CalcExpression {
     /// Calculator manager element.
     calc_manager: Rc<RefCell<CalcManager>>,
 
-    /// Symbol table.
+    /// Common symbol table.
     symbol_table: Rc<RefCell<MapSymbol>>,
     /// Token scanner.
     scanner: RefCell<CalcScan>,
+
     /// User descriptor list.
     list_descriptor_user: ListDescriptor,
     /// Cashflow descriptor list.
     list_descriptor_cashflow: Option<ListDescriptor>,
     /// Event descriptor list.
     list_descriptor_event: Option<ListDescriptor>,
+
     /// Start of fiscal year in MMDD format.
     fiscal_year_start: usize,
     /// Number of significant decimal digits.
@@ -108,7 +110,7 @@ impl CalcExpression {
 
         CalcExpression {
             calc_manager: Rc::clone(calc_manager_param),
-            symbol_table: symbol_param.clone(),
+            symbol_table: Rc::clone(symbol_param),
             scanner: RefCell::new(CalcScan::new(expr_str)),
             list_descriptor_user: tlist_descriptor_user,
             list_descriptor_cashflow: None,

@@ -52,11 +52,9 @@ impl CalcEngine {
 
     pub fn new() -> CalcEngine {
         let calc_engine = CalcEngine {
-            // The AmFn manager instance
             calc_manager: Rc::new(RefCell::new(CalcManager::new(CoreManager::new()))),
         };
 
-        // Inject the wrapped calculation manager into itself
         calc_engine
             .calc_mgr_mut()
             .init_calc_manager(&calc_engine.calc_manager());
