@@ -27,12 +27,12 @@ pub struct CalcManager {
     /// User preferences element.
     elem_preferences: Option<ElemPreferences>,
     /// List of cashflows.
-    list_cashflow: ListCashflow,
+    list_cashflow:  Option<ListCashflow>,
+    /// List of template groups.
+    list_template_group:  Option<ListTemplateGroup>,
 
     /// List of exchange rates.
     list_exchange_rate: ListExchangeRate,
-    /// List of template groups.
-    list_template_group: ListTemplateGroup,
 
     /// Currently updating while loading a JSON source.
     updating_json: Cell<bool>,
@@ -56,9 +56,9 @@ impl CalcManager {
             core_manager: core_manager_param,
             list_locale: ListLocale::new(),
             elem_preferences: None,
-            list_cashflow: ListCashflow::new(),
+            list_cashflow: None,
+            list_template_group: None,
             list_exchange_rate: ListExchangeRate::new(),
-            list_template_group: ListTemplateGroup::new(),
             updating_json: Cell::new(false),
         }
     }
@@ -88,9 +88,9 @@ impl CalcManager {
             false,
         ));
 
-        self.list_cashflow_mut().set_calc_mgr(calc_manager);
+        self.list_cashflow = Option::from(ListCashflow::new(calc_manager));
 
-        self.list_template_group_mut().set_calc_mgr(calc_manager);
+        self.list_template_group = Option::from(ListTemplateGroup::new(calc_manager));
     }
 
     /// Get the core manager.
@@ -600,7 +600,12 @@ impl CalcManager {
     /// * See description.
 
     pub fn list_cashflow(&self) -> &ListCashflow {
-        &self.list_cashflow
+        match self.list_cashflow.as_ref() {
+            None => {
+                panic!("Missing list cashflow");
+            }
+            Some(o) => o,
+        }
     }
 
     /// Get the mutable list of cashflows.
@@ -610,7 +615,42 @@ impl CalcManager {
     /// * See description.
 
     pub fn list_cashflow_mut(&mut self) -> &mut ListCashflow {
-        &mut self.list_cashflow
+        match self.list_cashflow.as_mut() {
+            None => {
+                panic!("Missing list cashflow");
+            }
+            Some(o) => o,
+        }
+    }
+
+    /// Get the list of template groups.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn list_template_group(&self) -> &ListTemplateGroup {
+        match self.list_template_group.as_ref() {
+            None => {
+                panic!("Missing list template group");
+            }
+            Some(o) => o,
+        }
+    }
+
+    /// Get the mutable list of template groups.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    pub fn list_template_group_mut(&mut self) -> &mut ListTemplateGroup {
+        match self.list_template_group.as_mut() {
+            None => {
+                panic!("Missing list template group");
+            }
+            Some(o) => o,
+        }
     }
 
     /// Get the list of exchange rates.
@@ -631,26 +671,6 @@ impl CalcManager {
 
     pub fn list_exchange_rate_mut(&mut self) -> &mut ListExchangeRate {
         &mut self.list_exchange_rate
-    }
-
-    /// Get the list of template groups.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list_template_group(&self) -> &ListTemplateGroup {
-        &self.list_template_group
-    }
-
-    /// Get the mutable list of template groups.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    pub fn list_template_group_mut(&mut self) -> &mut ListTemplateGroup {
-        &mut self.list_template_group
     }
 
     /// Get the error text corresponding to an error value.
@@ -778,7 +798,17 @@ impl CalcManager {
     /// * `list_cashflow` - See description.
 
     pub fn set_list_cashflow(&mut self, list_cashflow: ListCashflow) {
-        self.list_cashflow = list_cashflow;
+        self.list_cashflow = Option::from(list_cashflow);
+    }
+
+    /// Set the list template group.
+    ///
+    /// # Arguments
+    ///
+    /// * `list_template_group` - See description.
+
+    pub fn set_list_template_group(&mut self, list_template_group: ListTemplateGroup) {
+        self.list_template_group = Option::from(list_template_group);
     }
 
     /// Set the list exchange rate.
@@ -789,16 +819,6 @@ impl CalcManager {
 
     pub fn set_list_exchange_rate(&mut self, list_exchange_rate: ListExchangeRate) {
         self.list_exchange_rate = list_exchange_rate;
-    }
-
-    /// Set the list template group.
-    ///
-    /// # Arguments
-    ///
-    /// * `list_template_group` - See description.
-
-    pub fn set_list_template_group(&mut self, list_template_group: ListTemplateGroup) {
-        self.list_template_group = list_template_group;
     }
 
     /// Set the updating json.

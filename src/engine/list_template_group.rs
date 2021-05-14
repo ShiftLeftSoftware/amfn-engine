@@ -20,7 +20,7 @@ use crate::ListTrait;
 
 pub struct ListTemplateGroup {
     /// Calculator manager element.
-    calc_manager: Option<Rc<RefCell<CalcManager>>>,
+    calc_manager: Rc<RefCell<CalcManager>>,
 
     /// The list of template groups.
     list_template_group: Vec<ElemTemplateGroup>,
@@ -104,32 +104,22 @@ impl ListTrait for ListTemplateGroup {
     }
 }
 
-/// Default implementation for the list of template groups.
-
-impl Default for ListTemplateGroup {
-    /// Create and return a new list template group.
-    ///
-    /// # Return
-    ///
-    /// * See description.
-
-    fn default() -> Self {
-        ListTemplateGroup::new()
-    }
-}
-
 /// Implementation for the list of template groups.
 
 impl ListTemplateGroup {
     /// Create and return a new list template group.
     ///
+    /// # Arguments
+    ///
+    /// * `calc_manager_param` - Calculation manager.
+    ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn new() -> ListTemplateGroup {
+    pub fn new(calc_manager_param: &Rc<RefCell<CalcManager>>) -> ListTemplateGroup {
         ListTemplateGroup {
-            calc_manager: None,
+            calc_manager: Rc::clone(calc_manager_param),
             list_template_group: Vec::new(),
             list_index: Cell::new(usize::MAX),
             sort_on_add: Cell::new(true),
@@ -144,12 +134,7 @@ impl ListTemplateGroup {
     /// * See description.
 
     fn calc_manager(&self) -> &Rc<RefCell<CalcManager>> {
-        match self.calc_manager.as_ref() {
-            None => {
-                panic!("Missing calc manager");
-            }
-            Some(o) => o,
-        }
+        &self.calc_manager
     }
 
     /// Returns the calculation manager.
@@ -159,22 +144,7 @@ impl ListTemplateGroup {
     /// * See description.
 
     fn calc_mgr(&self) -> Ref<CalcManager> {
-        match self.calc_manager.as_ref() {
-            None => {
-                panic!("Missing calc manager");
-            }
-            Some(o) => o.borrow(),
-        }
-    }
-
-    /// Set the calculation manager.
-    ///
-    /// # Arguments
-    ///
-    /// * `calc_manager_param` - Calculation manager.
-
-    pub fn set_calc_mgr(&mut self, calc_manager_param: &Rc<RefCell<CalcManager>>) {
-        self.calc_manager = Option::from(Rc::clone(calc_manager_param));
+        self.calc_manager.borrow()
     }
 
     /// Add a new template group into the template group list.
@@ -362,11 +332,11 @@ impl ListTemplateGroup {
         &self,
         calc_manager_param: &Rc<RefCell<CalcManager>>,
     ) -> ListTemplateGroup {
-        let mut list_template_group = ListTemplateGroup::new();
+        let mut list_template_group = ListTemplateGroup::new(calc_manager_param);
         let mut index: usize = 0;
 
-        list_template_group.set_calc_mgr(calc_manager_param);
         list_template_group.set_sort_on_add(false);
+
         loop {
             if !self.get_element(index) {
                 break;
@@ -378,6 +348,7 @@ impl ListTemplateGroup {
 
             index += 1;
         }
+
         list_template_group.set_sort_on_add(true);
 
         list_template_group

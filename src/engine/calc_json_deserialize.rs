@@ -176,10 +176,8 @@ impl CalcJsonDeserialize {
     /// * ERROR_NONE if successful, otherwise error code.
 
     fn deserialize_cashflows(&self, cfs: &JsonValue) -> Result<ListCashflow, crate::ErrorType> {
-        let mut cashflows = ListCashflow::new();
+        let mut cashflows = ListCashflow::new(&self.calc_manager);
         let mut index: usize = 0;
-
-        cashflows.set_calc_mgr(&self.calc_manager);
 
         loop {
             let cf = &cfs[index];
@@ -1639,10 +1637,9 @@ impl CalcJsonDeserialize {
         &self,
         templ_groups: &JsonValue,
     ) -> Result<ListTemplateGroup, crate::ErrorType> {
-        let mut template_groups = ListTemplateGroup::new();
+        let mut template_groups = ListTemplateGroup::new(&self.calc_manager);
         let mut index: usize = 0;
 
-        template_groups.set_calc_mgr(&self.calc_manager);
         template_groups.set_sort_on_add(false);
 
         loop {

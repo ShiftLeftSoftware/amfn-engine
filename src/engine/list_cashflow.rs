@@ -19,7 +19,7 @@ use crate::ListTrait;
 
 pub struct ListCashflow {
     /// Calculator manager element.
-    calc_manager: Option<Rc<RefCell<CalcManager>>>,
+    calc_manager: Rc<RefCell<CalcManager>>,
 
     /// The list of cashflows.
     list_cashflow: Vec<ElemCashflow>,
@@ -107,32 +107,23 @@ impl ListTrait for ListCashflow {
     }
 }
 
-/// List of currently active cashflows default implementation.
-
-impl Default for ListCashflow {
-    /// Create and return a new list cashflow.
-    ///
-    /// # Return
-    ///
-    /// * See description.   
-
-    fn default() -> Self {
-        ListCashflow::new()
-    }
-}
-
 /// List of currently active cashflows implementation.
 
 impl ListCashflow {
+    
     /// Create and return a new list cashflow.
+    ///
+    /// # Arguments
+    ///
+    /// * `calc_manager_param` - Calculation manager.
     ///
     /// # Return
     ///
     /// * See description.   
 
-    pub fn new() -> ListCashflow {
+    pub fn new(calc_manager_param: &Rc<RefCell<CalcManager>>) -> ListCashflow {
         ListCashflow {
-            calc_manager: None,
+            calc_manager: Rc::clone(calc_manager_param),
             list_cashflow: Vec::new(),
             list_index: Cell::new(usize::MAX),
         }
@@ -145,12 +136,7 @@ impl ListCashflow {
     /// * See description.
 
     fn calc_manager(&self) -> &Rc<RefCell<CalcManager>> {
-        match self.calc_manager.as_ref() {
-            None => {
-                panic!("Missing calc manager");
-            }
-            Some(o) => o,
-        }
+        &self.calc_manager
     }
 
     /// Returns the calculation manager.
@@ -160,22 +146,7 @@ impl ListCashflow {
     /// * See description.
 
     fn calc_mgr(&self) -> Ref<CalcManager> {
-        match self.calc_manager.as_ref() {
-            None => {
-                panic!("Missing calc manager");
-            }
-            Some(o) => o.borrow(),
-        }
-    }
-
-    /// Set the calculation manager.
-    ///
-    /// # Arguments
-    ///
-    /// * `calc_manager_param` - Calculation manager.
-
-    pub fn set_calc_mgr(&mut self, calc_manager_param: &Rc<RefCell<CalcManager>>) {
-        self.calc_manager = Option::from(Rc::clone(calc_manager_param));
+        self.calc_manager.borrow()
     }
 
     /// Prepare to add a new cashflow into the cashflow list.
@@ -333,8 +304,7 @@ impl ListCashflow {
         &self,
         calc_manager_param: &Rc<RefCell<CalcManager>>,
     ) -> ListCashflow {
-        let mut list_cashflow = ListCashflow::new();
-        list_cashflow.set_calc_mgr(calc_manager_param);
+        let mut list_cashflow = ListCashflow::new(calc_manager_param);
 
         let mut index: usize = 0;
         loop {
