@@ -451,7 +451,11 @@ impl CalcExpression {
                                                 .core_manager()
                                                 .operators()
                                                 .get_value_ext_by_index(elem.sym_integer())
-                                                < self.calc_mgr().core_manager().operators().value_ext())
+                                                < self
+                                                    .calc_mgr()
+                                                    .core_manager()
+                                                    .operators()
+                                                    .value_ext())
                                     {
                                         break;
                                     }
@@ -464,7 +468,9 @@ impl CalcExpression {
                                 }
                                 let mut elem =
                                     ElemSymbol::new_with_token_type(crate::TokenType::Operator);
-                                elem.set_operator(self.calc_mgr().core_manager().operators().index());
+                                elem.set_operator(
+                                    self.calc_mgr().core_manager().operators().index(),
+                                );
                                 stack.push(elem);
                                 operator_needed = false;
                             }
@@ -513,7 +519,11 @@ impl CalcExpression {
                                             .core_manager()
                                             .operators()
                                             .get_value_ext_by_index(elem_symbol.sym_integer())
-                                            < self.calc_mgr().core_manager().operators().value_ext())
+                                            < self
+                                                .calc_mgr()
+                                                .core_manager()
+                                                .operators()
+                                                .value_ext())
                                 {
                                     break;
                                 }
@@ -526,7 +536,8 @@ impl CalcExpression {
                             }
                             let mut elem_symbol =
                                 ElemSymbol::new_with_token_type(crate::TokenType::Operator);
-                            elem_symbol.set_operator(self.calc_mgr().core_manager().operators().index());
+                            elem_symbol
+                                .set_operator(self.calc_mgr().core_manager().operators().index());
                             stack.push(elem_symbol);
                             operator_needed = false;
                         } else {
@@ -703,7 +714,9 @@ impl CalcExpression {
                                 elem_symbol2 = o;
                             }
                         }
-                        match CoreUtility::get_operator(self.calc_mgr().core_manager().operators().value()) {
+                        match CoreUtility::get_operator(
+                            self.calc_mgr().core_manager().operators().value(),
+                        ) {
                             crate::OperatorType::And => {
                                 if elem_symbol1.sym_type() != crate::TokenType::Integer
                                     || elem_symbol2.sym_type() != crate::TokenType::Integer
@@ -1359,7 +1372,12 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        if !self.calc_mgr().core_manager().functions().get_element_by_key(name) {
+        if !self
+            .calc_mgr()
+            .core_manager()
+            .functions()
+            .get_element_by_key(name)
+        {
             return Err(crate::ErrorType::Function);
         }
 
@@ -1367,7 +1385,8 @@ impl CalcExpression {
 
         let mut result: Result<ElemSymbol, crate::ErrorType>;
 
-        let function_type = CoreUtility::get_function(self.calc_mgr().core_manager().functions().value());
+        let function_type =
+            CoreUtility::get_function(self.calc_mgr().core_manager().functions().value());
         match function_type {
             crate::FunctionType::Abs => {
                 result = self.function_abs(list_am_opt, elem_balance_result_opt);

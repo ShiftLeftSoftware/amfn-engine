@@ -17,8 +17,9 @@ use super::{
     CalcExpression, CalcManager, CalcUtility, ElemCashflow, ElemCashflowStats, ElemPreferences,
 };
 use crate::core::{
-    CoreManager, CoreUtility, ElemBalanceResult, ElemSymbol, ElemColumn, ElemExtension, ListColumn, 
-    ListAmortization, ListDescriptor, ListEvent, ListParameter, ListSummary, ListStatisticHelper,
+    CoreManager, CoreUtility, ElemBalanceResult, ElemColumn, ElemExtension, ElemSymbol,
+    ListAmortization, ListColumn, ListDescriptor, ListEvent, ListParameter, ListStatisticHelper,
+    ListSummary,
 };
 use crate::ListTrait;
 
@@ -58,15 +59,6 @@ impl CalcEngine {
         calc_engine
             .calc_mgr_mut()
             .init_calc_manager(&calc_engine.calc_manager());
-
-        calc_engine
-            .calc_mgr_mut()
-            .list_cashflow_mut()
-            .set_calc_mgr(&calc_engine.calc_manager());
-        calc_engine
-            .calc_mgr_mut()
-            .list_template_group_mut()
-            .set_calc_mgr(&calc_engine.calc_manager());
 
         calc_engine
     }
@@ -2314,7 +2306,7 @@ impl CalcEngine {
     /// * See description.
 
     pub fn set_event_value(
-        &self, 
+        &self,
         col_name_index: usize,
         col_type: &str,
         col_code: &str,
@@ -2342,11 +2334,7 @@ impl CalcEngine {
     ///
     /// * True if successful, otherwise false.
 
-    pub fn set_extension_values(
-        &self, 
-        index: usize,
-        ext_param: &ElemExtension,
-    ) -> bool {
+    pub fn set_extension_values(&self, index: usize, ext_param: &ElemExtension) -> bool {
         CalcUtility::set_extension_values(self.calc_manager(), index, ext_param)
     }
 
@@ -2361,11 +2349,7 @@ impl CalcEngine {
     ///
     /// * True if successful, otherwise false.
 
-    pub fn set_parameter_values(
-        &self, 
-        index_param: usize,
-        parameters: Vec<String>,
-    ) -> bool {
+    pub fn set_parameter_values(&self, index_param: usize, parameters: Vec<String>) -> bool {
         CalcUtility::set_parameter_values(self.calc_manager(), index_param, parameters)
     }
 }

@@ -7,7 +7,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cell::{Ref, RefCell};
+use std::cell::{Ref, RefCell, RefMut};
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -58,6 +58,16 @@ impl CalcJsonDeserialize {
         self.calc_manager.borrow()
     }
 
+    /// Returns the mutable calculation manager.
+    ///
+    /// # Return
+    ///
+    /// * See description.
+
+    fn calc_mgr_mut(&self) -> RefMut<CalcManager> {
+        self.calc_manager.borrow_mut()
+    }
+
     /// Deserialize and ingest serialized Json.
     ///
     /// # Arguments
@@ -90,7 +100,7 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager.borrow_mut().set_preferences(o);
+                    self.calc_mgr_mut().set_preferences(o);
                 }
             }
         }
@@ -103,10 +113,7 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager
-                        .borrow_mut()
-                        .list_locale_mut()
-                        .append_locales(o);
+                    self.calc_mgr_mut().list_locale_mut().append_locales(o);
                 }
             }
         }
@@ -119,7 +126,7 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager.borrow_mut().set_list_exchange_rate(o);
+                    self.calc_mgr_mut().set_list_exchange_rate(o);
                 }
             }
         }
@@ -132,8 +139,7 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager
-                        .borrow_mut()
+                    self.calc_mgr_mut()
                         .list_template_group_mut()
                         .append_template_groups(o);
                 }
@@ -148,10 +154,7 @@ impl CalcJsonDeserialize {
                     return Err(e);
                 }
                 Ok(o) => {
-                    self.calc_manager
-                        .borrow_mut()
-                        .list_cashflow_mut()
-                        .append_cashflows(o);
+                    self.calc_mgr_mut().list_cashflow_mut().append_cashflows(o);
                 }
             }
         }

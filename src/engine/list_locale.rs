@@ -587,7 +587,8 @@ impl ListLocale {
     /// * See description.
 
     pub fn format_decimal_out(&self, val: Decimal) -> String {
-        let mut text = CoreUtility::util_round(val, crate::MAXIMUM_DISPLAY_DECIMAL_DIGITS).to_string();
+        let mut text =
+            CoreUtility::util_round(val, crate::MAXIMUM_DISPLAY_DECIMAL_DIGITS).to_string();
 
         let tokens: Vec<_> = text.split('.').collect();
         if tokens.len() > 1 {

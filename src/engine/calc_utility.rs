@@ -18,6 +18,8 @@ use crate::core::{
 };
 use crate::ListTrait;
 
+/// The AmFn utility methods.
+
 pub struct CalcUtility {}
 
 /// The AmFn utility methods implementation.
@@ -29,6 +31,9 @@ impl CalcUtility {
     ///
     /// # Arguments
     ///
+    /// * `calc_mgr` - Calculation manager reference.
+    /// * `cashflow_currency_code` - Cashflow currency code.
+    /// * `event_currency_code` - Event currency code.
     /// * `value` - The value to convert.
     ///
     /// # Return
@@ -36,7 +41,7 @@ impl CalcUtility {
     /// * See description.
 
     pub fn convert_currency_event(
-        calc_manager_param: &Ref<CalcManager>,
+        calc_mgr: &Ref<CalcManager>,
         cashflow_currency_code: &str,
         event_currency_code: &str,
         value: Decimal,
@@ -45,11 +50,11 @@ impl CalcUtility {
             return value;
         }
 
-        calc_manager_param.list_exchange_rate().convert_currency(
+        calc_mgr.list_exchange_rate().convert_currency(
             value,
             cashflow_currency_code,
             event_currency_code,
-            calc_manager_param.cross_rate_code(true),
+            calc_mgr.cross_rate_code(true),
         )
     }
 
@@ -57,7 +62,7 @@ impl CalcUtility {
     ///
     /// # Arguments
     ///
-    /// * `calc_manager_param` - Calculation manager.
+    /// * `calc_manager` - Calculation manager.
     /// * `elem_type` - Type of the event.
     /// * `elem_extension` - A ElemPrincipalChange, ElemCurrentValue,
     ///     ElemInterestChange, or ElemStatisticValue element.
@@ -67,11 +72,10 @@ impl CalcUtility {
     /// * See description.
 
     pub fn create_event_type_list_parameter(
-        calc_manager_param: &Rc<RefCell<CalcManager>>,
+        calc_manager: &Rc<RefCell<CalcManager>>,
         elem_type: crate::ExtensionType,
         elem_extension: &ElemExtension,
     ) -> ListParameter {
-        let calc_manager = Rc::clone(calc_manager_param);
         let mut list_parameter = ListParameter::new();
         let updating_json = calc_manager.borrow().updating_json();
         match elem_type {
@@ -162,18 +166,17 @@ impl CalcUtility {
     ///
     /// # Arguments
     ///
-    /// * `calc_manager_param` - Calculation manager.
+    /// * `calc_manager` - Calculation manager.
     /// * `expression` - CalcExpression element.
     /// * `list_parameter` - List of parameters used with evaluation.
     /// * `list_descriptor` - List of descriptors to evaluate.
 
     pub fn evaluate_descriptors(
-        calc_manager_param: &Rc<RefCell<CalcManager>>,
+        calc_manager: &Rc<RefCell<CalcManager>>,
         expression: &RefCell<CalcExpression>,
         list_parameter: &ListParameter,
         list_descriptor: &ListDescriptor,
     ) {
-        let calc_manager = Rc::clone(calc_manager_param);
         let calc_mgr = calc_manager.borrow();
 
         let orig_index = list_descriptor.index();
@@ -256,7 +259,7 @@ impl CalcUtility {
     ///
     /// # Arguments
     ///
-    /// * `calc_manager_param` - Calculation manager.
+    /// * `calc_manager` - Calculation manager.
     /// * `list_parameter` - List of parameters used with evaluation.
     /// * `expression_str` - The expression to evaluate.
     /// * `cashflow` - Search the cashflow preferences.
@@ -267,12 +270,11 @@ impl CalcUtility {
     ///     message in the symbol.
 
     pub fn evaluate_expression(
-        calc_manager_param: &Rc<RefCell<CalcManager>>,
+        calc_manager: &Rc<RefCell<CalcManager>>,
         list_parameter: Option<&ListParameter>,
         expression_str: &str,
         cashflow: bool,
     ) -> ElemSymbol {
-        let calc_manager = Rc::clone(calc_manager_param);
         let calc_mgr = calc_manager.borrow();
         let mut list_descriptor_cashflow: Option<&ListDescriptor> = None;
 
@@ -320,7 +322,7 @@ impl CalcUtility {
     ///
     /// # Arguments
     ///
-    /// * `calc_manager_param` - Calculation manager.
+    /// * `calc_manager` - Calculation manager.
     /// * `elem_column` - Column element.
     ///
     /// # Return
@@ -328,10 +330,9 @@ impl CalcUtility {
     /// * See description.
 
     pub fn get_event_value(
-        calc_manager_param: &Rc<RefCell<CalcManager>>,
+        calc_manager: &Rc<RefCell<CalcManager>>,
         elem_column: &ElemColumn,
     ) -> String {
-        let calc_manager = Rc::clone(calc_manager_param);
         let calc_mgr = calc_manager.borrow();
         let decimal_digits = calc_mgr.decimal_digits(true);
         let list_locale = calc_mgr.list_locale();
@@ -458,9 +459,9 @@ impl CalcUtility {
                     .core_manager()
                     .map_frequency()
                     .get_element_by_value(list_event.frequency() as usize);
-                result =
-                    String::from(list_locale.get_resource(
-                        calc_mgr.core_manager().map_frequency().key()));
+                result = String::from(
+                    list_locale.get_resource(calc_mgr.core_manager().map_frequency().key()),
+                );
             }
             crate::ColumnType::EndDate => {
                 if list_event.periods() > 1 {
@@ -515,7 +516,7 @@ impl CalcUtility {
     ///
     /// # Arguments
     ///
-    /// * `calc_manager_param` - Calculation manager.
+    /// * `calc_manager` - Calculation manager.
     /// * `elem_column` - Column element.
     /// * `list_am_opt` - Amortization list.
     ///
@@ -524,11 +525,10 @@ impl CalcUtility {
     /// * See description.
 
     pub fn get_am_value(
-        calc_manager_param: &Rc<RefCell<CalcManager>>,
+        calc_manager: &Rc<RefCell<CalcManager>>,
         elem_column: &ElemColumn,
         list_am: &ListAmortization,
     ) -> String {
-        let calc_manager = Rc::clone(calc_manager_param);
         let calc_mgr = calc_manager.borrow();
         let decimal_digits = calc_mgr.decimal_digits(true);
         let list_locale = calc_mgr.list_locale();
@@ -682,9 +682,9 @@ impl CalcUtility {
                     .core_manager()
                     .map_frequency()
                     .get_element_by_value(list_am.frequency() as usize);
-                result =
-                    String::from(list_locale.get_resource(
-                        calc_mgr.core_manager().map_frequency().key()));
+                result = String::from(
+                    list_locale.get_resource(calc_mgr.core_manager().map_frequency().key()),
+                );
             }
             crate::ColumnType::ParameterList => match list_am.list_parameter().as_ref() {
                 None => {
@@ -854,7 +854,7 @@ impl CalcUtility {
     ///
     /// # Arguments
     ///
-    /// * `calc_manager_param` - Calculation manager.
+    /// * `calc_manager` - Calculation manager.
     /// * `expression` - The expression to normalize.
     /// * `new_line` - If true, format with a newline character between expressions.
     ///
@@ -863,12 +863,10 @@ impl CalcUtility {
     /// * Normalized expression.
 
     pub fn normalize_expression(
-        calc_manager_param: &Rc<RefCell<CalcManager>>,
+        calc_manager: &Rc<RefCell<CalcManager>>,
         expression: &str,
         new_line: bool,
     ) -> String {
-        let calc_manager = Rc::clone(calc_manager_param);
-
         let mut calc_expression = CalcExpression::new(
             &calc_manager,
             calc_manager.borrow().fiscal_year_start(false),
@@ -883,7 +881,7 @@ impl CalcUtility {
     ///
     /// # Arguments
     ///
-    /// * `calc_manager_param` - Calculation manager.
+    /// * `calc_manager` - Calculation manager.
     /// * `elem_type` - The type of table.
     /// * `cashflow` - Search the cashflow preferences.
     ///
@@ -892,11 +890,10 @@ impl CalcUtility {
     /// * See description.
 
     pub fn parse_columns(
-        calc_manager_param: &Rc<RefCell<CalcManager>>,
+        calc_manager: &Rc<RefCell<CalcManager>>,
         elem_type: crate::TableType,
         cashflow: bool,
     ) -> ListColumn {
-        let calc_manager = Rc::clone(calc_manager_param);
         let calc_mgr = calc_manager.borrow();
         let list_locale = calc_mgr.list_locale();
 
@@ -1005,7 +1002,11 @@ impl CalcUtility {
                     }
                 }
 
-                column_editable = (calc_manager.borrow().core_manager().map_col_names().value_ext()
+                column_editable = (calc_manager
+                    .borrow()
+                    .core_manager()
+                    .map_col_names()
+                    .value_ext()
                     & crate::MAPCOLNAMES_EDITABLE)
                     != 0;
             } else {
@@ -1175,14 +1176,13 @@ impl CalcUtility {
     ///
     /// # Arguments
     ///
-    /// * `calc_manager_param` - Calculation manager.
+    /// * `calc_manager` - Calculation manager.
     ///
     /// # Return
     ///
     /// * See description.
 
-    pub fn parse_summary(calc_manager_param: &Rc<RefCell<CalcManager>>) -> ListSummary {
-        let calc_manager = Rc::clone(calc_manager_param);
+    pub fn parse_summary(calc_manager: &Rc<RefCell<CalcManager>>) -> ListSummary {
         let calc_mgr = calc_manager.borrow();
         let list_locale = calc_mgr.list_locale();
         let list_cashflow = calc_mgr.list_cashflow();
@@ -1430,7 +1430,7 @@ impl CalcUtility {
     ///
     /// # Arguments
     ///
-    /// * `calc_manager_param` - Calculation manager.
+    /// * `calc_manager` - Calculation manager.
     /// * `col_name_index` - Column name index.
     /// * `col_type` - Column type.
     /// * `col_code` - Column code.
@@ -1442,14 +1442,13 @@ impl CalcUtility {
     /// * See description.
 
     pub fn set_event_value(
-        calc_manager_param: &Rc<RefCell<CalcManager>>,
+        calc_manager: &Rc<RefCell<CalcManager>>,
         col_name_index: usize,
         col_type: &str,
         col_code: &str,
         index: usize,
         value_param: &str,
     ) -> String {
-        let calc_manager = Rc::clone(calc_manager_param);
         let mut result = String::from("");
 
         {
@@ -1593,7 +1592,7 @@ impl CalcUtility {
             false,
         );
 
-        result = CalcUtility::get_event_value(calc_manager_param, &column);
+        result = CalcUtility::get_event_value(calc_manager, &column);
 
         {
             let mut calc_mgr = calc_manager.borrow_mut();
@@ -1626,7 +1625,7 @@ impl CalcUtility {
     ///
     /// # Arguments
     ///
-    /// * `calc_manager_param` - Calculation manager.
+    /// * `calc_manager` - Calculation manager.
     /// * `index` - Event row index.
     /// * `ext_param` - Extension values to set.
     ///
@@ -1635,11 +1634,10 @@ impl CalcUtility {
     /// * True if successful, otherwise false.
 
     pub fn set_extension_values(
-        calc_manager_param: &Rc<RefCell<CalcManager>>,
+        calc_manager: &Rc<RefCell<CalcManager>>,
         index: usize,
         ext_param: &ElemExtension,
     ) -> bool {
-        let calc_manager = Rc::clone(calc_manager_param);
         let mut calc_mgr = calc_manager.borrow_mut();
         let list_cashflow = calc_mgr.list_cashflow_mut();
         let mut list_event_opt = list_cashflow.list_event_mut();

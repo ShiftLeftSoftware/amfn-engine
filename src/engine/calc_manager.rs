@@ -15,13 +15,10 @@ use rust_decimal::prelude::*;
 use super::{
     CalcExpression, ElemPreferences, ListCashflow, ListExchangeRate, ListLocale, ListTemplateGroup,
 };
-use crate::core::{
-    CoreManager, CoreUtility, ElemSymbol, ListDescriptor, ListEvent,
-};
+use crate::core::{CoreManager, CoreUtility, ElemSymbol, ListDescriptor, ListEvent};
 use crate::ListTrait;
 
 pub struct CalcManager {
-
     /// Core manager element.
     core_manager: CoreManager,
     /// List of locales.
@@ -90,6 +87,10 @@ impl CalcManager {
             false,
             false,
         ));
+
+        self.list_cashflow_mut().set_calc_mgr(calc_manager);
+
+        self.list_template_group_mut().set_calc_mgr(calc_manager);
     }
 
     /// Get the core manager.
@@ -662,9 +663,12 @@ impl CalcManager {
     ///
     /// * See description.
     pub fn get_error_string(&self, error: crate::ErrorType) -> String {
-
         let error_index = error as usize;
-        if !self.core_manager.map_error().get_element_by_value(error_index) {
+        if !self
+            .core_manager
+            .map_error()
+            .get_element_by_value(error_index)
+        {
             return format!("{}{}", crate::ERROR_PREFIX, error_index);
         }
 
