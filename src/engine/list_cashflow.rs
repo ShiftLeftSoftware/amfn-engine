@@ -34,8 +34,6 @@ impl ListTrait for ListCashflow {
     /// Clear all cashflows from the cashflow list.
 
     fn clear(&mut self) {
-        self.calc_mgr().list_locale().select_cashflow_locale("");
-
         self.list_cashflow.clear();
         self.list_index.set(usize::MAX);
     }

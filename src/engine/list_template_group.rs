@@ -43,8 +43,8 @@ impl ListTrait for ListTemplateGroup {
     fn clear(&mut self) {
         self.list_template_group.clear();
         self.list_index.set(usize::MAX);
-        self.sort_on_add = Cell::new(true);
-        self.sort_updated = Cell::new(false);
+        self.sort_on_add.set(true);
+        self.sort_updated.set(false);
     }
 
     /// Get the count of the template group list.
