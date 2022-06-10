@@ -137,7 +137,7 @@ impl ElemDescriptor {
     /// * See description.
 
     pub fn value(&self) -> String {
-        String::from(self.value.borrow().as_str())
+        self.value.borrow().clone()
     }
 
     /// Get the descriptor value expression.
@@ -147,7 +147,7 @@ impl ElemDescriptor {
     /// * See description.
 
     pub fn value_expr(&self) -> String {
-        String::from(self.value_expr.as_str())
+        self.value_expr.clone()
     }
 
     /// Get the descriptor propagate.

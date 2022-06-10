@@ -62,7 +62,7 @@ impl CalcCalculate {
         let dd = calc_manager_param.borrow().decimal_digits(false);
 
         let list_descriptor: Option<ListDescriptor>;
-        match list_descriptor_cashflow_param.as_ref() {
+        match list_descriptor_cashflow_param {
             None => {
                 list_descriptor = None;
             }
@@ -1801,7 +1801,7 @@ impl CalcCalculate {
             action = 0;
             if next_element1 && next_element2 {
                 let extension1: &ElemExtension;
-                match extension1_opt.as_ref() {
+                match extension1_opt {
                     None => {
                         return Err(crate::ErrorType::Index);
                     }
@@ -1811,7 +1811,7 @@ impl CalcCalculate {
                 }
 
                 let extension2: &ElemExtension;
-                match extension2_opt.as_ref() {
+                match extension2_opt {
                     None => {
                         return Err(crate::ErrorType::Index);
                     }
@@ -1873,7 +1873,7 @@ impl CalcCalculate {
                 list_am_opt = Option::from(list_am2);
             }
             let list_am: &ListAmortization;
-            match list_am_opt.as_ref() {
+            match list_am_opt {
                 None => {
                     return Err(crate::ErrorType::Index);
                 }
@@ -1883,7 +1883,7 @@ impl CalcCalculate {
             }
 
             let mut list_descriptor_copy: ListDescriptor;
-            match list_am.list_descriptor().as_ref() {
+            match list_am.list_descriptor() {
                 None => {
                     return Err(crate::ErrorType::Index);
                 }
@@ -1899,7 +1899,7 @@ impl CalcCalculate {
                 if elem_type1 == crate::ExtensionType::PrincipalChange {
                     value += list_am2.value();
                 }
-                match list_am2.list_descriptor().as_ref() {
+                match list_am2.list_descriptor() {
                     None => {
                         return Err(crate::ErrorType::Index);
                     }
@@ -1912,7 +1912,7 @@ impl CalcCalculate {
             let new_elem_extension = list_am.elem_extension().copy();
 
             let list_parameter: Option<ListParameter>;
-            match list_am.list_parameter().as_ref() {
+            match list_am.list_parameter() {
                 None => {
                     return Err(crate::ErrorType::Index);
                 }
@@ -2021,7 +2021,7 @@ impl CalcCalculate {
             let new_elem_extension = list_am.elem_extension().copy();
             let new_eom = new_elem_extension.extension_eom();
             let new_list_parameter: ListParameter;
-            match list_am.list_parameter().as_ref() {
+            match list_am.list_parameter() {
                 None => {
                     return Err(crate::ErrorType::Index);
                 }
@@ -2030,7 +2030,7 @@ impl CalcCalculate {
                 }
             }
             let mut new_list_descriptor: ListDescriptor;
-            match list_am.list_descriptor().as_ref() {
+            match list_am.list_descriptor() {
                 None => {
                     return Err(crate::ErrorType::Index);
                 }
@@ -2070,7 +2070,7 @@ impl CalcCalculate {
                     }
                     let mut break_on_descriptor = false;
                     if !compress_descriptor {
-                        match list_descriptor.as_ref() {
+                        match list_descriptor {
                             None => {
                                 return Err(crate::ErrorType::Index);
                             }
@@ -2102,7 +2102,7 @@ impl CalcCalculate {
                     }
 
                     if compress_descriptor {
-                        match list_descriptor.as_ref() {
+                        match list_descriptor {
                             None => {
                                 return Err(crate::ErrorType::Index);
                             }
@@ -2217,7 +2217,7 @@ impl CalcCalculate {
                     let new_frequency = rollup_list_am.frequency();
                     let new_elem_extension = rollup_list_am.elem_extension().copy();
                     let new_list_parameter: ListParameter;
-                    match rollup_list_am.list_parameter().as_ref() {
+                    match rollup_list_am.list_parameter() {
                         None => {
                             return Err(crate::ErrorType::Index);
                         }
@@ -2226,7 +2226,7 @@ impl CalcCalculate {
                         }
                     }
                     let new_list_descriptor: ListDescriptor;
-                    match rollup_list_am.list_descriptor().as_ref() {
+                    match rollup_list_am.list_descriptor() {
                         None => {
                             return Err(crate::ErrorType::Index);
                         }
@@ -2288,7 +2288,7 @@ impl CalcCalculate {
 
                 let new_elem_extension = list_am.elem_extension().copy();
                 let new_list_parameter: ListParameter;
-                match list_am.list_parameter().as_ref() {
+                match list_am.list_parameter() {
                     None => {
                         return Err(crate::ErrorType::Index);
                     }
@@ -2297,7 +2297,7 @@ impl CalcCalculate {
                     }
                 }
                 let new_list_descriptor: ListDescriptor;
-                match list_am.list_descriptor().as_ref() {
+                match list_am.list_descriptor() {
                     None => {
                         return Err(crate::ErrorType::Index);
                     }
@@ -2420,7 +2420,7 @@ impl CalcCalculate {
             let value_expr = list_event.value_expr();
             let value_expr_balance = list_event.value_expr_balance();
             let list_parameter: ListParameter;
-            match list_event.list_parameter().as_ref() {
+            match list_event.list_parameter() {
                 None => {
                     return Err(crate::ErrorType::Index);
                 }
@@ -2487,7 +2487,7 @@ impl CalcCalculate {
 
             let list_desc = list_event.list_descriptor();
             let list_descriptor: &ListDescriptor;
-            match list_desc.as_ref() {
+            match list_desc {
                 None => {
                     return Err(crate::ErrorType::Index);
                 }
@@ -3016,7 +3016,7 @@ impl CalcCalculate {
             let new_elem_extension = list_am.elem_extension().copy();
 
             let mut new_list_parameter: ListParameter;
-            match list_am.list_parameter().as_ref() {
+            match list_am.list_parameter() {
                 None => {
                     return Err(crate::ErrorType::Index);
                 }
@@ -3026,7 +3026,7 @@ impl CalcCalculate {
             }
 
             let mut new_list_descriptor: ListDescriptor;
-            match list_am.list_descriptor().as_ref() {
+            match list_am.list_descriptor() {
                 None => {
                     return Err(crate::ErrorType::Index);
                 }
@@ -3060,7 +3060,7 @@ impl CalcCalculate {
                     let elem_extension = list_am.elem_extension().copy();
 
                     let list_parameter: ListParameter;
-                    match list_am.list_parameter().as_ref() {
+                    match list_am.list_parameter() {
                         None => {
                             return Err(crate::ErrorType::Index);
                         }
@@ -3070,7 +3070,7 @@ impl CalcCalculate {
                     }
 
                     let list_descriptor: ListDescriptor;
-                    match list_am.list_descriptor().as_ref() {
+                    match list_am.list_descriptor() {
                         None => {
                             return Err(crate::ErrorType::Index);
                         }
@@ -3127,7 +3127,7 @@ impl CalcCalculate {
                 }
 
                 let list_parameter = list_am.list_parameter();
-                match list_parameter.as_ref() {
+                match list_parameter {
                     None => {
                         return Err(crate::ErrorType::Index);
                     }
@@ -3138,7 +3138,7 @@ impl CalcCalculate {
                     }
                 }
                 let list_descriptor = list_am.list_descriptor();
-                match list_descriptor.as_ref() {
+                match list_descriptor {
                     None => {
                         return Err(crate::ErrorType::Index);
                     }
@@ -3219,7 +3219,7 @@ impl CalcCalculate {
                 );
                 let elem_extension = list_am.elem_extension().copy();
                 let list_parameter: ListParameter;
-                match list_am.list_parameter().as_ref() {
+                match list_am.list_parameter() {
                     None => {
                         return Err(crate::ErrorType::Index);
                     }
@@ -3229,7 +3229,7 @@ impl CalcCalculate {
                 }
 
                 let list_descriptor: ListDescriptor;
-                match list_am.list_descriptor().as_ref() {
+                match list_am.list_descriptor() {
                     None => {
                         return Err(crate::ErrorType::Index);
                     }
@@ -3532,7 +3532,7 @@ impl CalcCalculate {
                             let new_list_parameter = ListParameter::new();
                             let mut new_list_descriptor = ListDescriptor::new();
 
-                            match list_descriptor.as_ref() {
+                            match list_descriptor {
                                 None => {
                                     return Err(crate::ErrorType::Index);
                                 }
@@ -3588,7 +3588,7 @@ impl CalcCalculate {
                         let new_list_parameter = ListParameter::new();
                         let mut new_list_descriptor = ListDescriptor::new();
 
-                        match list_descriptor.as_ref() {
+                        match list_descriptor {
                             None => {
                                 return Err(crate::ErrorType::Index);
                             }
@@ -3635,7 +3635,7 @@ impl CalcCalculate {
 
                             let new_list_parameter = ListParameter::new();
                             let mut new_list_descriptor = ListDescriptor::new();
-                            match list_descriptor.as_ref() {
+                            match list_descriptor {
                                 None => {
                                     return Err(crate::ErrorType::Index);
                                 }
@@ -3676,7 +3676,7 @@ impl CalcCalculate {
                         let new_list_parameter = ListParameter::new();
                         let mut new_list_descriptor = ListDescriptor::new();
 
-                        match list_descriptor.as_ref() {
+                        match list_descriptor {
                             None => {
                                 return Err(crate::ErrorType::Index);
                             }
@@ -3719,7 +3719,7 @@ impl CalcCalculate {
                         let new_list_parameter = ListParameter::new();
                         let mut new_list_descriptor = ListDescriptor::new();
 
-                        match list_descriptor.as_ref() {
+                        match list_descriptor {
                             None => {
                                 return Err(crate::ErrorType::Index);
                             }
@@ -3759,7 +3759,7 @@ impl CalcCalculate {
                     let new_list_parameter = ListParameter::new();
                     let mut new_list_descriptor = ListDescriptor::new();
 
-                    match list_descriptor.as_ref() {
+                    match list_descriptor {
                         None => {
                             return Err(crate::ErrorType::Index);
                         }
@@ -3801,7 +3801,7 @@ impl CalcCalculate {
                         let new_list_parameter = ListParameter::new();
                         let mut new_list_descriptor = ListDescriptor::new();
 
-                        match list_descriptor.as_ref() {
+                        match list_descriptor {
                             None => {
                                 return Err(crate::ErrorType::Index);
                             }

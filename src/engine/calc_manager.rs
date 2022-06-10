@@ -292,7 +292,7 @@ impl CalcManager {
     pub fn compress_descriptor(&self, cashflow: bool) -> bool {
         if cashflow {
             let cashflow_preferences = self.list_cashflow().preferences();
-            match cashflow_preferences.as_ref() {
+            match cashflow_preferences {
                 None => {
                     return false;
                 }
@@ -325,7 +325,7 @@ impl CalcManager {
     pub fn cross_rate_code(&self, cashflow: bool) -> &str {
         if cashflow {
             let cashflow_preferences = self.list_cashflow().preferences();
-            match cashflow_preferences.as_ref() {
+            match cashflow_preferences {
                 None => {
                     return "";
                 }
@@ -354,7 +354,7 @@ impl CalcManager {
     pub fn fiscal_year_start(&self, cashflow: bool) -> usize {
         if cashflow {
             let cashflow_preferences = self.list_cashflow().preferences();
-            match cashflow_preferences.as_ref() {
+            match cashflow_preferences {
                 None => {
                     return crate::DEFAULT_FISCAL_YEAR_START;
                 }
@@ -388,7 +388,7 @@ impl CalcManager {
     pub fn decimal_digits(&self, cashflow: bool) -> usize {
         if cashflow {
             let cashflow_preferences = self.list_cashflow().preferences();
-            match cashflow_preferences.as_ref() {
+            match cashflow_preferences {
                 None => {
                     return crate::DEFAULT_DECIMAL_DIGITS;
                 }
@@ -422,7 +422,7 @@ impl CalcManager {
     pub fn default_encoding(&self, cashflow: bool) -> &str {
         if cashflow {
             let cashflow_preferences = self.list_cashflow().preferences();
-            match cashflow_preferences.as_ref() {
+            match cashflow_preferences {
                 None => {
                     return crate::DEFAULT_ENCODING;
                 }
@@ -450,7 +450,7 @@ impl CalcManager {
 
     pub fn target(&self) -> Decimal {
         let cashflow_preferences = self.list_cashflow().preferences();
-        match cashflow_preferences.as_ref() {
+        match cashflow_preferences {
             None => self.preferences().target(),
             Some(o) => o.target(),
         }
@@ -486,14 +486,14 @@ impl CalcManager {
         let mut list_descriptor_event: Option<&ListDescriptor> = None;
 
         if cashflow {
-            match self.list_cashflow().preferences().as_ref() {
+            match self.list_cashflow().preferences() {
                 None => {}
                 Some(o) => {
                     list_descriptor_cashflow = Option::from(o.list_descriptor());
                 }
             }
             if is_event {
-                match self.list_cashflow().list_event().as_ref() {
+                match self.list_cashflow().list_event() {
                     None => {}
                     Some(o2) => {
                         list_descriptor_event = o2.list_descriptor();
@@ -527,7 +527,7 @@ impl CalcManager {
     pub fn group(&self, cashflow: bool) -> &str {
         if cashflow {
             let cashflow_preferences = self.list_cashflow().preferences();
-            match cashflow_preferences.as_ref() {
+            match cashflow_preferences {
                 None => {}
                 Some(o) => {
                     if !o.group().is_empty() {
@@ -713,7 +713,7 @@ impl CalcManager {
     pub fn locale(&self, cashflow: bool) -> String {
         let cashflow_preferences = self.list_cashflow().preferences();
 
-        match cashflow_preferences.as_ref() {
+        match cashflow_preferences {
             None => {}
             Some(o) => {
                 if cashflow && !o.locale_str().is_empty() {
@@ -745,7 +745,7 @@ impl CalcManager {
     pub fn statistic_events(&self, cashflow: bool) -> bool {
         let cashflow_preferences = self.list_cashflow().preferences();
 
-        match cashflow_preferences.as_ref() {
+        match cashflow_preferences {
             None => {}
             Some(o) => {
                 if cashflow && o.statistic_events() >= 0 {

@@ -356,7 +356,7 @@ impl ListEvent {
                 let new_extension = o.elem_extension().copy();
 
                 let mut list_parameter_opt: Option<ListParameter> = None;
-                match o.list_parameter().as_ref() {
+                match o.list_parameter() {
                     None => {}
                     Some(o2) => {
                         list_parameter_opt = Option::from(o2.copy(updating_json_param));
@@ -364,7 +364,7 @@ impl ListEvent {
                 }
 
                 let mut list_descriptor_opt: Option<ListDescriptor> = None;
-                match o.list_descriptor().as_ref() {
+                match o.list_descriptor() {
                     None => {}
                     Some(o2) => {
                         list_descriptor_opt = Option::from(o2.copy(false, updating_json_param));

@@ -304,14 +304,14 @@ impl ListAmortization {
             let mut list_parameter_opt: Option<ListParameter> = None;
             let mut list_descriptor_opt: Option<ListDescriptor> = None;
 
-            match elem.list_parameter().as_ref() {
+            match elem.list_parameter() {
                 None => {}
                 Some(o) => {
                     list_parameter_opt = Option::from(o.copy(updating_json));
                 }
             }
 
-            match elem.list_descriptor().as_ref() {
+            match elem.list_descriptor() {
                 None => {}
                 Some(o) => {
                     list_descriptor_opt = Option::from(o.copy(false, updating_json));

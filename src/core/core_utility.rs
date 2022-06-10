@@ -696,24 +696,24 @@ impl CoreUtility {
         let mut value = String::from("");
         let mut orig_list_index: usize;
 
-        match list_descriptor_event_opt.as_ref() {
+        match list_descriptor_event_opt {
             None => {}
             Some(o) => {
                 orig_list_index = o.index();
                 if o.get_element_by_name(group, name, desc_type, code, true) {
-                    value = String::from(o.value().as_str());
+                    value = o.value();
                     o.get_element(orig_list_index);
                 }
             }
         }
 
         if value.is_empty() {
-            match list_descriptor_cashflow_opt.as_ref() {
+            match list_descriptor_cashflow_opt {
                 None => {}
                 Some(o) => {
                     orig_list_index = o.index();
                     if o.get_element_by_name(group, name, desc_type, code, true) {
-                        value = String::from(o.value().as_str());
+                        value = o.value();
                         o.get_element(orig_list_index);
                     }
                 }
@@ -721,12 +721,12 @@ impl CoreUtility {
         }
 
         if value.is_empty() {
-            match list_descriptor_user_opt.as_ref() {
+            match list_descriptor_user_opt {
                 None => {}
                 Some(o) => {
                     orig_list_index = o.index();
                     if o.get_element_by_name(group, name, desc_type, code, true) {
-                        value = String::from(o.value().as_str());
+                        value = o.value();
                         o.get_element(orig_list_index);
                     }
                 }

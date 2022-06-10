@@ -302,7 +302,7 @@ impl CalcEngine {
             let new_extension = new_list_event.elem_extension().copy();
 
             let mut list_parameter_opt: Option<ListParameter> = None;
-            match new_list_event.list_parameter().as_ref() {
+            match new_list_event.list_parameter() {
                 None => {}
                 Some(o2) => {
                     list_parameter_opt = Option::from(o2.copy(true));
@@ -310,7 +310,7 @@ impl CalcEngine {
             }
 
             let mut list_descriptor_opt: Option<ListDescriptor> = None;
-            match new_list_event.list_descriptor().as_ref() {
+            match new_list_event.list_descriptor() {
                 None => {}
                 Some(o2) => {
                     list_descriptor_opt = Option::from(o2.copy(false, true));
@@ -1914,7 +1914,7 @@ impl CalcEngine {
                     list_event.elem_type(),
                     list_event.elem_extension(),
                 );
-                match preferences_cashflow.as_ref() {
+                match preferences_cashflow {
                     None => {
                         panic!("Missing cashflow preferences");
                     }

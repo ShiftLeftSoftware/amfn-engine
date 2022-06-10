@@ -199,7 +199,7 @@ impl CalcUtility {
             }
 
             let mut list_descriptor_cashflow: Option<&ListDescriptor> = None;
-            match calc_mgr.list_cashflow().preferences().as_ref() {
+            match calc_mgr.list_cashflow().preferences() {
                 None => {}
                 Some(o) => {
                     list_descriptor_cashflow = Option::from(o.list_descriptor());
@@ -278,7 +278,7 @@ impl CalcUtility {
         let calc_mgr = calc_manager.borrow();
         let mut list_descriptor_cashflow: Option<&ListDescriptor> = None;
 
-        match calc_mgr.list_cashflow().preferences().as_ref() {
+        match calc_mgr.list_cashflow().preferences() {
             None => {}
             Some(o) => {
                 list_descriptor_cashflow = Option::from(o.list_descriptor());
@@ -341,7 +341,7 @@ impl CalcUtility {
         let mut result = String::from("");
 
         let list_event: &ListEvent;
-        match list_event_opt.as_ref() {
+        match list_event_opt {
             None => {
                 return result;
             }
@@ -358,7 +358,7 @@ impl CalcUtility {
         match CoreUtility::get_col_name(elem_column.col_name_index()) {
             crate::ColumnType::None => {
                 let list_descriptor_opt = list_event.list_descriptor();
-                match list_descriptor_opt.as_ref() {
+                match list_descriptor_opt {
                     None => {
                         return result;
                     }
@@ -397,7 +397,7 @@ impl CalcUtility {
                                     }
                                 },
                                 _ => {
-                                    result = String::from(o.value().as_str());
+                                    result = o.value();
                                 }
                             }
                         }
@@ -475,7 +475,7 @@ impl CalcUtility {
                     result = list_locale.format_date_out(val);
                 }
             }
-            crate::ColumnType::ParameterList => match list_event.list_parameter().as_ref() {
+            crate::ColumnType::ParameterList => match list_event.list_parameter() {
                 None => {
                     result = String::from("");
                 }
@@ -485,7 +485,7 @@ impl CalcUtility {
                     }
                 }
             },
-            crate::ColumnType::DescriptorList => match list_event.list_descriptor().as_ref() {
+            crate::ColumnType::DescriptorList => match list_event.list_descriptor() {
                 None => {
                     result = String::from("");
                 }
@@ -538,7 +538,7 @@ impl CalcUtility {
         let elem_balance_result_opt = list_cashflow.elem_balance_result();
 
         let elem_balance_result: &ElemBalanceResult;
-        match elem_balance_result_opt.as_ref() {
+        match elem_balance_result_opt {
             None => {
                 return String::from("");
             }
@@ -561,7 +561,7 @@ impl CalcUtility {
         match CoreUtility::get_col_name(elem_column.col_name_index()) {
             crate::ColumnType::None => {
                 let list_descriptor_opt = list_am.list_descriptor();
-                match list_descriptor_opt.as_ref() {
+                match list_descriptor_opt {
                     None => {}
                     Some(o) => {
                         if o.get_element_by_name(
@@ -605,7 +605,7 @@ impl CalcUtility {
                                     }
                                 },
                                 _ => {
-                                    result = String::from(o.value().as_str());
+                                    result = o.value();
                                 }
                             }
                         }
@@ -686,7 +686,7 @@ impl CalcUtility {
                     list_locale.get_resource(calc_mgr.core_manager().map_frequency().key()),
                 );
             }
-            crate::ColumnType::ParameterList => match list_am.list_parameter().as_ref() {
+            crate::ColumnType::ParameterList => match list_am.list_parameter() {
                 None => {
                     result = String::from("");
                 }
@@ -696,7 +696,7 @@ impl CalcUtility {
                     }
                 }
             },
-            crate::ColumnType::DescriptorList => match list_am.list_descriptor().as_ref() {
+            crate::ColumnType::DescriptorList => match list_am.list_descriptor() {
                 None => {
                     result = String::from("");
                 }
@@ -1193,7 +1193,7 @@ impl CalcUtility {
 
         let list_parameter: &ListParameter;
         let list_descriptor: &ListDescriptor;
-        match preferences.as_ref() {
+        match preferences {
             None => {
                 return list_summary;
             }
@@ -1331,7 +1331,7 @@ impl CalcUtility {
 
             if tokens.len() < 2 {
                 label_expr = String::from(name);
-                result_expr = String::from(text.as_str());
+                result_expr = text;
             } else {
                 label_expr = String::from(tokens[0].trim());
                 result_expr = String::from(tokens[1].trim());
@@ -1458,7 +1458,7 @@ impl CalcUtility {
             let list_event_opt = list_cashflow.list_event();
 
             let list_event: &ListEvent;
-            match list_event_opt.as_ref() {
+            match list_event_opt {
                 None => {
                     return result;
                 }

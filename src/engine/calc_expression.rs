@@ -3860,7 +3860,7 @@ impl CalcExpression {
         }
         let sym_table = self.symbol_table();
         let elem_symbol = sym_table.get_symbol(elem_result_symbol.sym_string());
-        match elem_symbol.as_ref() {
+        match elem_symbol {
             None => {
                 elem_result_symbol.set_integer(crate::TokenType::Unknown as usize);
             }

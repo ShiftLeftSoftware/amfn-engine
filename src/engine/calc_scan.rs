@@ -189,7 +189,7 @@ impl CalcScan {
             self.expr_index += 1;
         }
 
-        self.token = String::from(self.accum_token.as_str());
+        self.token = self.accum_token.clone();
         let length = self.accum_token.len();
 
         if length > 0 {

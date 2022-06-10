@@ -528,7 +528,7 @@ impl ListLocale {
         let text = format!("{:04}-{:02}-{:02}", val / 10000, val / 100 % 100, val % 100);
 
         match Regex::new(self.get_locale(true).format_out().date_regex()) {
-            Err(_e) => String::from(text.as_str()),
+            Err(_e) => text,
             Ok(o) => o
                 .replace(
                     text.as_str(),
@@ -552,7 +552,7 @@ impl ListLocale {
         let text = val.to_string();
 
         match Regex::new(self.get_locale(true).format_out().integer_regex()) {
-            Err(_e) => String::from(text.as_str()),
+            Err(_e) => text,
             Ok(o) => o
                 .replace(
                     text.as_str(),
@@ -600,7 +600,7 @@ impl ListLocale {
         }
 
         match Regex::new(self.get_locale(true).format_out().decimal_regex()) {
-            Err(_e) => String::from(text.as_str()),
+            Err(_e) => text,
             Ok(o) => o
                 .replace(
                     text.as_str(),
@@ -641,7 +641,7 @@ impl ListLocale {
         }
 
         match Regex::new(self.get_locale(true).format_out().currency_regex()) {
-            Err(_e) => String::from(text.as_str()),
+            Err(_e) => text,
             Ok(o) => o
                 .replace(
                     text.as_str(),

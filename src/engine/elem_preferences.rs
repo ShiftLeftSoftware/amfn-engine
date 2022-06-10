@@ -98,7 +98,7 @@ impl ElemPreferences {
     ) -> ElemPreferences {
         let new_list_parameter: ListParameter;
         let new_list_descriptor: ListDescriptor;
-        match list_parameter_param.as_ref() {
+        match list_parameter_param {
             None => {
                 new_list_parameter = ListParameter::new();
             }
@@ -107,7 +107,7 @@ impl ElemPreferences {
             }
         }
 
-        match list_descriptor_param.as_ref() {
+        match list_descriptor_param {
             None => {
                 new_list_descriptor = ListDescriptor::new();
             }

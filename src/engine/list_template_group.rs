@@ -252,7 +252,7 @@ impl ListTemplateGroup {
                     group_index += 1;
                 }
 
-                group = String::from(temp_group.as_str());
+                group = temp_group;
             }
         }
         let elem_preferences: ElemPreferences;

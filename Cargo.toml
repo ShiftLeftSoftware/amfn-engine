@@ -1,6 +1,6 @@
 [package]
 name = "amfnengine"
-version = "0.3.3"
+version = "0.3.4"
 authors = ["ShiftLeft Software"]
 description = "Amortization Functions (AmFn) Engine"
 homepage = "https://shiftleftsoftware.com"
@@ -18,7 +18,7 @@ compare = "~0.1"
 rust_decimal = "~1.10"
 chrono = "~0.4"
 json = "~0.12"
-regex = "~1.4"
+regex = "~1.5.5"
 
 [profile.release]
 lto = true
