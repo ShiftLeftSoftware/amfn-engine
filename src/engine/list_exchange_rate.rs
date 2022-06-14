@@ -550,8 +550,7 @@ impl ListExchangeRate {
     /// Sort the exchange rate list.
 
     fn sort(&mut self) {
-        self.list_exchange_rate
-            .sort_by(|a, b| ListExchangeRate::cmp(a, b));
+        self.list_exchange_rate.sort_by(ListExchangeRate::cmp);
     }
 
     /// Sort compare function.

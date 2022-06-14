@@ -442,15 +442,10 @@ impl ListParameter {
     /// * True if successful, otherwise false.
 
     pub fn move_param(&mut self, is_up: bool) -> bool {
-        let name: String;
-        match self.list_parameter.get_mut(self.list_index.get()) {
-            None => {
-                return false;
-            }
-            Some(o) => {
-                name = String::from(o.name());
-            }
-        }
+        let name: String = match self.list_parameter.get_mut(self.list_index.get()) {
+            None => return false,
+            Some(o) => String::from(o.name()),
+        };
 
         if is_up {
             if self.list_index.get() == 0 {

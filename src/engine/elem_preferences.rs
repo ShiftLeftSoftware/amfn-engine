@@ -96,25 +96,15 @@ impl ElemPreferences {
         copy_propagate_param: bool,
         updating_json: bool,
     ) -> ElemPreferences {
-        let new_list_parameter: ListParameter;
-        let new_list_descriptor: ListDescriptor;
-        match list_parameter_param {
-            None => {
-                new_list_parameter = ListParameter::new();
-            }
-            Some(o) => {
-                new_list_parameter = o.copy(updating_json);
-            }
-        }
+        let new_list_parameter: ListParameter = match list_parameter_param {
+            None => ListParameter::new(),
+            Some(o) => o.copy(updating_json),
+        };
 
-        match list_descriptor_param {
-            None => {
-                new_list_descriptor = ListDescriptor::new();
-            }
-            Some(o) => {
-                new_list_descriptor = o.copy(copy_propagate_param, updating_json);
-            }
-        }
+        let new_list_descriptor: ListDescriptor = match list_descriptor_param {
+            None => ListDescriptor::new(),
+            Some(o) => o.copy(copy_propagate_param, updating_json),
+        };
 
         ElemPreferences {
             calc_manager: Rc::clone(calc_manager_param),

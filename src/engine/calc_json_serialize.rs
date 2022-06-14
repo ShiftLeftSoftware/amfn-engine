@@ -152,8 +152,7 @@ impl CalcJsonSerialize {
         let compress_descriptor = calc_mgr.compress_descriptor(true);
         let omit_statistic_events = calc_mgr.statistic_events(true);
 
-        let list_am: ListAmortization;
-        match calc_mgr.list_cashflow().create_cashflow_output(
+        let list_am: ListAmortization = match calc_mgr.list_cashflow().create_cashflow_output(
             include_rollups,
             include_details,
             compress_descriptor,
@@ -161,12 +160,10 @@ impl CalcJsonSerialize {
             true,
         ) {
             Err(_e) => {
-                panic!("Cannot create amortization list for output");
+                panic!("Cannot create amortization list for output")
             }
-            Ok(o) => {
-                list_am = o;
-            }
-        }
+            Ok(o) => o,
+        };
 
         buf.push_str(self.indent().as_str());
         buf.push_str("\"am-list\": [");
@@ -1249,15 +1246,10 @@ impl CalcJsonSerialize {
             buf.push_str(crate::LINE_ENDING);
         }
 
-        let dd: usize;
-        match interest_change.round_decimal_digits().to_usize() {
-            None => {
-                dd = 0;
-            }
-            Some(o) => {
-                dd = o;
-            }
-        }
+        let dd: usize = interest_change
+            .round_decimal_digits()
+            .to_usize()
+            .unwrap_or(0);
 
         if all_data || dd != decimal_digits {
             buf.push_str(self.indent().as_str());

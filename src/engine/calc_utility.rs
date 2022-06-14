@@ -212,12 +212,10 @@ impl CalcUtility {
                 list_descriptor.value_expr().as_str(),
             );
 
-            let elem_result_symbol: ElemSymbol;
-            let result = expression.borrow().evaluate(
+            let elem_result_symbol: ElemSymbol = match expression.borrow().evaluate(
                 calc_mgr.list_cashflow().list_amortization(),
                 calc_mgr.list_cashflow().elem_balance_result(),
-            );
-            match result {
+            ) {
                 Err(e) => {
                     let error_string = calc_mgr.get_error_string(e);
                     list_descriptor
@@ -226,26 +224,19 @@ impl CalcUtility {
                     index += 1;
                     continue;
                 }
-                Ok(o) => {
-                    elem_result_symbol = o;
-                }
-            }
+                Ok(o) => o,
+            };
 
-            let value: String;
-            match elem_result_symbol.sym_type() {
+            let value: String = match elem_result_symbol.sym_type() {
                 crate::TokenType::Integer => {
-                    value = format!("{}", elem_result_symbol.sym_integer());
+                    format!("{}", elem_result_symbol.sym_integer())
                 }
                 crate::TokenType::Decimal => {
-                    value = format!("{}", elem_result_symbol.sym_decimal());
+                    format!("{}", elem_result_symbol.sym_decimal())
                 }
-                crate::TokenType::String => {
-                    value = String::from(elem_result_symbol.sym_string());
-                }
-                _ => {
-                    value = String::from("");
-                }
-            }
+                crate::TokenType::String => String::from(elem_result_symbol.sym_string()),
+                _ => String::from(""),
+            };
             list_descriptor.set_value(value.as_str());
             calc_mgr.list_locale().select_event_locale("");
 
@@ -286,7 +277,7 @@ impl CalcUtility {
         }
 
         let mut expression = CalcExpression::new(
-            &calc_manager,
+            calc_manager,
             calc_mgr.fiscal_year_start(cashflow),
             calc_mgr.decimal_digits(cashflow),
         );
@@ -340,15 +331,10 @@ impl CalcUtility {
         let list_event_opt = list_cashflow.list_event();
         let mut result = String::from("");
 
-        let list_event: &ListEvent;
-        match list_event_opt {
-            None => {
-                return result;
-            }
-            Some(o) => {
-                list_event = o;
-            }
-        }
+        let list_event: &ListEvent = match list_event_opt {
+            None => return result,
+            Some(o) => o,
+        };
 
         let orig_list_index = list_event.index();
         list_locale.select_event_locale("");
@@ -537,15 +523,10 @@ impl CalcUtility {
         let list_cashflow = calc_mgr.list_cashflow();
         let elem_balance_result_opt = list_cashflow.elem_balance_result();
 
-        let elem_balance_result: &ElemBalanceResult;
-        match elem_balance_result_opt {
-            None => {
-                return String::from("");
-            }
-            Some(o) => {
-                elem_balance_result = o;
-            }
-        }
+        let elem_balance_result: &ElemBalanceResult = match elem_balance_result_opt {
+            None => return String::from(""),
+            Some(o) => o,
+        };
 
         let orig_list_index = list_am.index();
         if orig_list_index == usize::MAX {
@@ -868,7 +849,7 @@ impl CalcUtility {
         new_line: bool,
     ) -> String {
         let mut calc_expression = CalcExpression::new(
-            &calc_manager,
+            calc_manager,
             calc_manager.borrow().fiscal_year_start(false),
             calc_manager.borrow().decimal_digits(false),
         );
@@ -905,12 +886,11 @@ impl CalcUtility {
             crate::GROUP_EVENT
         });
 
-        let locale_str: &str;
-        if cashflow {
-            locale_str = list_locale.cashflow_locale().locale_str();
+        let locale_str: &str = if cashflow {
+            list_locale.cashflow_locale().locale_str()
         } else {
-            locale_str = list_locale.user_locale().locale_str();
-        }
+            list_locale.user_locale().locale_str()
+        };
 
         let mut columns = calc_manager.borrow().descriptor_value(
             group.as_str(),
@@ -1204,51 +1184,34 @@ impl CalcUtility {
         }
 
         let mut calc_expression = CalcExpression::new(
-            &calc_manager,
+            calc_manager,
             calc_mgr.fiscal_year_start(true),
             calc_mgr.decimal_digits(true),
         );
 
-        let mut last_yield: Decimal;
-        match list_cashflow.elem_balance_result() {
+        let mut last_yield: Decimal = match list_cashflow.elem_balance_result() {
             None => {
-                last_yield = dec!(0.0);
+                dec!(0.0)
             }
-            Some(o) => {
-                last_yield = o.result_yield();
-            }
-        }
+            Some(o) => o.result_yield(),
+        };
 
         if last_yield == dec!(0.0) {
-            let list_event: &ListEvent;
-            match list_cashflow.list_event() {
-                None => {
-                    return list_summary;
-                }
-                Some(o) => {
-                    list_event = o;
-                }
-            }
+            let list_event: &ListEvent = match list_cashflow.list_event() {
+                None => return list_summary,
+                Some(o) => o,
+            };
 
-            let mut list_am: ListAmortization;
-            match list_cashflow.list_amortization() {
-                None => {
-                    return list_summary;
-                }
-                Some(o) => {
-                    list_am = o.copy(true);
-                }
-            }
+            let mut list_am: ListAmortization = match list_cashflow.list_amortization() {
+                None => return list_summary,
+                Some(o) => o.copy(true),
+            };
 
-            let mut list_stat_helper: ListStatisticHelper;
-            match list_cashflow.list_statistic_helper() {
-                None => {
-                    return list_summary;
-                }
-                Some(o) => {
-                    list_stat_helper = o.copy();
-                }
-            }
+            let mut list_stat_helper: ListStatisticHelper =
+                match list_cashflow.list_statistic_helper() {
+                    None => return list_summary,
+                    Some(o) => o.copy(),
+                };
 
             match list_cashflow.calculate().calculate_yield(
                 list_event,
@@ -1336,6 +1299,7 @@ impl CalcUtility {
                 label_expr = String::from(tokens[0].trim());
                 result_expr = String::from(tokens[1].trim());
             }
+
             calc_expression.init_expression(
                 Option::from(list_descriptor),
                 None,
@@ -1457,15 +1421,10 @@ impl CalcUtility {
             let list_cashflow = calc_mgr.list_cashflow();
             let list_event_opt = list_cashflow.list_event();
 
-            let list_event: &ListEvent;
-            match list_event_opt {
-                None => {
-                    return result;
-                }
-                Some(o) => {
-                    list_event = o;
-                }
-            }
+            let list_event: &ListEvent = match list_event_opt {
+                None => return result,
+                Some(o) => o,
+            };
 
             if !list_event.get_element(index) {
                 return result;
@@ -1522,15 +1481,10 @@ impl CalcUtility {
             let list_cashflow = calc_mgr.list_cashflow_mut();
             let mut list_event_opt = list_cashflow.list_event_mut();
 
-            let list_event: &mut ListEvent;
-            match list_event_opt.as_mut() {
-                None => {
-                    return result;
-                }
-                Some(o) => {
-                    list_event = o;
-                }
-            }
+            let list_event: &mut ListEvent = match list_event_opt.as_mut() {
+                None => return result,
+                Some(o) => o,
+            };
 
             list_event.set_sort_on_add(false);
 
@@ -1599,15 +1553,10 @@ impl CalcUtility {
             let list_cashflow = calc_mgr.list_cashflow_mut();
             let mut list_event_opt = list_cashflow.list_event_mut();
 
-            let list_event: &mut ListEvent;
-            match list_event_opt.as_mut() {
-                None => {
-                    return result;
-                }
-                Some(o) => {
-                    list_event = o;
-                }
-            }
+            let list_event: &mut ListEvent = match list_event_opt.as_mut() {
+                None => return result,
+                Some(o) => o,
+            };
 
             list_event.set_sort_on_add(true);
         }
@@ -1642,15 +1591,10 @@ impl CalcUtility {
         let list_cashflow = calc_mgr.list_cashflow_mut();
         let mut list_event_opt = list_cashflow.list_event_mut();
 
-        let list_event: &mut ListEvent;
-        match list_event_opt.as_mut() {
-            None => {
-                return false;
-            }
-            Some(o) => {
-                list_event = o;
-            }
-        }
+        let list_event: &mut ListEvent = match list_event_opt.as_mut() {
+            None => return false,
+            Some(o) => o,
+        };
 
         let orig_list_index = list_event.index();
         if !list_event.get_element(index) {
@@ -1719,30 +1663,20 @@ impl CalcUtility {
         let mut calc_mgr = calc_manager.borrow_mut();
         let list_cashflow = calc_mgr.list_cashflow_mut();
 
-        let list_event: &mut ListEvent;
-        match list_cashflow.list_event_mut() {
-            None => {
-                return false;
-            }
-            Some(o) => {
-                list_event = o;
-            }
-        }
+        let list_event: &mut ListEvent = match list_cashflow.list_event_mut() {
+            None => return false,
+            Some(o) => o,
+        };
 
         let orig_index = list_event.index();
         if !list_event.get_element(index_param) {
             return false;
         }
 
-        let list_parameter: &mut ListParameter;
-        match list_event.list_parameter_mut() {
-            None => {
-                return false;
-            }
-            Some(o) => {
-                list_parameter = o;
-            }
-        }
+        let list_parameter: &mut ListParameter = match list_event.list_parameter_mut() {
+            None => return false,
+            Some(o) => o,
+        };
 
         let orig_param_index = list_parameter.index();
         let mut index: usize = 0;

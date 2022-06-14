@@ -108,7 +108,6 @@ impl ListTrait for ListCashflow {
 /// List of currently active cashflows implementation.
 
 impl ListCashflow {
-    
     /// Create and return a new list cashflow.
     ///
     /// # Arguments
@@ -245,15 +244,10 @@ impl ListCashflow {
             list_event_opt = Option::from(ListEvent::new(true));
         }
 
-        let elem_cashflow: ElemCashflow;
-        match elem_preferences {
-            None => {
-                return Err(crate::ErrorType::Cashflow);
-            }
-            Some(o) => {
-                elem_cashflow = ElemCashflow::new(name.as_str(), o, list_event_opt, calculate);
-            }
-        }
+        let elem_cashflow: ElemCashflow = match elem_preferences {
+            None => return Err(crate::ErrorType::Cashflow),
+            Some(o) => ElemCashflow::new(name.as_str(), o, list_event_opt, calculate),
+        };
 
         Ok(elem_cashflow)
     }
@@ -364,15 +358,12 @@ impl ListCashflow {
         let mut principal_changes: usize = 0;
         let mut statistic_values: usize = 0;
 
-        let list_event: &ListEvent;
-        match self.list_event() {
+        let list_event: &ListEvent = match self.list_event() {
             None => {
-                panic!("Event list index not set");
+                panic!("Event list index not set")
             }
-            Some(o) => {
-                list_event = o;
-            }
-        }
+            Some(o) => o,
+        };
 
         let orig_index = list_event.index();
         let mut index: usize = 0;
@@ -896,7 +887,7 @@ impl ListCashflow {
     /// Sort the event list.
 
     pub fn sort(&mut self) {
-        self.list_cashflow.sort_by(|a, b| ListCashflow::cmp(a, b));
+        self.list_cashflow.sort_by(ListCashflow::cmp);
     }
 
     /// Sort compare function.

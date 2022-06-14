@@ -947,8 +947,7 @@ impl ListDescriptor {
     /// Sort the descriptor list.
 
     fn sort(&mut self) {
-        self.list_descriptor
-            .sort_by(|a, b| ListDescriptor::cmp(a, b));
+        self.list_descriptor.sort_by(ListDescriptor::cmp);
     }
 
     /// Sort compare function.

@@ -56,15 +56,10 @@ impl ElemCashflow {
         list_event_param: Option<ListEvent>,
         calculate_param: CalcCalculate,
     ) -> ElemCashflow {
-        let tlist_event: ListEvent;
-        match list_event_param {
-            None => {
-                tlist_event = ListEvent::new(true);
-            }
-            Some(o) => {
-                tlist_event = o;
-            }
-        }
+        let tlist_event: ListEvent = match list_event_param {
+            None => ListEvent::new(true),
+            Some(o) => o,
+        };
 
         ElemCashflow {
             name: String::from(name_param),

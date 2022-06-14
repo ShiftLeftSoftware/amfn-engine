@@ -79,16 +79,13 @@ impl CalcJsonDeserialize {
     /// * ERROR_NONE if successful, otherwise error code.
 
     pub fn deserialize(&self, input_param: String) -> Result<(), crate::ErrorType> {
-        let data: JsonValue;
-        match json::parse(input_param.as_str()) {
+        let data: JsonValue = match json::parse(input_param.as_str()) {
             Err(e) => {
                 println!("Json error: {:?}", e);
                 return Err(crate::ErrorType::Json);
             }
-            Ok(o) => {
-                data = o;
-            }
-        }
+            Ok(o) => o,
+        };
 
         self.calc_mgr().set_updating_json(true);
 
@@ -185,15 +182,10 @@ impl CalcJsonDeserialize {
                 break;
             }
 
-            let name: &str;
-            match cf["name"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    name = o;
-                }
-            }
+            let name: &str = match cf["name"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
             let group = String::from(self.calc_mgr().preferences().group());
             let preferences = self.calc_mgr().preferences().copy(true);
@@ -312,63 +304,32 @@ impl CalcJsonDeserialize {
                 break;
             }
 
-            let mut propagate: bool = false;
-            match desc["propagate"].as_bool() {
-                None => {}
-                Some(o) => {
-                    propagate = o;
-                }
-            }
+            let propagate: bool = desc["propagate"].as_bool().unwrap_or(false);
 
-            let descriptor_code: &str;
-            match desc["descriptor-code"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    descriptor_code = o;
-                }
-            }
+            let descriptor_code: &str = match desc["descriptor-code"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
-            let descriptor_type: &str;
-            match desc["descriptor-type"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    descriptor_type = o;
-                }
-            }
+            let descriptor_type: &str = match desc["descriptor-type"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
-            let group: &str;
-            match desc["group"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    group = o;
-                }
-            }
+            let group: &str = match desc["group"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
-            let name: &str;
-            match desc["name"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    name = o;
-                }
-            }
+            let name: &str = match desc["name"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
-            let value: &str;
-            match desc["value"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    value = o;
-                }
-            }
+            let value: &str = match desc["value"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
             let mut expr = "";
             if !desc["expression"].is_null() {
@@ -433,15 +394,10 @@ impl CalcJsonDeserialize {
                 break;
             }
 
-            let event_date: usize;
-            match ev["event-date"]["date"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    event_date = self.get_date(o);
-                }
-            }
+            let event_date: usize = match ev["event-date"]["date"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => self.get_date(o),
+            };
 
             let mut event_date_expr = "";
             if !ev["event-date"]["expression"].is_null() {
@@ -494,15 +450,10 @@ impl CalcJsonDeserialize {
                 }
             }
 
-            let periods: usize;
-            match ev["event-periods"]["periods"].as_usize() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    periods = o;
-                }
-            }
+            let periods: usize = match ev["event-periods"]["periods"].as_usize() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
             let mut periods_expr = "";
             if !ev["event-periods"]["expression"].is_null() {
@@ -530,50 +481,29 @@ impl CalcJsonDeserialize {
                 }
             }
 
-            let sort_order: usize;
-            match ev["sort-order"].as_usize() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    sort_order = o;
-                }
-            }
+            let sort_order: usize = match ev["sort-order"].as_usize() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
-            let intervals: usize;
-            match ev["intervals"].as_usize() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    intervals = o;
-                }
-            }
+            let intervals: usize = match ev["intervals"].as_usize() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
-            let frequency: crate::FrequencyType;
-            match ev["frequency"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    frequency = CoreUtility::get_frequency(o);
-                }
-            }
+            let frequency: crate::FrequencyType = match ev["frequency"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => CoreUtility::get_frequency(o),
+            };
 
             if ev["extension"].is_null() {
                 return Err(crate::ErrorType::Json);
             }
 
-            let extension: ElemExtension;
-            let result = self.deserialize_extension(&ev["extension"]);
-            match result {
-                Err(e) => {
-                    return Err(e);
-                }
-                Ok(o) => {
-                    extension = o;
-                }
-            }
+            let extension: ElemExtension = match self.deserialize_extension(&ev["extension"]) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
 
             let mut params = ListParameter::new();
             if !ev["parameter-list"].is_null() {
@@ -598,25 +528,15 @@ impl CalcJsonDeserialize {
                 Ok(_o) => {}
             }
 
-            let event_name: &str;
-            match ev["event-name"].as_str() {
-                None => {
-                    event_name = "";
-                }
-                Some(o) => {
-                    event_name = o;
-                }
-            }
+            let event_name: &str = match ev["event-name"].as_str() {
+                None => "",
+                Some(o) => o,
+            };
 
-            let next_name: &str;
-            match ev["event-next-name"].as_str() {
-                None => {
-                    next_name = "";
-                }
-                Some(o) => {
-                    next_name = o;
-                }
-            }
+            let next_name: &str = match ev["event-next-name"].as_str() {
+                None => "",
+                Some(o) => o,
+            };
 
             events.add_event(
                 event_date,
@@ -670,25 +590,15 @@ impl CalcJsonDeserialize {
                 break;
             }
 
-            let from_str: &str;
-            match exch_rate["from"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    from_str = o;
-                }
-            }
+            let from_str: &str = match exch_rate["from"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
-            let to_str: &str;
-            match exch_rate["to"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    to_str = o;
-                }
-            }
+            let to_str: &str = match exch_rate["to"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
             let value: Decimal;
             match exch_rate["value"].as_str() {
@@ -739,8 +649,7 @@ impl CalcJsonDeserialize {
             event_type = crate::ExtensionType::PrincipalChange;
         }
 
-        let extension: ElemExtension;
-        match event_type {
+        let extension: ElemExtension = match event_type {
             crate::ExtensionType::CurrentValue => {
                 let mut cv = ElemCurrentValue::new(false, false, false);
 
@@ -752,7 +661,7 @@ impl CalcJsonDeserialize {
                     Ok(_o) => {}
                 }
 
-                extension = ElemExtension::new_current_value(cv);
+                ElemExtension::new_current_value(cv)
             }
             crate::ExtensionType::InterestChange => {
                 let mut ic = ElemInterestChange::new(
@@ -773,7 +682,7 @@ impl CalcJsonDeserialize {
                     Ok(_o) => {}
                 }
 
-                extension = ElemExtension::new_interest_change(ic);
+                ElemExtension::new_interest_change(ic)
             }
             crate::ExtensionType::StatisticValue => {
                 let mut sv = ElemStatisticValue::new("", false, false);
@@ -786,7 +695,7 @@ impl CalcJsonDeserialize {
                     Ok(_o) => {}
                 }
 
-                extension = ElemExtension::new_statistic_value(sv);
+                ElemExtension::new_statistic_value(sv)
             }
             _ => {
                 let mut pc = ElemPrincipalChange::new(
@@ -806,9 +715,9 @@ impl CalcJsonDeserialize {
                     Ok(_o) => {}
                 }
 
-                extension = ElemExtension::new_principal_change(pc);
+                ElemExtension::new_principal_change(pc)
             }
-        }
+        };
 
         Ok(extension)
     }
@@ -833,16 +742,13 @@ impl CalcJsonDeserialize {
             format!("{{{}}}", ext_param)
         };
 
-        let data: JsonValue;
-        match json::parse(ext.as_str()) {
+        let data: JsonValue = match json::parse(ext.as_str()) {
             Err(e) => {
                 println!("Json error: {:?}", e);
                 return Err(crate::ErrorType::Json);
             }
-            Ok(o) => {
-                data = o;
-            }
-        }
+            Ok(o) => o,
+        };
 
         self.deserialize_extension(&data)
     }
@@ -869,34 +775,16 @@ impl CalcJsonDeserialize {
         match ic["round-balance"].as_str() {
             None => {}
             Some(o) => {
-                let round_balance: crate::RoundType;
-
-                match o {
-                    "bankers" => {
-                        round_balance = crate::RoundType::Bankers;
-                    }
-                    "bias-up" => {
-                        round_balance = crate::RoundType::BiasUp;
-                    }
-                    "bias-down" => {
-                        round_balance = crate::RoundType::BiasDown;
-                    }
-                    "up" => {
-                        round_balance = crate::RoundType::Up;
-                    }
-                    "truncate" => {
-                        round_balance = crate::RoundType::Truncate;
-                    }
-                    "yes" => {
-                        round_balance = crate::RoundType::Bankers;
-                    }
-                    "no" => {
-                        round_balance = crate::RoundType::None;
-                    }
-                    _ => {
-                        round_balance = crate::RoundType::None;
-                    }
-                }
+                let round_balance: crate::RoundType = match o {
+                    "bankers" => crate::RoundType::Bankers,
+                    "bias-up" => crate::RoundType::BiasUp,
+                    "bias-down" => crate::RoundType::BiasDown,
+                    "up" => crate::RoundType::Up,
+                    "truncate" => crate::RoundType::Truncate,
+                    "yes" => crate::RoundType::Bankers,
+                    "no" => crate::RoundType::None,
+                    _ => crate::RoundType::None,
+                };
 
                 interest_change.set_round_balance(round_balance);
             }
@@ -905,37 +793,17 @@ impl CalcJsonDeserialize {
         match ic["day-count-basis"].as_str() {
             None => {}
             Some(o) => {
-                let day_count_basis: crate::DayCountType;
-
-                match o {
-                    "rule-of-78" => {
-                        day_count_basis = crate::DayCountType::RuleOf78;
-                    }
-                    "actual" => {
-                        day_count_basis = crate::DayCountType::Actual;
-                    }
-                    "actual-actual-isma" => {
-                        day_count_basis = crate::DayCountType::ActualActualISMA;
-                    }
-                    "actual-actual-afb" => {
-                        day_count_basis = crate::DayCountType::ActualActualAFB;
-                    }
-                    "actual-365L" => {
-                        day_count_basis = crate::DayCountType::Actual365L;
-                    }
-                    "30" => {
-                        day_count_basis = crate::DayCountType::Dc30;
-                    }
-                    "30E" => {
-                        day_count_basis = crate::DayCountType::Dc30E;
-                    }
-                    "30EP" => {
-                        day_count_basis = crate::DayCountType::Dc30EP;
-                    }
-                    _ => {
-                        day_count_basis = crate::DayCountType::Periodic;
-                    }
-                }
+                let day_count_basis: crate::DayCountType = match o {
+                    "rule-of-78" => crate::DayCountType::RuleOf78,
+                    "actual" => crate::DayCountType::Actual,
+                    "actual-actual-isma" => crate::DayCountType::ActualActualISMA,
+                    "actual-actual-afb" => crate::DayCountType::ActualActualAFB,
+                    "actual-365L" => crate::DayCountType::Actual365L,
+                    "30" => crate::DayCountType::Dc30,
+                    "30E" => crate::DayCountType::Dc30E,
+                    "30EP" => crate::DayCountType::Dc30EP,
+                    _ => crate::DayCountType::Periodic,
+                };
 
                 interest_change.set_day_count_basis(day_count_basis);
             }
@@ -963,16 +831,10 @@ impl CalcJsonDeserialize {
         match ic["interest-method"].as_str() {
             None => {}
             Some(o) => {
-                let interest_method: crate::MethodType;
-
-                match o {
-                    "simple-interest" => {
-                        interest_method = crate::MethodType::SimpleInterest;
-                    }
-                    _ => {
-                        interest_method = crate::MethodType::Actuarial;
-                    }
-                }
+                let interest_method: crate::MethodType = match o {
+                    "simple-interest" => crate::MethodType::SimpleInterest,
+                    _ => crate::MethodType::Actuarial,
+                };
 
                 interest_change.set_method(interest_method);
             }
@@ -1010,25 +872,15 @@ impl CalcJsonDeserialize {
                 break;
             }
 
-            let locale_str: &str;
-            match locale["locale-str"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    locale_str = o;
-                }
-            }
+            let locale_str: &str = match locale["locale-str"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
-            let currency_code: &str;
-            match locale["currency-code"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    currency_code = o;
-                }
-            }
+            let currency_code: &str = match locale["currency-code"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
             let mut decimal_digits = crate::DEFAULT_DECIMAL_DIGITS;
             match locale["decimal-digits"].as_usize() {
@@ -1038,31 +890,23 @@ impl CalcJsonDeserialize {
                 }
             }
 
-            let format_in: ElemLocaleFormat;
             if locale["format-in"].is_null() {
                 return Err(crate::ErrorType::Json);
             }
-            match self.deserialize_locale_format(&locale["format-in"]) {
-                Err(e) => {
-                    return Err(e);
-                }
-                Ok(o) => {
-                    format_in = o;
-                }
-            }
+            let format_in: ElemLocaleFormat =
+                match self.deserialize_locale_format(&locale["format-in"]) {
+                    Err(e) => return Err(e),
+                    Ok(o) => o,
+                };
 
-            let format_out: ElemLocaleFormat;
             if locale["format-out"].is_null() {
                 return Err(crate::ErrorType::Json);
             }
-            match self.deserialize_locale_format(&locale["format-out"]) {
-                Err(e) => {
-                    return Err(e);
-                }
-                Ok(o) => {
-                    format_out = o;
-                }
-            }
+            let format_out: ElemLocaleFormat =
+                match self.deserialize_locale_format(&locale["format-out"]) {
+                    Err(e) => return Err(e),
+                    Ok(o) => o,
+                };
 
             let mut resources: HashMap<String, String> = HashMap::new();
             let mut index2: usize = 0;
@@ -1072,24 +916,16 @@ impl CalcJsonDeserialize {
                 if resource.is_null() {
                     break;
                 }
-                let key: &str;
-                match resource["key"].as_str() {
-                    None => {
-                        return Err(crate::ErrorType::Json);
-                    }
-                    Some(o) => {
-                        key = o;
-                    }
-                }
-                let text: &str;
-                match resource["text"].as_str() {
-                    None => {
-                        return Err(crate::ErrorType::Json);
-                    }
-                    Some(o) => {
-                        text = o;
-                    }
-                }
+                let key: &str = match resource["key"].as_str() {
+                    None => return Err(crate::ErrorType::Json),
+                    Some(o) => o,
+                };
+
+                let text: &str = match resource["text"].as_str() {
+                    None => return Err(crate::ErrorType::Json),
+                    Some(o) => o,
+                };
+
                 resources.insert(String::from(key), String::from(text));
                 index2 += 1;
             }
@@ -1123,82 +959,45 @@ impl CalcJsonDeserialize {
         &self,
         locale_format: &JsonValue,
     ) -> Result<ElemLocaleFormat, crate::ErrorType> {
-        let date_regex: &str;
-        match locale_format["date-regex"].as_str() {
-            None => {
-                return Err(crate::ErrorType::Json);
-            }
-            Some(o) => {
-                date_regex = o;
-            }
-        }
+        let date_regex: &str = match locale_format["date-regex"].as_str() {
+            None => return Err(crate::ErrorType::Json),
+            Some(o) => o,
+        };
 
-        let date_replace: &str;
-        match locale_format["date-replace"].as_str() {
-            None => {
-                return Err(crate::ErrorType::Json);
-            }
-            Some(o) => {
-                date_replace = o;
-            }
-        }
-        let integer_regex: &str;
-        match locale_format["integer-regex"].as_str() {
-            None => {
-                return Err(crate::ErrorType::Json);
-            }
-            Some(o) => {
-                integer_regex = o;
-            }
-        }
+        let date_replace: &str = match locale_format["date-replace"].as_str() {
+            None => return Err(crate::ErrorType::Json),
+            Some(o) => o,
+        };
 
-        let integer_replace: &str;
-        match locale_format["integer-replace"].as_str() {
-            None => {
-                return Err(crate::ErrorType::Json);
-            }
-            Some(o) => {
-                integer_replace = o;
-            }
-        }
-        let decimal_regex: &str;
-        match locale_format["decimal-regex"].as_str() {
-            None => {
-                return Err(crate::ErrorType::Json);
-            }
-            Some(o) => {
-                decimal_regex = o;
-            }
-        }
+        let integer_regex: &str = match locale_format["integer-regex"].as_str() {
+            None => return Err(crate::ErrorType::Json),
+            Some(o) => o,
+        };
 
-        let decimal_replace: &str;
-        match locale_format["decimal-replace"].as_str() {
-            None => {
-                return Err(crate::ErrorType::Json);
-            }
-            Some(o) => {
-                decimal_replace = o;
-            }
-        }
-        let currency_regex: &str;
-        match locale_format["currency-regex"].as_str() {
-            None => {
-                return Err(crate::ErrorType::Json);
-            }
-            Some(o) => {
-                currency_regex = o;
-            }
-        }
+        let integer_replace: &str = match locale_format["integer-replace"].as_str() {
+            None => return Err(crate::ErrorType::Json),
+            Some(o) => o,
+        };
 
-        let currency_replace: &str;
-        match locale_format["currency-replace"].as_str() {
-            None => {
-                return Err(crate::ErrorType::Json);
-            }
-            Some(o) => {
-                currency_replace = o;
-            }
-        }
+        let decimal_regex: &str = match locale_format["decimal-regex"].as_str() {
+            None => return Err(crate::ErrorType::Json),
+            Some(o) => o,
+        };
+
+        let decimal_replace: &str = match locale_format["decimal-replace"].as_str() {
+            None => return Err(crate::ErrorType::Json),
+            Some(o) => o,
+        };
+
+        let currency_regex: &str = match locale_format["currency-regex"].as_str() {
+            None => return Err(crate::ErrorType::Json),
+            Some(o) => o,
+        };
+
+        let currency_replace: &str = match locale_format["currency-replace"].as_str() {
+            None => return Err(crate::ErrorType::Json),
+            Some(o) => o,
+        };
 
         Ok(ElemLocaleFormat::new(
             date_regex,
@@ -1236,55 +1035,30 @@ impl CalcJsonDeserialize {
                 break;
             }
 
-            let name: &str;
-            match param["name"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    name = o;
-                }
-            }
+            let name: &str = match param["name"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
-            let label: &str;
-            match param["label"].as_str() {
-                None => {
-                    label = "";
-                }
-                Some(o) => {
-                    label = o;
-                }
-            }
+            let label: &str = match param["label"].as_str() {
+                None => "",
+                Some(o) => o,
+            };
 
-            let description: &str;
-            match param["description"].as_str() {
-                None => {
-                    description = "";
-                }
-                Some(o) => {
-                    description = o;
-                }
-            }
+            let description: &str = match param["description"].as_str() {
+                None => "",
+                Some(o) => o,
+            };
 
-            let param_type: &str;
-            match param["parameter-type"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    param_type = o;
-                }
-            }
+            let param_type: &str = match param["parameter-type"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
-            let value: &str;
-            match param["value"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    value = o;
-                }
-            }
+            let value: &str = match param["value"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
             parameters.add_parameter(name, label, description, true);
 
@@ -1579,25 +1353,12 @@ impl CalcJsonDeserialize {
                 break;
             }
 
-            let name: &str;
-            match templ_event["name"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    name = o;
-                }
-            }
+            let name: &str = match templ_event["name"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
-            let initial: bool;
-            match templ_event["initial"].as_bool() {
-                None => {
-                    initial = false;
-                }
-                Some(o) => {
-                    initial = o;
-                }
-            }
+            let initial: bool = templ_event["initial"].as_bool().unwrap_or(false);
 
             if templ_event["event-list"].is_null() {
                 return Err(crate::ErrorType::Json);
@@ -1648,15 +1409,10 @@ impl CalcJsonDeserialize {
                 break;
             }
 
-            let group: &str;
-            match templ_group["group"].as_str() {
-                None => {
-                    return Err(crate::ErrorType::Json);
-                }
-                Some(o) => {
-                    group = o;
-                }
-            }
+            let group: &str = match templ_group["group"].as_str() {
+                None => return Err(crate::ErrorType::Json),
+                Some(o) => o,
+            };
 
             match template_groups.add_template_group(group) {
                 Err(_e) => {

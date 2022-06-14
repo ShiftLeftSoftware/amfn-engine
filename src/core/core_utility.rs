@@ -93,12 +93,11 @@ impl CoreUtility {
         let mut day2 = (date2 as i32) % 100;
 
         interval_count = (year2 * 12 - year1 * 12) + (month2 - month1);
-        let eom;
-        if frequency == crate::FrequencyType::HalfMonth {
-            eom = day2 >= 28 && eom_param;
+        let eom = if frequency == crate::FrequencyType::HalfMonth {
+            day2 >= 28 && eom_param
         } else {
-            eom = day2 == (CoreUtility::days_in_month(year2 as usize, month2 as usize) as i32);
-        }
+            day2 == (CoreUtility::days_in_month(year2 as usize, month2 as usize) as i32)
+        };
         if day1 > day2 && !eom {
             day2 += CoreUtility::days_in_month(year1 as usize, month1 as usize) as i32; // For semi-monthly calculation
             interval_count -= 1;
@@ -249,13 +248,11 @@ impl CoreUtility {
                 day = orig_day;
             }
         } else {
-            let eom;
-            if frequency == crate::FrequencyType::HalfMonth {
-                eom = orig_day >= 28 && eom_param;
+            let eom = if frequency == crate::FrequencyType::HalfMonth {
+                orig_day >= 28 && eom_param
             } else {
-                eom = orig_day
-                    == CoreUtility::days_in_month(orig_date / 10000, orig_date % 10000 / 100);
-            }
+                orig_day == CoreUtility::days_in_month(orig_date / 10000, orig_date % 10000 / 100)
+            };
 
             if eom {
                 // Check for EOM
@@ -321,13 +318,12 @@ impl CoreUtility {
         let year = date / 10000;
         let month = date % 10000 / 100;
         let day = date % 100;
-        let val: usize;
 
-        if month > 2 {
-            val = 93 - CoreUtility::leap_year(year);
+        let val: usize = if month > 2 {
+            93 - CoreUtility::leap_year(year)
         } else {
-            val = 91;
-        }
+            91
+        };
 
         (round::ceil(((year - crate::SERIAL_BASE_YEAR) as f64) * 365.25, 0) as usize)
             + (3055 * (month + 2) / 100 - val + day)
@@ -807,49 +803,22 @@ impl CoreUtility {
 
     pub fn get_frequency(text_param: &str) -> crate::FrequencyType {
         let text = text_param.to_lowercase();
-        let frequency: crate::FrequencyType;
 
-        match text.as_str() {
-            "1-year" => {
-                frequency = crate::FrequencyType::OneYear;
-            }
-            "6-months" => {
-                frequency = crate::FrequencyType::SixMonths;
-            }
-            "4-months" => {
-                frequency = crate::FrequencyType::FourMonths;
-            }
-            "3-months" => {
-                frequency = crate::FrequencyType::ThreeMonths;
-            }
-            "2-months" => {
-                frequency = crate::FrequencyType::TwoMonths;
-            }
-            "1-month" => {
-                frequency = crate::FrequencyType::OneMonth;
-            }
-            "half-month" => {
-                frequency = crate::FrequencyType::HalfMonth;
-            }
-            "4-weeks" => {
-                frequency = crate::FrequencyType::FourWeeks;
-            }
-            "2-weeks" => {
-                frequency = crate::FrequencyType::TwoWeeks;
-            }
-            "1-week" => {
-                frequency = crate::FrequencyType::OneWeek;
-            }
-            "1-day" => {
-                frequency = crate::FrequencyType::OneDay;
-            }
-            "continuous" => {
-                frequency = crate::FrequencyType::Continuous;
-            }
-            _ => {
-                frequency = crate::FrequencyType::None;
-            }
-        }
+        let frequency: crate::FrequencyType = match text.as_str() {
+            "1-year" => crate::FrequencyType::OneYear,
+            "6-months" => crate::FrequencyType::SixMonths,
+            "4-months" => crate::FrequencyType::FourMonths,
+            "3-months" => crate::FrequencyType::ThreeMonths,
+            "2-months" => crate::FrequencyType::TwoMonths,
+            "1-month" => crate::FrequencyType::OneMonth,
+            "half-month" => crate::FrequencyType::HalfMonth,
+            "4-weeks" => crate::FrequencyType::FourWeeks,
+            "2-weeks" => crate::FrequencyType::TwoWeeks,
+            "1-week" => crate::FrequencyType::OneWeek,
+            "1-day" => crate::FrequencyType::OneDay,
+            "continuous" => crate::FrequencyType::Continuous,
+            _ => crate::FrequencyType::None,
+        };
 
         frequency
     }
@@ -1669,12 +1638,12 @@ impl CoreUtility {
         year += crate::SERIAL_BASE_YEAR;
         let leap = CoreUtility::leap_year(year);
 
-        let val1: usize;
-        if day > 59 + leap {
-            val1 = 93 + day - leap;
+        let val1: usize = if day > 59 + leap {
+            93 + day - leap
         } else {
-            val1 = 91 + day;
-        }
+            91 + day
+        };
+
         let val2 = val1 * 100 / 3055;
         day = val1 - (val2 * 3055 / 100);
         let month = val2 - 2;

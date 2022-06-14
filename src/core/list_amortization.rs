@@ -988,7 +988,7 @@ impl ListAmortization {
     /// Sort the amortization list.
 
     pub fn sort(&mut self) {
-        self.list_am.sort_by(|a, b| ListAmortization::cmp(a, b));
+        self.list_am.sort_by(ListAmortization::cmp);
     }
 
     /// Sort compare function.

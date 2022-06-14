@@ -1457,7 +1457,7 @@ impl ListEvent {
     /// Sort the event list.
 
     fn sort(&mut self) {
-        self.list_event.sort_by(|a, b| ListEvent::cmp(a, b));
+        self.list_event.sort_by(ListEvent::cmp);
     }
 
     /// Sort compare function.

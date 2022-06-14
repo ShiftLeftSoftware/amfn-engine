@@ -218,15 +218,10 @@ impl CalcExpression {
     /// * `list_parameter_param` - The parameters to the expression.
 
     pub fn init_list_parameter(&mut self, list_parameter_param: Option<&ListParameter>) {
-        let list_parameter: &ListParameter;
-        match list_parameter_param {
-            None => {
-                return;
-            } // Empty list parameter
-            Some(o) => {
-                list_parameter = o;
-            }
-        }
+        let list_parameter: &ListParameter = match list_parameter_param {
+            None => return, // Empty list parameter
+            Some(o) => o,
+        };
 
         let orig_index = list_parameter.index();
         let mut index: usize = 0;
@@ -378,18 +373,15 @@ impl CalcExpression {
                                     return Err(crate::ErrorType::LeftParen);
                                 }
                                 loop {
-                                    let elem_symbol: ElemSymbol;
-                                    match stack.pop() {
-                                        None => {
-                                            break;
-                                        }
-                                        Some(o) => {
-                                            elem_symbol = o;
-                                        }
-                                    }
+                                    let elem_symbol: ElemSymbol = match stack.pop() {
+                                        None => break,
+                                        Some(o) => o,
+                                    };
+
                                     if elem_symbol.sym_type() == crate::TokenType::LeftParen {
                                         break;
                                     }
+
                                     expression.push_back(elem_symbol);
                                 }
                             }
@@ -668,24 +660,14 @@ impl CalcExpression {
                                 return Err(crate::ErrorType::MissingOperand);
                             }
                             elem_symbol1_opt = stack.pop();
-                            let elem_symbol1: &mut ElemSymbol;
-                            match elem_symbol1_opt.as_mut() {
-                                None => {
-                                    return Err(crate::ErrorType::MissingOperand);
-                                }
-                                Some(o) => {
-                                    elem_symbol1 = o;
-                                }
-                            }
-                            let elem_symbol2: &mut ElemSymbol;
-                            match elem_symbol2_opt.as_mut() {
-                                None => {
-                                    return Err(crate::ErrorType::MissingOperand);
-                                }
-                                Some(o) => {
-                                    elem_symbol2 = o;
-                                }
-                            }
+                            let elem_symbol1: &mut ElemSymbol = match elem_symbol1_opt.as_mut() {
+                                None => return Err(crate::ErrorType::MissingOperand),
+                                Some(o) => o,
+                            };
+                            let elem_symbol2: &mut ElemSymbol = match elem_symbol2_opt.as_mut() {
+                                None => return Err(crate::ErrorType::MissingOperand),
+                                Some(o) => o,
+                            };
                             if elem_symbol1.sym_type() == crate::TokenType::Integer
                                 && elem_symbol2.sym_type() == crate::TokenType::Decimal
                             {
@@ -696,24 +678,14 @@ impl CalcExpression {
                                 elem_symbol2.set_decimal(dec!(elem_symbol2.sym_integer()));
                             }
                         }
-                        let elem_symbol1: &mut ElemSymbol;
-                        match elem_symbol1_opt.as_mut() {
-                            None => {
-                                return Err(crate::ErrorType::MissingOperand);
-                            }
-                            Some(o) => {
-                                elem_symbol1 = o;
-                            }
-                        }
-                        let elem_symbol2: &mut ElemSymbol;
-                        match elem_symbol2_opt.as_mut() {
-                            None => {
-                                return Err(crate::ErrorType::MissingOperand);
-                            }
-                            Some(o) => {
-                                elem_symbol2 = o;
-                            }
-                        }
+                        let elem_symbol1: &mut ElemSymbol = match elem_symbol1_opt.as_mut() {
+                            None => return Err(crate::ErrorType::MissingOperand),
+                            Some(o) => o,
+                        };
+                        let elem_symbol2: &mut ElemSymbol = match elem_symbol2_opt.as_mut() {
+                            None => return Err(crate::ErrorType::MissingOperand),
+                            Some(o) => o,
+                        };
                         match CoreUtility::get_operator(
                             self.calc_mgr().core_manager().operators().value(),
                         ) {
@@ -1032,15 +1004,10 @@ impl CalcExpression {
         if elem_last_symbol.is_none() {
             return Err(crate::ErrorType::Incomplete);
         }
-        let elem: &ElemSymbol;
-        match elem_last_symbol.as_ref() {
-            None => {
-                return Err(crate::ErrorType::Incomplete);
-            }
-            Some(o) => {
-                elem = o;
-            }
-        }
+        let elem: &ElemSymbol = match elem_last_symbol.as_ref() {
+            None => return Err(crate::ErrorType::Incomplete),
+            Some(o) => o,
+        };
 
         let mut elem_result_symbol = ElemSymbol::new();
 
@@ -1121,15 +1088,10 @@ impl CalcExpression {
                 }
             }
 
-            let elem_symbol: &mut ElemSymbol;
-            match elem_symbol_opt.as_mut() {
-                None => {
-                    return Err(crate::ErrorType::Incomplete);
-                }
-                Some(o) => {
-                    elem_symbol = o;
-                }
-            }
+            let elem_symbol: &mut ElemSymbol = match elem_symbol_opt.as_mut() {
+                None => return Err(crate::ErrorType::Incomplete),
+                Some(o) => o,
+            };
 
             match elem_symbol.sym_type() {
                 crate::TokenType::Integer => {
@@ -1383,105 +1345,74 @@ impl CalcExpression {
 
         self.scanner_mut().scan_token();
 
-        let mut result: Result<ElemSymbol, crate::ErrorType>;
-
         let function_type =
             CoreUtility::get_function(self.calc_mgr().core_manager().functions().value());
-        match function_type {
-            crate::FunctionType::Abs => {
-                result = self.function_abs(list_am_opt, elem_balance_result_opt);
-            }
-            crate::FunctionType::Am => {
-                result = self.function_am(list_am_opt, elem_balance_result_opt);
-            }
+
+        let mut result: Result<ElemSymbol, crate::ErrorType> = match function_type {
+            crate::FunctionType::Abs => self.function_abs(list_am_opt, elem_balance_result_opt),
+            crate::FunctionType::Am => self.function_am(list_am_opt, elem_balance_result_opt),
             crate::FunctionType::Cashflow => {
-                result = self.function_cashflow(list_am_opt, elem_balance_result_opt);
+                self.function_cashflow(list_am_opt, elem_balance_result_opt)
             }
             crate::FunctionType::DateDiff => {
-                result = self.function_date_diff(list_am_opt, elem_balance_result_opt);
+                self.function_date_diff(list_am_opt, elem_balance_result_opt)
             }
             crate::FunctionType::DateFiscal => {
-                result = self.function_date_fiscal(list_am_opt, elem_balance_result_opt);
+                self.function_date_fiscal(list_am_opt, elem_balance_result_opt)
             }
             crate::FunctionType::DateNew => {
-                result = self.function_date_new(list_am_opt, elem_balance_result_opt);
+                self.function_date_new(list_am_opt, elem_balance_result_opt)
             }
-            crate::FunctionType::DateNow => {
-                result = self.function_date_now();
-            }
+            crate::FunctionType::DateNow => self.function_date_now(),
             crate::FunctionType::Default => {
-                result = self.function_default(list_am_opt, elem_balance_result_opt);
+                self.function_default(list_am_opt, elem_balance_result_opt)
             }
             crate::FunctionType::Descriptor => {
-                result = self.function_descriptor(list_am_opt, elem_balance_result_opt);
+                self.function_descriptor(list_am_opt, elem_balance_result_opt)
             }
             crate::FunctionType::Decimal => {
-                result = self.function_decimal(list_am_opt, elem_balance_result_opt);
+                self.function_decimal(list_am_opt, elem_balance_result_opt)
             }
             crate::FunctionType::Format => {
-                result = self.function_format(list_am_opt, elem_balance_result_opt);
+                self.function_format(list_am_opt, elem_balance_result_opt)
             }
             crate::FunctionType::FormatCurrency => {
-                result = self.function_format_currency(list_am_opt, elem_balance_result_opt);
+                self.function_format_currency(list_am_opt, elem_balance_result_opt)
             }
             crate::FunctionType::FormatDate => {
-                result = self.function_format_date(list_am_opt, elem_balance_result_opt);
+                self.function_format_date(list_am_opt, elem_balance_result_opt)
             }
             crate::FunctionType::FormatNumber => {
-                result = self.function_format_number(list_am_opt, elem_balance_result_opt);
+                self.function_format_number(list_am_opt, elem_balance_result_opt)
             }
-            crate::FunctionType::If => {
-                result = self.function_if(list_am_opt, elem_balance_result_opt);
-            }
+            crate::FunctionType::If => self.function_if(list_am_opt, elem_balance_result_opt),
             crate::FunctionType::Integer => {
-                result = self.function_integer(list_am_opt, elem_balance_result_opt);
+                self.function_integer(list_am_opt, elem_balance_result_opt)
             }
-            crate::FunctionType::Len => {
-                result = self.function_len(list_am_opt, elem_balance_result_opt);
-            }
+            crate::FunctionType::Len => self.function_len(list_am_opt, elem_balance_result_opt),
             crate::FunctionType::Lowercase => {
-                result = self.function_lowercase(list_am_opt, elem_balance_result_opt);
+                self.function_lowercase(list_am_opt, elem_balance_result_opt)
             }
-            crate::FunctionType::Max => {
-                result = self.function_max(list_am_opt, elem_balance_result_opt);
-            }
-            crate::FunctionType::Mid => {
-                result = self.function_mid(list_am_opt, elem_balance_result_opt);
-            }
-            crate::FunctionType::Min => {
-                result = self.function_min(list_am_opt, elem_balance_result_opt);
-            }
-            crate::FunctionType::Parse => {
-                result = self.function_parse(list_am_opt, elem_balance_result_opt);
-            }
-            crate::FunctionType::Pr => {
-                result = self.function_pr(list_am_opt, elem_balance_result_opt);
-            }
+            crate::FunctionType::Max => self.function_max(list_am_opt, elem_balance_result_opt),
+            crate::FunctionType::Mid => self.function_mid(list_am_opt, elem_balance_result_opt),
+            crate::FunctionType::Min => self.function_min(list_am_opt, elem_balance_result_opt),
+            crate::FunctionType::Parse => self.function_parse(list_am_opt, elem_balance_result_opt),
+            crate::FunctionType::Pr => self.function_pr(list_am_opt, elem_balance_result_opt),
             crate::FunctionType::Replace => {
-                result = self.function_replace(list_am_opt, elem_balance_result_opt);
+                self.function_replace(list_am_opt, elem_balance_result_opt)
             }
-            crate::FunctionType::Round => {
-                result = self.function_round(list_am_opt, elem_balance_result_opt);
-            }
+            crate::FunctionType::Round => self.function_round(list_am_opt, elem_balance_result_opt),
             crate::FunctionType::RoundFraction => {
-                result = self.function_round_fraction(list_am_opt, elem_balance_result_opt);
+                self.function_round_fraction(list_am_opt, elem_balance_result_opt)
             }
-            crate::FunctionType::Set => {
-                result = self.function_set(list_am_opt, elem_balance_result_opt);
-            }
-            crate::FunctionType::Trim => {
-                result = self.function_trim(list_am_opt, elem_balance_result_opt);
-            }
-            crate::FunctionType::Type => {
-                result = self.function_type(list_am_opt, elem_balance_result_opt);
-            }
+            crate::FunctionType::Set => self.function_set(list_am_opt, elem_balance_result_opt),
+            crate::FunctionType::Trim => self.function_trim(list_am_opt, elem_balance_result_opt),
+            crate::FunctionType::Type => self.function_type(list_am_opt, elem_balance_result_opt),
             crate::FunctionType::Uppercase => {
-                result = self.function_uppercase(list_am_opt, elem_balance_result_opt);
+                self.function_uppercase(list_am_opt, elem_balance_result_opt)
             }
-            _ => {
-                return Err(crate::ErrorType::Function);
-            }
-        }
+            _ => return Err(crate::ErrorType::Function),
+        };
 
         match result.as_ref() {
             Err(_e) => {}
@@ -1553,31 +1484,21 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let location: String;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                location = String::from(o.sym_string());
-            }
-        }
+        let location: String = match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => String::from(o.sym_string()),
+        };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let col_name: String;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                col_name = String::from(o.sym_string());
-            }
-        }
+        let col_name: String = match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => String::from(o.sym_string()),
+        };
+
         let index: usize;
         if self
             .calc_mgr()
@@ -1635,25 +1556,15 @@ impl CalcExpression {
             }
         }
 
-        let list_am: &ListAmortization;
-        match list_am_opt {
-            None => {
-                return Err(crate::ErrorType::Index);
-            }
-            Some(o) => {
-                list_am = o;
-            }
-        }
+        let list_am: &ListAmortization = match list_am_opt {
+            None => return Err(crate::ErrorType::Index),
+            Some(o) => o,
+        };
 
-        let elem_balance_result: &ElemBalanceResult;
-        match elem_balance_result_opt {
-            None => {
-                return Err(crate::ErrorType::Index);
-            }
-            Some(o) => {
-                elem_balance_result = o;
-            }
-        }
+        let elem_balance_result: &ElemBalanceResult = match elem_balance_result_opt {
+            None => return Err(crate::ErrorType::Index),
+            Some(o) => o,
+        };
 
         let orig_index = list_am.index();
         let mut location_index = usize::MAX;
@@ -1990,16 +1901,10 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let text: String;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                text = String::from(o.sym_string());
-            }
-        }
+        let text: String = match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => String::from(o.sym_string()),
+        };
 
         let calc_mgr = self.calc_mgr();
         let cashflow = calc_mgr.list_cashflow();
@@ -2283,45 +2188,32 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let date1: usize;
-        let result = self.get_expr_integer(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                date1 = o.sym_integer();
-            }
-        }
-        let token = self.scanner_mut().scan_token();
-        if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
-            self.scanner_mut().scan_token();
-        }
-        let date2: usize;
-        let result = self.get_expr_integer(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                date2 = o.sym_integer();
-            }
-        }
+        let date1: usize = match self.get_expr_integer(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => o.sym_integer(),
+        };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let frequency: crate::FrequencyType;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                frequency = CoreUtility::get_frequency(o.sym_string());
-            }
+        let date2: usize = match self.get_expr_integer(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => o.sym_integer(),
+        };
+
+        let token = self.scanner_mut().scan_token();
+        if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
+            self.scanner_mut().scan_token();
         }
+
+        let frequency: crate::FrequencyType =
+            match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+                Err(e) => return Err(e),
+                Ok(o) => CoreUtility::get_frequency(o.sym_string()),
+            };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
@@ -2344,16 +2236,10 @@ impl CalcExpression {
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
-        let eom: bool;
-        let result = self.get_expr_integer(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                eom = o.sym_integer() != 0;
-            }
-        }
+        let eom: bool = match self.get_expr_integer(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => o.sym_integer() != 0,
+        };
 
         let mut elem_result_symbol = ElemSymbol::new();
         elem_result_symbol.set_integeri(CoreUtility::date_diff(
@@ -2380,31 +2266,22 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let orig_date: usize;
-        let result = self.get_expr_integer(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                orig_date = o.sym_integer();
-            }
-        }
+        let orig_date: usize = match self.get_expr_integer(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => o.sym_integer(),
+        };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let frequency: crate::FrequencyType;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                frequency = CoreUtility::get_frequency(o.sym_string());
-            }
-        }
+        let frequency: crate::FrequencyType =
+            match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+                Err(e) => return Err(e),
+                Ok(o) => CoreUtility::get_frequency(o.sym_string()),
+            };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
@@ -2426,16 +2303,11 @@ impl CalcExpression {
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
-        let adjust: bool;
-        let result = self.get_expr_integer(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                adjust = o.sym_integer() != 0;
-            }
-        }
+        let adjust: bool = match self.get_expr_integer(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => o.sym_integer() != 0,
+        };
+
         let mut year = orig_date / 10000;
         if crate::SERIAL_BASE_YEAR * 10000 + (orig_date % 10000)
             < crate::SERIAL_BASE_YEAR * 10000 + self.fiscal_year_start
@@ -2481,24 +2353,19 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut date: usize;
-        let result = self.get_expr_integer(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                date = o.sym_integer();
-            }
-        }
+        let mut date: usize = match self.get_expr_integer(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => o.sym_integer(),
+        };
+
         let orig_date = date;
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
+
         let mut periods: usize;
-        let result = self.get_expr_integer(list_am_opt, elem_balance_result_opt);
-        match result {
+        match self.get_expr_integer(list_am_opt, elem_balance_result_opt) {
             Err(e) => {
                 return Err(e);
             }
@@ -2509,21 +2376,18 @@ impl CalcExpression {
                 }
             }
         }
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let frequency: crate::FrequencyType;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                frequency = CoreUtility::get_frequency(o.sym_string());
-            }
-        }
+        let frequency: crate::FrequencyType =
+            match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+                Err(e) => return Err(e),
+                Ok(o) => CoreUtility::get_frequency(o.sym_string()),
+            };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
@@ -2542,21 +2406,17 @@ impl CalcExpression {
                 }
             }
         }
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let eom: bool;
-        let result = self.get_expr_integer(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                eom = o.sym_integer() != 0;
-            }
-        }
+        let eom: bool = match self.get_expr_integer(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => o.sym_integer() != 0,
+        };
+
         while periods > 0 {
             date = CoreUtility::date_new(orig_date, date, frequency, intervals, eom);
             periods -= 1;
@@ -2596,16 +2456,11 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
 
         match elem_result_symbol.sym_type() {
             crate::TokenType::Integer => {
@@ -2636,16 +2491,12 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, true);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, true) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
         if elem_result_symbol.sym_type() != crate::TokenType::String {
             return Err(crate::ErrorType::String);
         }
@@ -2694,61 +2545,41 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let group: String;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                group = String::from(o.sym_string());
-            }
-        }
+        let group: String = match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => String::from(o.sym_string()),
+        };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let name: String;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                name = String::from(o.sym_string());
-            }
-        }
+        let name: String = match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => String::from(o.sym_string()),
+        };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let elem_type: String;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_type = String::from(o.sym_string());
-            }
-        }
+        let elem_type: String = match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => String::from(o.sym_string()),
+        };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let code: String;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                code = String::from(o.sym_string());
-            }
-        }
+        let code: String = match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => String::from(o.sym_string()),
+        };
+
         let mut value = CoreUtility::get_descriptor_value(
             Option::from(&self.list_descriptor_user),
             self.list_descriptor_cashflow.as_ref(),
@@ -2793,16 +2624,12 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
         match elem_result_symbol.sym_type() {
             crate::TokenType::Integer => {
                 elem_result_symbol
@@ -2842,16 +2669,12 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
         match elem_result_symbol.sym_type() {
             crate::TokenType::Integer => {
                 elem_result_symbol.set_string(
@@ -2893,16 +2716,12 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_integer(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_integer(list_am_opt, elem_balance_result_opt) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
         elem_result_symbol.set_string(
             self.calc_mgr()
                 .list_locale()
@@ -2928,16 +2747,12 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
         match elem_result_symbol.sym_type() {
             crate::TokenType::Integer => {
                 elem_result_symbol.set_string(
@@ -2976,31 +2791,23 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let elem_symbol: ElemSymbol;
-        let result = self.get_expr_integer(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_symbol = o;
-            }
-        }
+        let elem_symbol: ElemSymbol =
+            match self.get_expr_integer(list_am_opt, elem_balance_result_opt) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
@@ -3044,16 +2851,11 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
 
         match elem_result_symbol.sym_type() {
             crate::TokenType::Decimal => match elem_result_symbol.sym_decimal().to_i32() {
@@ -3089,16 +2891,12 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
         elem_result_symbol.set_integer(elem_result_symbol.sym_string().len());
         Ok(elem_result_symbol)
     }
@@ -3119,16 +2917,11 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
 
         elem_result_symbol.set_string(elem_result_symbol.sym_string().to_lowercase().as_str());
         Ok(elem_result_symbol)
@@ -3150,28 +2943,20 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
-        let result1: Decimal;
-        match elem_result_symbol.sym_type() {
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
+        let result1: Decimal = match elem_result_symbol.sym_type() {
             crate::TokenType::Integer => {
-                result1 = dec!(elem_result_symbol.sym_integer());
+                dec!(elem_result_symbol.sym_integer())
             }
-            crate::TokenType::Decimal => {
-                result1 = elem_result_symbol.sym_decimal();
-            }
-            _ => {
-                return Err(crate::ErrorType::Decimal);
-            }
-        }
+            crate::TokenType::Decimal => elem_result_symbol.sym_decimal(),
+            _ => return Err(crate::ErrorType::Decimal),
+        };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
@@ -3186,18 +2971,15 @@ impl CalcExpression {
                 elem_result_symbol = o;
             }
         }
-        let result2: Decimal;
-        match elem_result_symbol.sym_type() {
+
+        let result2: Decimal = match elem_result_symbol.sym_type() {
             crate::TokenType::Integer => {
-                result2 = dec!(elem_result_symbol.sym_integer());
+                dec!(elem_result_symbol.sym_integer())
             }
-            crate::TokenType::Decimal => {
-                result2 = elem_result_symbol.sym_decimal();
-            }
-            _ => {
-                return Err(crate::ErrorType::Decimal);
-            }
-        }
+            crate::TokenType::Decimal => elem_result_symbol.sym_decimal(),
+            _ => return Err(crate::ErrorType::Decimal),
+        };
+
         elem_result_symbol.set_decimal(if result1 >= result2 { result1 } else { result2 });
         Ok(elem_result_symbol)
     }
@@ -3218,21 +3000,18 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
         let text = String::from(elem_result_symbol.sym_string());
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
+
         let result = self.get_expr_integer(list_am_opt, elem_balance_result_opt);
         match result {
             Err(e) => {
@@ -3255,6 +3034,7 @@ impl CalcExpression {
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
+
         let result = self.get_expr_integer(list_am_opt, elem_balance_result_opt);
         match result {
             Err(e) => {
@@ -3291,35 +3071,26 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
-        let result1: Decimal;
-        match elem_result_symbol.sym_type() {
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
+        let result1: Decimal = match elem_result_symbol.sym_type() {
             crate::TokenType::Integer => {
-                result1 = dec!(elem_result_symbol.sym_integer());
+                dec!(elem_result_symbol.sym_integer())
             }
-            crate::TokenType::Decimal => {
-                result1 = elem_result_symbol.sym_decimal();
-            }
-            _ => {
-                return Err(crate::ErrorType::Decimal);
-            }
-        }
+            crate::TokenType::Decimal => elem_result_symbol.sym_decimal(),
+            _ => return Err(crate::ErrorType::Decimal),
+        };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false);
-        match result {
+        match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false) {
             Err(e) => {
                 return Err(e);
             }
@@ -3327,18 +3098,15 @@ impl CalcExpression {
                 elem_result_symbol = o;
             }
         }
-        let result2: Decimal;
-        match elem_result_symbol.sym_type() {
+
+        let result2: Decimal = match elem_result_symbol.sym_type() {
             crate::TokenType::Integer => {
-                result2 = dec!(elem_result_symbol.sym_integer());
+                dec!(elem_result_symbol.sym_integer())
             }
-            crate::TokenType::Decimal => {
-                result2 = elem_result_symbol.sym_decimal();
-            }
-            _ => {
-                return Err(crate::ErrorType::Decimal);
-            }
-        }
+            crate::TokenType::Decimal => elem_result_symbol.sym_decimal(),
+            _ => return Err(crate::ErrorType::Decimal),
+        };
+
         elem_result_symbol.set_decimal(if result1 <= result2 { result1 } else { result2 });
         Ok(elem_result_symbol)
     }
@@ -3359,31 +3127,23 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
         let text = String::from(elem_result_symbol.sym_string());
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => o,
+        };
+
         let delims = String::from(elem_result_symbol.sym_string());
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
@@ -3431,28 +3191,19 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
-        let dresult: Decimal;
-        match elem_result_symbol.sym_type() {
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
+        let dresult: Decimal = match elem_result_symbol.sym_type() {
             crate::TokenType::Integer => {
-                dresult = dec!(elem_result_symbol.sym_integer());
+                dec!(elem_result_symbol.sym_integer())
             }
-            crate::TokenType::Decimal => {
-                dresult = elem_result_symbol.sym_decimal();
-            }
-            _ => {
-                return Err(crate::ErrorType::Decimal);
-            }
-        }
+            crate::TokenType::Decimal => elem_result_symbol.sym_decimal(),
+            _ => return Err(crate::ErrorType::Decimal),
+        };
 
         let mut dpr: Decimal = dec!(0.0);
         match list_am_opt {
@@ -3486,46 +3237,30 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let text: String;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                text = String::from(o.sym_string());
-            }
-        }
+        let text: String = match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => String::from(o.sym_string()),
+        };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let cfrom: String;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                cfrom = String::from(o.sym_string());
-            }
-        }
+        let cfrom: String = match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => String::from(o.sym_string()),
+        };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
         }
 
-        let cto: String;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                cto = String::from(o.sym_string());
-            }
-        }
+        let cto: String = match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+            Err(e) => return Err(e),
+            Ok(o) => String::from(o.sym_string()),
+        };
 
         let rs = text.replace(cfrom.as_str(), cto.as_str());
 
@@ -3550,28 +3285,20 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
-        let dvalue: Decimal;
-        match elem_result_symbol.sym_type() {
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
+        let dvalue: Decimal = match elem_result_symbol.sym_type() {
             crate::TokenType::Integer => {
-                dvalue = dec!(elem_result_symbol.sym_integer());
+                dec!(elem_result_symbol.sym_integer())
             }
-            crate::TokenType::Decimal => {
-                dvalue = elem_result_symbol.sym_decimal();
-            }
-            _ => {
-                return Err(crate::ErrorType::Decimal);
-            }
-        }
+            crate::TokenType::Decimal => elem_result_symbol.sym_decimal(),
+            _ => return Err(crate::ErrorType::Decimal),
+        };
+
         let mut digits: usize = self.decimal_digits;
         let mut round_ctrl = crate::RoundType::Bankers;
 
@@ -3632,28 +3359,20 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
-        let dvalue: Decimal;
-        match elem_result_symbol.sym_type() {
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, false) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
+        let dvalue: Decimal = match elem_result_symbol.sym_type() {
             crate::TokenType::Integer => {
-                dvalue = dec!(elem_result_symbol.sym_integer());
+                dec!(elem_result_symbol.sym_integer())
             }
-            crate::TokenType::Decimal => {
-                dvalue = elem_result_symbol.sym_decimal();
-            }
-            _ => {
-                return Err(crate::ErrorType::Decimal);
-            }
-        }
+            crate::TokenType::Decimal => elem_result_symbol.sym_decimal(),
+            _ => return Err(crate::ErrorType::Decimal),
+        };
+
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
             self.scanner_mut().scan_token();
@@ -3668,18 +3387,15 @@ impl CalcExpression {
                 elem_result_symbol = o;
             }
         }
-        let dfraction: Decimal;
-        match elem_result_symbol.sym_type() {
+
+        let dfraction: Decimal = match elem_result_symbol.sym_type() {
             crate::TokenType::Integer => {
-                dfraction = dec!(elem_result_symbol.sym_integer());
+                dec!(elem_result_symbol.sym_integer())
             }
-            crate::TokenType::Decimal => {
-                dfraction = elem_result_symbol.sym_decimal();
-            }
-            _ => {
-                return Err(crate::ErrorType::Decimal);
-            }
-        }
+            crate::TokenType::Decimal => elem_result_symbol.sym_decimal(),
+            _ => return Err(crate::ErrorType::Decimal),
+        };
+
         let mut round_ctrl = crate::RoundType::Bankers;
         let token = self.scanner_mut().scan_token();
         if token == crate::TokenType::Punctuation && self.scanner().get_token().starts_with(',') {
@@ -3750,16 +3466,12 @@ impl CalcExpression {
             self.scanner_mut().scan_token();
         }
 
-        let elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, true);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, true) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
         let mut sym_table = self.symbol_table_mut();
         let mut elem_symbol_opt = sym_table.get_symbol_mut(text.as_str());
         let mut symbol_new = ElemSymbol::new();
@@ -3813,16 +3525,11 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
 
         let s = String::from(elem_result_symbol.sym_string().trim());
         elem_result_symbol.set_string(s.as_str());
@@ -3845,19 +3552,16 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_symbol(list_am_opt, elem_balance_result_opt, true);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_symbol(list_am_opt, elem_balance_result_opt, true) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
+
         if elem_result_symbol.sym_type() != crate::TokenType::String {
             return Err(crate::ErrorType::String);
         }
+
         let sym_table = self.symbol_table();
         let elem_symbol = sym_table.get_symbol(elem_result_symbol.sym_string());
         match elem_symbol {
@@ -3887,16 +3591,11 @@ impl CalcExpression {
         list_am_opt: Option<&ListAmortization>,
         elem_balance_result_opt: Option<&ElemBalanceResult>,
     ) -> Result<ElemSymbol, crate::ErrorType> {
-        let mut elem_result_symbol: ElemSymbol;
-        let result = self.get_expr_string(list_am_opt, elem_balance_result_opt);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_result_symbol = o;
-            }
-        }
+        let mut elem_result_symbol: ElemSymbol =
+            match self.get_expr_string(list_am_opt, elem_balance_result_opt) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
 
         elem_result_symbol.set_string(elem_result_symbol.sym_string().to_uppercase().as_str());
         Ok(elem_result_symbol)

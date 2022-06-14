@@ -402,21 +402,15 @@ impl ListLocale {
     /// * See description.
 
     pub fn format_date_in(&self, display_val: &str) -> String {
-        let text: String;
-
-        match Regex::new(self.get_locale(true).format_in().date_regex()) {
-            Err(_e) => {
-                return String::from(display_val);
-            }
-            Ok(o) => {
-                text = o
-                    .replace(
-                        display_val,
-                        self.get_locale(true).format_in().date_replace(),
-                    )
-                    .to_string();
-            }
-        }
+        let text: String = match Regex::new(self.get_locale(true).format_in().date_regex()) {
+            Err(_e) => return String::from(display_val),
+            Ok(o) => o
+                .replace(
+                    display_val,
+                    self.get_locale(true).format_in().date_replace(),
+                )
+                .to_string(),
+        };
 
         let dd: Vec<_> = text.split('-').collect();
         if dd.len() != 3 {

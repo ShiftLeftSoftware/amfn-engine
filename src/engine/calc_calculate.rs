@@ -61,22 +61,17 @@ impl CalcCalculate {
         let fys = calc_manager_param.borrow().fiscal_year_start(false) % 10000;
         let dd = calc_manager_param.borrow().decimal_digits(false);
 
-        let list_descriptor: Option<ListDescriptor>;
-        match list_descriptor_cashflow_param {
-            None => {
-                list_descriptor = None;
-            }
-            Some(o) => {
-                list_descriptor = Option::from(o.copy(false, false));
-            }
-        }
+        let list_descriptor: Option<ListDescriptor> = match list_descriptor_cashflow_param {
+            None => None,
+            Some(o) => Option::from(o.copy(false, false)),
+        };
 
         return CalcCalculate {
             calc_manager: Rc::clone(calc_manager_param),
             fiscal_year_start: Cell::new(fys),
             decimal_digits: Cell::new(dd),
             list_descriptor_cashflow: list_descriptor,
-            calc_expression: RefCell::new(CalcExpression::new(&calc_manager_param, fys, dd)),
+            calc_expression: RefCell::new(CalcExpression::new(calc_manager_param, fys, dd)),
             interest: Cell::new(dec!(0.0)),
             sl_interest: Cell::new(dec!(0.0)),
             last_interest_date: Cell::new(0),
@@ -334,19 +329,16 @@ impl CalcCalculate {
                 self.expr_mut()
                     .set_symbol_integer("intSequence", event_sequence);
 
-                let result_symbol: ElemSymbol;
-                let result = self
+                let result_symbol: ElemSymbol = match self
                     .expr()
-                    .evaluate(Option::from(&*list_am), Option::from(elem_balance_prev));
-                match result {
+                    .evaluate(Option::from(&*list_am), Option::from(elem_balance_prev))
+                {
                     Err(e) => {
                         list_am.get_element(orig_list_index);
                         return Err(e);
                     }
-                    Ok(o) => {
-                        result_symbol = o;
-                    }
-                }
+                    Ok(o) => o,
+                };
 
                 match result_symbol.sym_type() {
                     crate::TokenType::Integer => {
@@ -1078,12 +1070,12 @@ impl CalcCalculate {
                 self.decimal_digits.get(),
                 crate::RoundType::Bankers,
             );
-            let mut adjust_down;
-            if adjust_negative {
-                adjust_down = balance < new_value;
+
+            let mut adjust_down = if adjust_negative {
+                balance < new_value
             } else {
-                adjust_down = balance > new_value;
-            }
+                balance > new_value
+            };
 
             if balance == new_value
                 || periods > (intervals_in_year * intervals * 100) as i32
@@ -1309,12 +1301,11 @@ impl CalcCalculate {
                 break;
             }
 
-            let adjust_down: bool;
-            if adjust_negative {
-                adjust_down = balance < new_value;
+            let adjust_down: bool = if adjust_negative {
+                balance < new_value
             } else {
-                adjust_down = balance > new_value;
-            }
+                balance > new_value
+            };
 
             if balance == new_value
                 || principal > max_calc_principal
@@ -1443,12 +1434,12 @@ impl CalcCalculate {
                 balance > new_value
             };
             if adjust {
-                let adjust_down: bool;
-                if adjust_negative {
-                    adjust_down = balance < new_value;
+                let adjust_down: bool = if adjust_negative {
+                    balance < new_value
                 } else {
-                    adjust_down = balance > new_value;
-                }
+                    balance > new_value
+                };
+
                 if adjust_down {
                     principal -= decrement_fraction * dec_ten;
                 } else {
@@ -1583,12 +1574,11 @@ impl CalcCalculate {
                 break;
             }
 
-            let adjust_down: bool;
-            if elem_balance_result.polarity() < 0 {
-                adjust_down = balance < new_value;
+            let adjust_down: bool = if elem_balance_result.polarity() < 0 {
+                balance < new_value
             } else {
-                adjust_down = balance > new_value;
-            }
+                balance > new_value
+            };
 
             if balance == new_value
                 || calc_interest > max_calc_interest
@@ -1698,12 +1688,12 @@ impl CalcCalculate {
                 balance > new_value
             };
             if adjust {
-                let adjust_down: bool;
-                if elem_balance_result.polarity() < 0 {
-                    adjust_down = balance < new_value;
+                let adjust_down: bool = if elem_balance_result.polarity() < 0 {
+                    balance < new_value
                 } else {
-                    adjust_down = balance > new_value;
-                }
+                    balance > new_value
+                };
+
                 if adjust_down {
                     calc_interest -= smallest_fraction;
                 } else {
@@ -1800,25 +1790,16 @@ impl CalcCalculate {
 
             action = 0;
             if next_element1 && next_element2 {
-                let extension1: &ElemExtension;
-                match extension1_opt {
-                    None => {
-                        return Err(crate::ErrorType::Index);
-                    }
-                    Some(o) => {
-                        extension1 = o;
-                    }
-                }
+                let extension1: &ElemExtension = match extension1_opt {
+                    None => return Err(crate::ErrorType::Index),
+                    Some(o) => o,
+                };
 
-                let extension2: &ElemExtension;
-                match extension2_opt {
-                    None => {
-                        return Err(crate::ErrorType::Index);
-                    }
-                    Some(o) => {
-                        extension2 = o;
-                    }
-                }
+                let extension2: &ElemExtension = match extension2_opt {
+                    None => return Err(crate::ErrorType::Index),
+                    Some(o) => o,
+                };
+
                 if event_date1 < event_date2 {
                     action = 1;
                 } else if event_date1 > event_date2 {
@@ -1872,25 +1853,15 @@ impl CalcCalculate {
             } else {
                 list_am_opt = Option::from(list_am2);
             }
-            let list_am: &ListAmortization;
-            match list_am_opt {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    list_am = o;
-                }
-            }
+            let list_am: &ListAmortization = match list_am_opt {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => o,
+            };
 
-            let mut list_descriptor_copy: ListDescriptor;
-            match list_am.list_descriptor() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    list_descriptor_copy = o.copy(false, updating_json);
-                }
-            }
+            let mut list_descriptor_copy: ListDescriptor = match list_am.list_descriptor() {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => o.copy(false, updating_json),
+            };
 
             let mut value: Decimal = list_am.value();
 
@@ -1911,15 +1882,11 @@ impl CalcCalculate {
 
             let new_elem_extension = list_am.elem_extension().copy();
 
-            let list_parameter: Option<ListParameter>;
-            match list_am.list_parameter() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    list_parameter = Option::from(o.copy(updating_json));
-                }
-            }
+            let list_parameter: Option<ListParameter> = match list_am.list_parameter() {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => Option::from(o.copy(updating_json)),
+            };
+
             new_list_am.add_amortization(
                 list_am.event_type(),
                 list_am.event_date(),
@@ -2020,24 +1987,16 @@ impl CalcCalculate {
 
             let new_elem_extension = list_am.elem_extension().copy();
             let new_eom = new_elem_extension.extension_eom();
-            let new_list_parameter: ListParameter;
-            match list_am.list_parameter() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    new_list_parameter = o.copy(updating_json);
-                }
-            }
-            let mut new_list_descriptor: ListDescriptor;
-            match list_am.list_descriptor() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    new_list_descriptor = o.copy(false, updating_json);
-                }
-            }
+
+            let new_list_parameter: ListParameter = match list_am.list_parameter() {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => o.copy(updating_json),
+            };
+
+            let mut new_list_descriptor: ListDescriptor = match list_am.list_descriptor() {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => o.copy(false, updating_json),
+            };
 
             while am_index < list_am.count() {
                 if !list_am.get_element(am_index) {
@@ -2216,24 +2175,17 @@ impl CalcCalculate {
                     let new_intervals = rollup_list_am.intervals();
                     let new_frequency = rollup_list_am.frequency();
                     let new_elem_extension = rollup_list_am.elem_extension().copy();
-                    let new_list_parameter: ListParameter;
-                    match rollup_list_am.list_parameter() {
-                        None => {
-                            return Err(crate::ErrorType::Index);
-                        }
-                        Some(o) => {
-                            new_list_parameter = o.copy(updating_json);
-                        }
-                    }
-                    let new_list_descriptor: ListDescriptor;
-                    match rollup_list_am.list_descriptor() {
-                        None => {
-                            return Err(crate::ErrorType::Index);
-                        }
-                        Some(o) => {
-                            new_list_descriptor = o.copy(false, updating_json);
-                        }
-                    }
+
+                    let new_list_parameter: ListParameter = match rollup_list_am.list_parameter() {
+                        None => return Err(crate::ErrorType::Index),
+                        Some(o) => o.copy(updating_json),
+                    };
+
+                    let new_list_descriptor: ListDescriptor = match rollup_list_am.list_descriptor()
+                    {
+                        None => return Err(crate::ErrorType::Index),
+                        Some(o) => o.copy(false, updating_json),
+                    };
 
                     new_list_am.add_amortization_ex(
                         rollup_list_am.event_type(),
@@ -2287,24 +2239,16 @@ impl CalcCalculate {
                 let new_frequency = list_am.frequency();
 
                 let new_elem_extension = list_am.elem_extension().copy();
-                let new_list_parameter: ListParameter;
-                match list_am.list_parameter() {
-                    None => {
-                        return Err(crate::ErrorType::Index);
-                    }
-                    Some(o) => {
-                        new_list_parameter = o.copy(updating_json);
-                    }
-                }
-                let new_list_descriptor: ListDescriptor;
-                match list_am.list_descriptor() {
-                    None => {
-                        return Err(crate::ErrorType::Index);
-                    }
-                    Some(o) => {
-                        new_list_descriptor = o.copy(false, updating_json);
-                    }
-                }
+
+                let new_list_parameter: ListParameter = match list_am.list_parameter() {
+                    None => return Err(crate::ErrorType::Index),
+                    Some(o) => o.copy(updating_json),
+                };
+
+                let new_list_descriptor: ListDescriptor = match list_am.list_descriptor() {
+                    None => return Err(crate::ErrorType::Index),
+                    Some(o) => o.copy(false, updating_json),
+                };
 
                 new_list_am.add_amortization_ex(
                     new_event_type,
@@ -2419,15 +2363,12 @@ impl CalcCalculate {
             let orig_value = value;
             let value_expr = list_event.value_expr();
             let value_expr_balance = list_event.value_expr_balance();
-            let list_parameter: ListParameter;
-            match list_event.list_parameter() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    list_parameter = o.copy(updating_json);
-                }
-            }
+
+            let list_parameter: ListParameter = match list_event.list_parameter() {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => o.copy(updating_json),
+            };
+
             let mut periods: usize = 0;
             if list_event.periods_expr().is_empty() {
                 periods = list_event.periods();
@@ -2441,17 +2382,14 @@ impl CalcCalculate {
 
                 self.expr_mut()
                     .set_symbol_integer("intPeriods", list_event.periods());
-                let result_symbol: ElemSymbol;
-                let result = self.expr().evaluate(None, None);
-                match result {
+
+                let result_symbol: ElemSymbol = match self.expr().evaluate(None, None) {
                     Err(e) => {
                         list_event.get_element(orig_list_index);
                         return Err(e);
                     }
-                    Ok(o) => {
-                        result_symbol = o;
-                    }
-                }
+                    Ok(o) => o,
+                };
 
                 match result_symbol.sym_type() {
                     crate::TokenType::Integer => {
@@ -2486,15 +2424,11 @@ impl CalcCalculate {
             let mut principal_increase: Decimal = dec!(0.0);
 
             let list_desc = list_event.list_descriptor();
-            let list_descriptor: &ListDescriptor;
-            match list_desc {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    list_descriptor = o;
-                }
-            }
+
+            let list_descriptor: &ListDescriptor = match list_desc {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => o,
+            };
 
             let orig_descriptor_list_index = list_descriptor.index();
 
@@ -2571,17 +2505,13 @@ impl CalcCalculate {
                         self.expr_mut()
                             .set_symbol_integer("intSequence", event_sequence);
 
-                        let result_symbol: ElemSymbol;
-                        let result = self.expr().evaluate(None, None);
-                        match result {
+                        let result_symbol: ElemSymbol = match self.expr().evaluate(None, None) {
                             Err(e) => {
                                 list_event.get_element(orig_list_index);
                                 return Err(e);
                             }
-                            Ok(o) => {
-                                result_symbol = o;
-                            }
-                        }
+                            Ok(o) => o,
+                        };
 
                         match result_symbol.sym_type() {
                             crate::TokenType::Integer => {
@@ -3015,25 +2945,15 @@ impl CalcCalculate {
             }
             let new_elem_extension = list_am.elem_extension().copy();
 
-            let mut new_list_parameter: ListParameter;
-            match list_am.list_parameter() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    new_list_parameter = o.copy(updating_json);
-                }
-            }
+            let mut new_list_parameter: ListParameter = match list_am.list_parameter() {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => o.copy(updating_json),
+            };
 
-            let mut new_list_descriptor: ListDescriptor;
-            match list_am.list_descriptor() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    new_list_descriptor = o.copy(false, updating_json);
-                }
-            }
+            let mut new_list_descriptor: ListDescriptor = match list_am.list_descriptor() {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => o.copy(false, updating_json),
+            };
 
             for statistic_index in 0..list_statistic_helper.count() {
                 if !list_statistic_helper.get_element(statistic_index) {
@@ -3059,25 +2979,15 @@ impl CalcCalculate {
                 if new_date > event_date {
                     let elem_extension = list_am.elem_extension().copy();
 
-                    let list_parameter: ListParameter;
-                    match list_am.list_parameter() {
-                        None => {
-                            return Err(crate::ErrorType::Index);
-                        }
-                        Some(o) => {
-                            list_parameter = o.copy(updating_json);
-                        }
-                    }
+                    let list_parameter: ListParameter = match list_am.list_parameter() {
+                        None => return Err(crate::ErrorType::Index),
+                        Some(o) => o.copy(updating_json),
+                    };
 
-                    let list_descriptor: ListDescriptor;
-                    match list_am.list_descriptor() {
-                        None => {
-                            return Err(crate::ErrorType::Index);
-                        }
-                        Some(o) => {
-                            list_descriptor = o.copy(false, updating_json);
-                        }
-                    }
+                    let list_descriptor: ListDescriptor = match list_am.list_descriptor() {
+                        None => return Err(crate::ErrorType::Index),
+                        Some(o) => o.copy(false, updating_json),
+                    };
 
                     new_list_am.add_amortization(
                         list_am.event_type(),
@@ -3218,25 +3128,16 @@ impl CalcCalculate {
                     list_am.elem_extension().extension_eom(),
                 );
                 let elem_extension = list_am.elem_extension().copy();
-                let list_parameter: ListParameter;
-                match list_am.list_parameter() {
-                    None => {
-                        return Err(crate::ErrorType::Index);
-                    }
-                    Some(o) => {
-                        list_parameter = o.copy(updating_json);
-                    }
-                }
 
-                let list_descriptor: ListDescriptor;
-                match list_am.list_descriptor() {
-                    None => {
-                        return Err(crate::ErrorType::Index);
-                    }
-                    Some(o) => {
-                        list_descriptor = o.copy(false, updating_json);
-                    }
-                }
+                let list_parameter: ListParameter = match list_am.list_parameter() {
+                    None => return Err(crate::ErrorType::Index),
+                    Some(o) => o.copy(updating_json),
+                };
+
+                let list_descriptor: ListDescriptor = match list_am.list_descriptor() {
+                    None => return Err(crate::ErrorType::Index),
+                    Some(o) => o.copy(false, updating_json),
+                };
 
                 new_list_am.add_amortization(
                     list_am.event_type(),
@@ -3331,16 +3232,10 @@ impl CalcCalculate {
             );
         }
 
-        let list_am: ListAmortization;
-        let result = self.expand_cashflow(list_event, true);
-        match result {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                list_am = o;
-            }
-        }
+        let list_am: ListAmortization = match self.expand_cashflow(list_event, true) {
+            Err(e) => return Err(e),
+            Ok(o) => o,
+        };
 
         let mut am_index: usize = 0;
         while am_index < list_am.count() {

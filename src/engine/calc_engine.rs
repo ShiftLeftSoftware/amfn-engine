@@ -58,7 +58,7 @@ impl CalcEngine {
 
         calc_engine
             .calc_mgr_mut()
-            .init_calc_manager(&calc_engine.calc_manager());
+            .init_calc_manager(calc_engine.calc_manager());
 
         calc_engine
     }
@@ -264,32 +264,22 @@ impl CalcEngine {
         new_date_param: usize,
         frequency_param: crate::FrequencyType,
     ) -> Result<ListEvent, crate::ErrorType> {
-        let new_list_event: ListEvent;
-        match self.calc_mgr().copy_template_events(
+        let new_list_event: ListEvent = match self.calc_mgr().copy_template_events(
             &self.calc_manager,
             date_param,
             end_date_param,
             new_date_param,
             frequency_param,
         ) {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                new_list_event = o;
-            }
-        }
+            Err(e) => return Err(e),
+            Ok(o) => o,
+        };
 
         let mut calc_mgr = self.calc_mgr_mut();
-        let list_event: &mut ListEvent;
-        match calc_mgr.list_cashflow_mut().list_event_mut() {
-            None => {
-                return Err(crate::ErrorType::Index);
-            }
-            Some(o) => {
-                list_event = o;
-            }
-        }
+        let list_event: &mut ListEvent = match calc_mgr.list_cashflow_mut().list_event_mut() {
+            None => return Err(crate::ErrorType::Index),
+            Some(o) => o,
+        };
 
         list_event.set_sort_on_add(false);
 
@@ -365,15 +355,10 @@ impl CalcEngine {
             let calc_mgr = self.calc_mgr();
             let list_cashflow = calc_mgr.list_cashflow();
 
-            let list_event: &ListEvent;
-            match list_cashflow.list_event() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    list_event = o;
-                }
-            }
+            let list_event: &ListEvent = match list_cashflow.list_event() {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => o,
+            };
 
             match list_cashflow.list_statistic_helper() {
                 None => {
@@ -456,20 +441,17 @@ impl CalcEngine {
             list_cashflow.set_statistic_helper(statistic_helper);
             list_cashflow.set_elem_balance_result(elem_balance_result);
 
-            let index: usize;
-            match list_cashflow.list_amortization() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
+            let index: usize = match list_cashflow.list_amortization() {
+                None => return Err(crate::ErrorType::Index),
                 Some(o) => {
                     if list_cashflow.last_amortization_index() != usize::MAX
                         && !o.get_element(list_cashflow.last_amortization_index())
                     {
                         o.get_element(o.count() - 1);
                     }
-                    index = o.index();
+                    o.index()
                 }
-            }
+            };
 
             list_cashflow.set_last_amortization_index(index);
             list_cashflow.set_cashflow_valid(true);
@@ -519,20 +501,15 @@ impl CalcEngine {
                 }
             }
 
-            let result;
-            match list_cashflow.list_event() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    result = list_cashflow.calculate().calculate_yield(
-                        o,
-                        &mut list_am,
-                        &mut list_statistic_helper,
-                        target_value,
-                    );
-                }
-            }
+            let result = match list_cashflow.list_event() {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => list_cashflow.calculate().calculate_yield(
+                    o,
+                    &mut list_am,
+                    &mut list_statistic_helper,
+                    target_value,
+                ),
+            };
 
             match result {
                 Err(e) => {
@@ -692,20 +669,15 @@ impl CalcEngine {
                 }
             }
 
-            let result;
-            match list_cashflow.list_event() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    result = list_cashflow.calculate().calculate_periods(
-                        o,
-                        &mut list_am,
-                        &mut list_statistic_helper,
-                        target_value,
-                    );
-                }
-            }
+            let result = match list_cashflow.list_event() {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => list_cashflow.calculate().calculate_periods(
+                    o,
+                    &mut list_am,
+                    &mut list_statistic_helper,
+                    target_value,
+                ),
+            };
 
             match result {
                 Err(e) => {
@@ -786,29 +758,23 @@ impl CalcEngine {
 
             let orig_index = list_cashflow.index();
 
-            let list_am: &ListAmortization;
-            match list_cashflow.list_amortization() {
+            let list_am: &ListAmortization = match list_cashflow.list_amortization() {
                 None => {
-                    panic!("Cannot load the primary cashflow");
+                    panic!("Cannot load the primary cashflow")
                 }
-                Some(o) => {
-                    list_am = o;
-                }
-            }
+                Some(o) => o,
+            };
 
             if !list_cashflow.get_element_by_name(name2_param, true) {
                 return Err(crate::ErrorType::CfName);
             }
 
-            let list_am2: &ListAmortization;
-            match list_cashflow.list_amortization() {
+            let list_am2: &ListAmortization = match list_cashflow.list_amortization() {
                 None => {
-                    panic!("Cannot load the secondary cashflow");
+                    panic!("Cannot load the secondary cashflow")
                 }
-                Some(o) => {
-                    list_am2 = o;
-                }
-            }
+                Some(o) => o,
+            };
 
             list_cashflow.get_element(orig_index);
 
@@ -816,15 +782,10 @@ impl CalcEngine {
                 .calculate()
                 .combine_cashflow(list_am, list_am2);
 
-            let new_list_am: ListAmortization;
-            match result {
-                Err(e) => {
-                    return Err(e);
-                }
-                Ok(o) => {
-                    new_list_am = o;
-                }
-            }
+            let new_list_am: ListAmortization = match result {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
 
             let result = list_cashflow.calculate().create_cashflow_output(
                 &new_list_am,
@@ -835,15 +796,10 @@ impl CalcEngine {
                 true,
             );
 
-            let new_list_am_output: ListAmortization;
-            match result {
-                Err(e) => {
-                    return Err(e);
-                }
-                Ok(o) => {
-                    new_list_am_output = o;
-                }
-            }
+            let new_list_am_output: ListAmortization = match result {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
 
             let result = list_cashflow.calculate().transform_cashflow(
                 &new_list_am_output,
@@ -931,15 +887,10 @@ impl CalcEngine {
         self.evaluate_cashflow_descriptors();
         self.evaluate_cashflow_event_type_all();
 
-        let elem_balance_result: ElemBalanceResult;
-        match self.balance_cashflow() {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_balance_result = o;
-            }
-        }
+        let elem_balance_result: ElemBalanceResult = match self.balance_cashflow() {
+            Err(e) => return Err(e),
+            Ok(o) => o,
+        };
 
         {
             let mut calc_mgr = self.calc_mgr_mut();
@@ -1027,29 +978,23 @@ impl CalcEngine {
 
             let orig_index = list_cashflow.index();
 
-            let list_event: &ListEvent;
-            match list_cashflow.list_event() {
+            let list_event: &ListEvent = match list_cashflow.list_event() {
                 None => {
-                    panic!("Cannot load the primary cashflow");
+                    panic!("Cannot load the primary cashflow")
                 }
-                Some(o) => {
-                    list_event = o;
-                }
-            }
+                Some(o) => o,
+            };
 
             if !list_cashflow.get_element_by_name(name2_param, true) {
                 return Err(crate::ErrorType::CfName);
             }
 
-            let list_event2: &ListEvent;
-            match list_cashflow.list_event() {
+            let list_event2: &ListEvent = match list_cashflow.list_event() {
                 None => {
-                    panic!("Cannot load the secondary cashflow");
+                    panic!("Cannot load the secondary cashflow")
                 }
-                Some(o) => {
-                    list_event2 = o;
-                }
-            }
+                Some(o) => o,
+            };
 
             list_cashflow.get_element(orig_index);
 
@@ -1147,15 +1092,10 @@ impl CalcEngine {
         self.evaluate_cashflow_descriptors();
         self.evaluate_cashflow_event_type_all();
 
-        let elem_balance_result: ElemBalanceResult;
-        match self.balance_cashflow() {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_balance_result = o;
-            }
-        }
+        let elem_balance_result: ElemBalanceResult = match self.balance_cashflow() {
+            Err(e) => return Err(e),
+            Ok(o) => o,
+        };
 
         {
             let mut calc_mgr = self.calc_mgr_mut();
@@ -1232,15 +1172,10 @@ impl CalcEngine {
             }
         }
 
-        let elem_balance_result: ElemBalanceResult;
-        match self.balance_cashflow() {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_balance_result = o;
-            }
-        }
+        let elem_balance_result: ElemBalanceResult = match self.balance_cashflow() {
+            Err(e) => return Err(e),
+            Ok(o) => o,
+        };
 
         {
             let mut calc_mgr = self.calc_mgr_mut();
@@ -1317,38 +1252,26 @@ impl CalcEngine {
                 return Err(crate::ErrorType::Cashflow);
             }
 
-            let list_am: &ListAmortization;
-            match list_cashflow.list_amortization() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    list_am = o;
-                }
-            }
+            let list_am: &ListAmortization = match list_cashflow.list_amortization() {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => o,
+            };
 
-            let new_list_am_output: ListAmortization;
-            let result = list_cashflow
+            let new_list_am_output: ListAmortization = match list_cashflow
                 .calculate()
-                .create_cashflow_output(list_am, true, false, true, true, true);
+                .create_cashflow_output(list_am, true, false, true, true, true)
+            {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
 
-            match result {
-                Err(e) => {
-                    return Err(e);
-                }
-                Ok(o) => {
-                    new_list_am_output = o;
-                }
-            }
-
-            let result = list_cashflow.calculate().transform_cashflow(
+            match list_cashflow.calculate().transform_cashflow(
                 &new_list_am_output,
                 after_pv,
                 omit_interest_events,
                 false,
                 true,
-            );
-            match result {
+            ) {
                 Err(e) => {
                     return Err(e);
                 }
@@ -1357,15 +1280,10 @@ impl CalcEngine {
                 }
             }
 
-            let preferences: &ElemPreferences;
-            match list_cashflow.preferences() {
-                None => {
-                    return Err(crate::ErrorType::Index);
-                }
-                Some(o) => {
-                    preferences = o;
-                }
-            }
+            let preferences: &ElemPreferences = match list_cashflow.preferences() {
+                None => return Err(crate::ErrorType::Index),
+                Some(o) => o,
+            };
 
             if new_group.is_empty() && !preferences.group().is_empty() {
                 new_group = String::from(preferences.group());
@@ -1454,15 +1372,10 @@ impl CalcEngine {
         self.evaluate_cashflow_descriptors();
         self.evaluate_cashflow_event_type_all();
 
-        let elem_balance_result: ElemBalanceResult;
-        match self.balance_cashflow() {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_balance_result = o;
-            }
-        }
+        let elem_balance_result: ElemBalanceResult = match self.balance_cashflow() {
+            Err(e) => return Err(e),
+            Ok(o) => o,
+        };
 
         {
             let mut calc_mgr = self.calc_mgr_mut();
@@ -1609,13 +1522,11 @@ impl CalcEngine {
             }
         }
 
-        let list_event: ListEvent;
-        match self.copy_template_events(event_date, end_date, new_date, frequency) {
-            Err(e) => return Err(e),
-            Ok(o) => {
-                list_event = o;
-            }
-        }
+        let list_event: ListEvent =
+            match self.copy_template_events(event_date, end_date, new_date, frequency) {
+                Err(e) => return Err(e),
+                Ok(o) => o,
+            };
 
         self.evaluate_cashflow_event_type_all();
 
@@ -1647,7 +1558,6 @@ impl CalcEngine {
         new_name_param: &str,
         new_group_param: &str,
     ) -> Result<ElemBalanceResult, crate::ErrorType> {
-        let elem_balance_result: ElemBalanceResult;
         let elem_preferences_opt: Option<ElemPreferences>;
         let group: String;
 
@@ -1701,14 +1611,10 @@ impl CalcEngine {
 
         self.evaluate_cashflow_descriptors();
 
-        match self.balance_cashflow() {
-            Err(e) => {
-                return Err(e);
-            }
-            Ok(o) => {
-                elem_balance_result = o;
-            }
-        }
+        let elem_balance_result: ElemBalanceResult = match self.balance_cashflow() {
+            Err(e) => return Err(e),
+            Ok(o) => o,
+        };
 
         {
             let mut calc_mgr = self.calc_mgr_mut();
@@ -1783,15 +1689,12 @@ impl CalcEngine {
             calc_mgr.decimal_digits(false),
         );
 
-        let preferences: &ElemPreferences;
-        match calc_mgr.list_cashflow().preferences() {
+        let preferences: &ElemPreferences = match calc_mgr.list_cashflow().preferences() {
             None => {
-                panic!("Cashflow list index not set");
+                panic!("Cashflow list index not set")
             }
-            Some(o) => {
-                preferences = o;
-            }
-        }
+            Some(o) => o,
+        };
 
         let expression = RefCell::new(calc_expression);
 
@@ -1826,29 +1729,23 @@ impl CalcEngine {
                     break;
                 }
 
-                let group: String;
-                match list_event.elem_type() {
-                    crate::ExtensionType::CurrentValue => {
-                        group = String::from(crate::GROUP_CURRENT_VALUE);
-                    }
+                let group: String = match list_event.elem_type() {
+                    crate::ExtensionType::CurrentValue => String::from(crate::GROUP_CURRENT_VALUE),
                     crate::ExtensionType::StatisticValue => {
-                        group = String::from(crate::GROUP_STATISTIC_VALUE);
+                        String::from(crate::GROUP_STATISTIC_VALUE)
                     }
                     crate::ExtensionType::InterestChange => {
-                        group = String::from(crate::GROUP_INTEREST_CHANGE);
+                        String::from(crate::GROUP_INTEREST_CHANGE)
                     }
-                    _ => {
-                        group = String::from(crate::GROUP_PRINCIPAL_CHANGE);
-                    }
-                }
+                    _ => String::from(crate::GROUP_PRINCIPAL_CHANGE),
+                };
 
-                let locale_str: String;
-                if list_event.cashflow() {
-                    locale_str =
-                        String::from(calc_mgr.list_locale().cashflow_locale().locale_str());
+                let locale_str: String = if list_event.cashflow() {
+                    String::from(calc_mgr.list_locale().cashflow_locale().locale_str())
                 } else {
-                    locale_str = String::from(calc_mgr.list_locale().user_locale().locale_str());
-                }
+                    String::from(calc_mgr.list_locale().user_locale().locale_str())
+                };
+
                 let mut event_type_expr = calc_mgr.descriptor_value(
                     group.as_str(),
                     crate::NAME_EVENT_TYPE,

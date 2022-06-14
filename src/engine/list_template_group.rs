@@ -255,47 +255,42 @@ impl ListTemplateGroup {
                 group = temp_group;
             }
         }
-        let elem_preferences: ElemPreferences;
-        match elem_preferences_orig_opt {
-            None => {
-                elem_preferences = ElemPreferences::new(
-                    self.calc_manager(),
-                    "",
-                    "",
-                    "",
-                    "",
-                    0,
-                    crate::DEFAULT_DECIMAL_DIGITS,
-                    dec!(0.0),
-                    -1,
-                    -1,
-                    -1,
-                    None,
-                    None,
-                    false,
-                    updating_json,
-                );
-            }
-            Some(o) => {
-                elem_preferences = ElemPreferences::new(
-                    self.calc_manager(),
-                    o.locale_str(),
-                    o.cross_rate_code(),
-                    o.default_encoding(),
-                    o.group(),
-                    o.fiscal_year_start(),
-                    o.decimal_digits(),
-                    o.target(),
-                    o.combine_principal(),
-                    o.compress_descriptor(),
-                    o.statistic_events(),
-                    Option::from(o.list_parameter()),
-                    Option::from(o.list_descriptor()),
-                    copy_propagate,
-                    updating_json,
-                );
-            }
-        }
+        let elem_preferences: ElemPreferences = match elem_preferences_orig_opt {
+            None => ElemPreferences::new(
+                self.calc_manager(),
+                "",
+                "",
+                "",
+                "",
+                0,
+                crate::DEFAULT_DECIMAL_DIGITS,
+                dec!(0.0),
+                -1,
+                -1,
+                -1,
+                None,
+                None,
+                false,
+                updating_json,
+            ),
+            Some(o) => ElemPreferences::new(
+                self.calc_manager(),
+                o.locale_str(),
+                o.cross_rate_code(),
+                o.default_encoding(),
+                o.group(),
+                o.fiscal_year_start(),
+                o.decimal_digits(),
+                o.target(),
+                o.combine_principal(),
+                o.compress_descriptor(),
+                o.statistic_events(),
+                Option::from(o.list_parameter()),
+                Option::from(o.list_descriptor()),
+                copy_propagate,
+                updating_json,
+            ),
+        };
 
         let new_elem_template_group;
         if update_element {
@@ -632,8 +627,7 @@ impl ListTemplateGroup {
     /// Sort the template group list.
 
     pub fn sort(&mut self) {
-        self.list_template_group
-            .sort_by(|a, b| ListTemplateGroup::cmp(a, b));
+        self.list_template_group.sort_by(ListTemplateGroup::cmp);
     }
 
     /// Sort compare function.

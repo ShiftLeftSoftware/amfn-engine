@@ -445,8 +445,7 @@ impl ListTemplateEvent {
     /// Sort the template event list.
 
     fn sort(&mut self) {
-        self.list_template_event
-            .sort_by(|a, b| ListTemplateEvent::cmp(a, b));
+        self.list_template_event.sort_by(ListTemplateEvent::cmp);
     }
 
     /// Sort compare function.

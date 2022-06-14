@@ -27,9 +27,9 @@ pub struct CalcManager {
     /// User preferences element.
     elem_preferences: Option<ElemPreferences>,
     /// List of cashflows.
-    list_cashflow:  Option<ListCashflow>,
+    list_cashflow: Option<ListCashflow>,
     /// List of template groups.
-    list_template_group:  Option<ListTemplateGroup>,
+    list_template_group: Option<ListTemplateGroup>,
 
     /// List of exchange rates.
     list_exchange_rate: ListExchangeRate,
@@ -195,17 +195,13 @@ impl CalcManager {
                 );
                 calc_expression.set_symbol_integer("intEOM", if eom { 1 } else { 0 });
 
-                let elem_result_symbol: ElemSymbol;
-                let result = calc_expression.evaluate(None, None);
-                match result {
+                let elem_result_symbol: ElemSymbol = match calc_expression.evaluate(None, None) {
                     Err(e) => {
                         list_template_event_list_event.get_element(orig_index);
                         return Err(e);
                     }
-                    Ok(o) => {
-                        elem_result_symbol = o;
-                    }
-                }
+                    Ok(o) => o,
+                };
 
                 match elem_result_symbol.sym_type() {
                     crate::TokenType::Integer => {
